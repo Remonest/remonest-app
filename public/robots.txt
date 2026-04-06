@@ -1,0 +1,19 @@
+User-agent: *
+Allow: /
+
+# Disallow auth routes
+Disallow: /(auth)/
+Disallow: /login
+Disallow: /register
+
+# Disallow dashboard (private)
+Disallow: /dashboard
+Disallow: /dashboard/*
+
+# Allow public pages
+Allow: /learning
+Allow: /jobs
+Allow: /cv-builder
+Allow: /portfolio
+
+Sitemap: https://remonest.com/sitemap.xml

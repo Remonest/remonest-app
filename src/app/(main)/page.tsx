@@ -1,0 +1,52 @@
+import {
+  Header,
+  HeroSection,
+  FeaturesSection,
+  StepsSection,
+  TestimonialsSection,
+  CTASection,
+  Footer,
+} from "@/components/landing";
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "Remonest",
+  url: "https://remonest.com",
+  description:
+    "Remote career platform for Indonesian professionals. Find global opportunities, build ATS-ready CVs, and learn remote-ready skills.",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: "https://remonest.com/jobs?q={search_term_string}",
+    "query-input": "required name=search_term_string",
+  },
+  publisher: {
+    "@type": "Organization",
+    name: "Remonest",
+    url: "https://remonest.com",
+    logo: {
+      "@type": "ImageObject",
+      url: "https://remonest.com/logo.png",
+    },
+  },
+};
+
+export default function LandingPage() {
+  return (
+    <div className="flex flex-col flex-1 bg-background">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <Header />
+      <main>
+        <HeroSection />
+        <FeaturesSection />
+        <StepsSection />
+        <TestimonialsSection />
+        <CTASection />
+      </main>
+      <Footer />
+    </div>
+  );
+}
