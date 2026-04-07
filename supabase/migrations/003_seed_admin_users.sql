@@ -12,18 +12,18 @@ DECLARE
   target_emails TEXT[] := ARRAY[
     'admin@remonest.com'  -- TODO: Replace with actual admin email(s)
   ];
-  email TEXT;
+  target_email TEXT;
 BEGIN
-  FOREACH email IN ARRAY target_emails LOOP
+  FOREACH target_email IN ARRAY target_emails LOOP
     UPDATE public.user_profiles
     SET role = 'admin',
         updated_at = NOW()
-    WHERE id = (SELECT id FROM auth.users WHERE auth.users.email = email);
+    WHERE id = (SELECT id FROM auth.users WHERE auth.users.email = target_email);
 
     IF NOT FOUND THEN
-      RAISE NOTICE 'No user found with email: %', email;
+      RAISE NOTICE 'No user found with email: %', target_email;
     ELSE
-      RAISE NOTICE 'Promoted % to admin', email;
+      RAISE NOTICE 'Promoted % to admin', target_email;
     END IF;
   END LOOP;
 END $$;
