@@ -22,7 +22,7 @@ export function HeroSection() {
     },
     {
       image:
-        "https://storage.googleapis.com/banani-generated-images/generated-images/5676352a-bd3e-4f5e-9a20-f2e2fd666ded.jpg",
+        "https://storage.googleapis.com/banani-generated-images/generated-images/1056ed0c-0a1a-4aa3-b2a2-32ab4c7bb073.jpg",
       caption: t.hero.carousel.showcaseBestWork.caption,
       captionDesc: t.hero.carousel.showcaseBestWork.description,
     },

@@ -8,7 +8,10 @@
       "Bash(findstr *)",
       "Bash(pnpm add *)",
       "Bash(taskkill *)",
-      "Bash(pnpm *)"
+      "Bash(pnpm *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push)"
     ]
   },
   "$version": 3
