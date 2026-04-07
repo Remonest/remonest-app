@@ -6,7 +6,9 @@ import {
   TestimonialsSection,
   CTASection,
   Footer,
+  LanguageHandler,
 } from "@/components/landing";
+import { TranslationProvider } from "@/lib/translations";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -38,15 +40,18 @@ export default function LandingPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <Header />
-      <main>
-        <HeroSection />
-        <FeaturesSection />
-        <StepsSection />
-        <TestimonialsSection />
-        <CTASection />
-      </main>
-      <Footer />
+      <TranslationProvider>
+        <LanguageHandler />
+        <Header />
+        <main>
+          <HeroSection />
+          <FeaturesSection />
+          <StepsSection />
+          <TestimonialsSection />
+          <CTASection />
+        </main>
+        <Footer />
+      </TranslationProvider>
     </div>
   );
 }

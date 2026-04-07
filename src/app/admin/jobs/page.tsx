@@ -44,6 +44,7 @@ async function AllJobsContent() {
     status: job.status,
     location: job.location,
     created_at: job.created_at,
+    posted_at: job.created_at,
   }));
 
   return <DataTable data={transformedJobs} columns={columns} />;

@@ -4,8 +4,8 @@ import { Badge } from '@/components/ui/badge';
 import { JobTypeBadge } from './JobTypeBadge';
 import { VerificationBadge } from './VerificationBadge';
 import { CalendarDays, MapPin, ExternalLink } from 'lucide-react';
-import { formatSalary, formatDeadline, getJobTypeLabel } from '@/lib/jobs/actions';
-import type { JobType } from '@/lib/jobs/actions';
+import { formatSalary, formatDeadline, getJobTypeLabel } from '@/lib/jobs/utils';
+import type { JobType, JobStatus } from '@/lib/jobs/utils';
 
 interface JobCardProps {
   id: string;
@@ -21,7 +21,7 @@ interface JobCardProps {
   deadline: string | null;
   is_verified_by_admin: boolean;
   showStatus?: boolean;
-  status?: string;
+  status?: JobStatus;
 }
 
 export function JobCard({

@@ -11,7 +11,7 @@ export function getSupabaseServerClient(): SupabaseClient<Database> {
 
   if (!supabaseUrl || !supabaseAnonKey) {
     throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables."
+      "Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.",
     );
   }
 
@@ -42,7 +42,7 @@ export function getSupabaseServiceClient(): SupabaseClient<Database> {
 
   if (!supabaseUrl || !supabaseServiceKey) {
     throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables."
+      "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables.",
     );
   }
 
@@ -60,4 +60,41 @@ export function getSupabaseServiceClient(): SupabaseClient<Database> {
       },
     },
   });
+}
+
+/**
+ * Get the current user's role from user_profiles table
+ * Returns null if not authenticated or profile not found
+ */
+export async function getUserRole(): Promise<
+  "admin" | "user" | "client" | null
+> {
+  const supabase = getSupabaseServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return null;
+
+  const { data: profile, error } = await supabase
+    .from("user_profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (error || !profile) return null;
+  console.log(profile.role);
+  return profile.role as "admin" | "user" | "client" | null;
+}
+
+/**
+ * Guard function: throws if user is not admin
+ * Use in Server Actions, Route Handlers, or Server Components
+ */
+export async function requireAdmin(): Promise<void> {
+  const role = await getUserRole();
+  if (role !== "admin") {
+    throw new Error("Unauthorized: Admin access required");
+  }
 }

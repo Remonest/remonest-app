@@ -6,3 +6,4 @@ export { TestimonialsSection } from "./testimonials-section";
 export { CTASection } from "./cta-section";
 export { Footer } from "./footer";
 export { ThemeToggle } from "./theme-toggle";
+export { LanguageHandler } from "./language-handler";

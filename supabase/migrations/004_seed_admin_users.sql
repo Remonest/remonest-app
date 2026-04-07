@@ -1,10 +1,10 @@
 -- ============================================================
--- Migration: 003_seed_admin_users
+-- Migration: 004_seed_admin_users
 -- Created: 2026-04-07
 -- Description: Promote specific users to admin role by email
 -- ============================================================
 
--- Update role to 'admin' for the users below.
+-- Update role to 'admin' and verify email for the users below.
 -- Add or remove email lines as needed.
 
 DO $$
@@ -15,6 +15,12 @@ DECLARE
   target_email TEXT;
 BEGIN
   FOREACH target_email IN ARRAY target_emails LOOP
+    -- Verify email
+    UPDATE auth.users
+    SET email_confirmed_at = NOW()
+    WHERE email = target_email;
+
+    -- Promote to admin role
     UPDATE public.user_profiles
     SET role = 'admin',
         updated_at = NOW()
@@ -23,7 +29,7 @@ BEGIN
     IF NOT FOUND THEN
       RAISE NOTICE 'No user found with email: %', target_email;
     ELSE
-      RAISE NOTICE 'Promoted % to admin', target_email;
+      RAISE NOTICE 'Verified email and promoted % to admin', target_email;
     END IF;
   END LOOP;
 END $$;

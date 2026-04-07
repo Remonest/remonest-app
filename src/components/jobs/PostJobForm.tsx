@@ -18,7 +18,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { submitJob, saveJobDraft } from '@/lib/jobs/actions';
 import { toast } from 'sonner';
 import { Loader2, Save, Send } from 'lucide-react';
-import type { JobType } from '@/lib/jobs/actions';
+import type { JobType } from '@/lib/jobs/utils';
 
 interface PostJobFormProps {
   isAdmin?: boolean;
@@ -263,10 +263,11 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
           {/* Submit Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
             <Button
-              type="submit"
-              formAction={(e) => {
+              type="button"
+              onClick={(e) => {
                 e.preventDefault();
-                const formData = new FormData(e.currentTarget as HTMLFormElement);
+                const formElement = document.querySelector('form') as HTMLFormElement;
+                const formData = new FormData(formElement);
                 handleSubmitAction(formData, 'submit');
               }}
               disabled={isLoading}
