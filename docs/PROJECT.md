@@ -234,6 +234,81 @@ const goTo = (index: number) => {
 
 ---
 
+## Job Board Implementation (v1.0.0)
+
+**Date:** April 7, 2026
+
+### Overview
+
+Complete Job Board feature with dual posting workflow (Admin vs Client), approval queue, and all required UI components.
+
+### Server Actions (`src/lib/jobs/actions.ts`)
+
+| Action | Description | Returns |
+|--------|-------------|---------|
+| `getJobs(filters)` | Fetch published jobs with optional filters | Job[] |
+| `getJobById(id)` | Get single job by ID | Job \| null |
+| `getUserJobs()` | Get jobs posted by current user | Job[] |
+| `getPendingJobs()` | Get pending jobs for admin approval | Job[] |
+| `getAllJobs()` | Get all jobs for admin | Job[] |
+| `submitJob(formData)` | Submit new job (admin=publish, user=pending) | Result |
+| `saveJobDraft(formData)` | Save job as draft | Result |
+| `approveJob(jobId)` | Admin approve pending job | Result |
+| `rejectJob(jobId, reason)` | Admin reject with reason | Result |
+| `deleteJob(jobId)` | Delete job with restrictions | Result |
+| `republishJob(jobId)` | Republish expired job | Result |
+
+### UI Components (`src/components/jobs/`)
+
+- **JobCard.tsx** — Full job card with verification badge
+- **JobTypeBadge.tsx** — Color-coded badges (Full-Time=#0891b2, Part-Time=#0d9488, Project=#f97316, Freelance=#8b5cf6)
+- **VerificationBadge.tsx** — Green checkmark for admin-verified jobs
+- **StatusBadge.tsx** — Status badges with icons
+- **PostJobForm.tsx** — Unified form adapts to user role
+- **AdminApprovalTable.tsx** — Pending jobs with approve/reject actions
+
+### Posting Workflow
+
+**Admin Flow:**
+- Admin submits → `status='published'` immediately
+- `is_verified_by_admin=true`
+- `published_at` set to NOW()
+
+**Client Flow:**
+- Client submits → `status='pending'`
+- `is_verified_by_admin=false`
+- Admin reviews → approves or rejects
+
+### Database Schema (Migration 003)
+
+**Tables:**
+- `jobs` table with dual posting workflow
+- Enums: `job_type_enum`, `job_status_enum`, `apply_method_enum`
+- 7 indexes for performance
+- RLS policies for security
+- 4 sample jobs included
+
+### Status
+
+✅ **Complete:**
+- Database schema with RLS
+- Server actions with Zod validation
+- UI components (JobCard, badges, forms)
+- Admin approval workflow
+- Admin page integration
+
+⚠️ **In Progress:**
+- `/jobs` public job board page (UI exists, needs Supabase integration)
+- `/jobs/[id]` single job detail page
+- `/jobs/post` job posting form page
+- `/dashboard/jobs` user's job management
+
+### Documentation
+
+Full details in `docs/JOB_BOARD_IMPLEMENTATION.md`
+
+---
+
 ## Key Conventions
 
 1. **Imports**: Use `@/*` path alias (e.g., `@/components/ui/button`)
@@ -270,4 +345,6 @@ pnpm lint         # Run ESLint
 - `/admin/learning` and `/admin/settings` sidebar links exist but pages not created
 - Social icons in footer use `X`, `Link`, `Camera` instead of Twitter/LinkedIn/Instagram (not in lucide-react v1.7.0)
 - Profile views and CV downloads on dashboard are placeholder metrics (not yet tracked in DB)
-- `/jobs` and `/learning` pages still use hardcoded data despite DB tables existing with seed data
+- `/learning` pages still use hardcoded data despite DB tables existing with seed data
+- `/jobs` public pages need Supabase integration (server actions and UI components complete, just need page wiring)
+- Missing job board pages: `/jobs/post`, `/jobs/[id]`, `/dashboard/jobs`

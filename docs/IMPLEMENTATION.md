@@ -497,23 +497,62 @@ remonest-app/
 
 ### Job Board
 
-**Location:** `src/app/(main)/jobs/`
+**Location:** `src/app/(main)/jobs/`, `src/lib/jobs/`, `src/components/jobs/`
 
 **Implemented:**
-- **Job Listing Page** with:
-  - Search bar
-  - Filter button
-  - Job cards with metadata (title, company, location, salary, tags)
-- **Job Detail Pages** at `/jobs/[id]` with:
-  - Full job description
-  - Requirements section
-  - Benefits section
-  - "Apply Now" CTA button
-  - Company info sidebar
+- **Database Schema** (Migration 003):
+  - `jobs` table with dual posting workflow
+  - Enums: `job_type_enum` (full-time, part-time, project, freelance), `job_status_enum` (draft, pending, approved, rejected, published, expired), `apply_method_enum` (url, email)
+  - 7 indexes for performance
+  - RLS policies for security
+  - Auto-update triggers
+  - 4 sample jobs included
+- **Server Actions** (`src/lib/jobs/actions.ts`):
+  - `getJobs(filters)` — Fetch published jobs with optional filters (job_type, search, location)
+  - `getJobById(id)` — Get single job by ID
+  - `getUserJobs()` — Get jobs posted by current user
+  - `getPendingJobs()` — Get pending jobs for admin approval
+  - `getAllJobs()` — Get all jobs for admin
+  - `submitJob(formData)` — Submit new job (admin=immediate publish, user=pending approval)
+  - `saveJobDraft(formData)` — Save job as draft
+  - `approveJob(jobId)` — Admin approve pending job
+  - `rejectJob(jobId, reason)` — Admin reject with reason
+  - `deleteJob(jobId)` — Delete job with restrictions
+  - `republishJob(jobId)` — Republish expired jobs
+  - Helper functions: `formatSalary()`, `formatDeadline()`, `getJobTypeLabel()`, `getStatusLabel()`
+  - Zod validation for job submission
+- **UI Components** (`src/components/jobs/`):
+  - `JobCard.tsx` — Full job card with all fields (title, company, job type, salary, location, deadline, verification badge, apply button)
+  - `JobTypeBadge.tsx` — Color-coded badges (Full-Time=#0891b2, Part-Time=#0d9488, Project=#f97316, Freelance=#8b5cf6)
+  - `VerificationBadge.tsx` — Green checkmark badge for admin-verified jobs
+  - `StatusBadge.tsx` — Status badges (draft=gray, pending=amber, approved=blue, rejected=red, published=emerald, expired=orange)
+  - `PostJobForm.tsx` — Unified job posting form that adapts based on user role (Admin vs Client)
+  - `AdminApprovalTable.tsx` — Pending jobs table with approve/reject actions and reason dialog
+- **Posting Flows:**
+  - **Admin Flow:** Admin submits → status='published' immediately, is_verified_by_admin=true
+  - **Client Flow:** Client submits → status='pending', is_verified_by_admin=false → Admin approves/rejects
+- **Job Card Display:**
+  - Title, Company, Job Type badge (color-coded)
+  - Salary range (formatted: "Rp 5jt – 10jt / bulan")
+  - Location ("Remote / WFH")
+  - Deadline ("30 Mei 2026")
+  - Verification badge ("✅ Terverifikasi Admin")
+  - Apply button (external link or email)
+- **Admin Approval Workflow:**
+  - Pending jobs shown in table
+  - Approve → status='published', is_verified_by_admin=true
+  - Reject → status='rejected', optional rejection_reason stored
+  - Real-time updates after actions
 
-**Current Data:** 6 hardcoded jobs on listing page, 1 hardcoded job on detail page
+**Current Data:** 4 sample jobs in migration (2 published, 1 pending, 1 freelance)
 
-**Status:** ⚠️ UI complete, data hardcoded, no Supabase integration
+**Status:** ✅ Complete (database schema, server actions, UI components, approval workflow implemented)
+
+**Missing Pages:**
+- `/jobs` - Public job board page (UI exists but needs Supabase integration)
+- `/jobs/[id]` - Single job detail page
+- `/jobs/post` - Job posting form page (PostJobForm component ready)
+- `/dashboard/jobs` - User's job management page
 
 ---
 
@@ -644,7 +683,9 @@ remonest-app/
 
 **Implemented:**
 - **Admin Routes**:
-  - `/admin/jobs` — Jobs management page with sortable data table
+  - `/admin/jobs` — Jobs management page with dual tabs:
+    - "Menunggu Persetujuan" — Pending jobs with AdminApprovalTable
+    - "Semua Lowongan" — All jobs with DataTable (Supabase-integrated)
   - `/admin/learning/new` — Create new learning module form with server action
   - `/admin/layout.tsx` — Admin layout with sidebar navigation
 - **Admin Authentication & Authorization**:
@@ -666,11 +707,19 @@ remonest-app/
   - `JobActions` — Approve/Reject buttons for pending job listings (client-side toast)
   - `StatusBadge` — Visual badge for job status (pending/approved/rejected) with icons
   - `job-columns.tsx` — Column definitions for jobs data table
+  - `AdminApprovalTable` (from `src/components/jobs/`) — Pending jobs with approve/reject actions and reason dialog
 - **Admin Data Layer**:
   - `mock-data.ts` — Mock job entries (8 entries) with TypeScript types (`Job`, `JobStatus`, `JobType`)
   - `getSupabaseServiceClient()` — Service-role Supabase client for admin-only operations (bypasses RLS)
   - `saveLearningModule()` — Server action validating form data with zod, inserts into `learning_modules` table
   - `deleteLearningModule(id)` — Server action for deleting learning modules
+  - Job Board Actions (`src/lib/jobs/actions.ts`):
+    - `getPendingJobs()` — Fetch pending jobs for admin approval
+    - `getAllJobs()` — Fetch all jobs for admin
+    - `approveJob(jobId)` — Approve pending job
+    - `rejectJob(jobId, reason)` — Reject pending job with reason
+    - `deleteJob(jobId)` — Delete any job
+    - `republishJob(jobId)` — Republish expired job
 
 **Notable Gaps:**
 - `/admin/learning` — sidebar link exists but no index page
@@ -678,7 +727,7 @@ remonest-app/
 - `/admin` not in middleware `PROTECTED_PATHS` (protection enforced at layout level via `requireAdmin()`)
 - No admin-specific API routes yet
 
-**Status:** ⚠️ Partially implemented (jobs page + learning form complete, index pages missing)
+**Status:** ⚠️ Partially implemented (jobs page with Supabase integration + approval workflow complete, learning form done, index pages missing)
 
 ---
 
@@ -918,6 +967,151 @@ CREATE TRIGGER on_auth_user_created
 
 - 6 sample jobs (RemoteFirst Inc., DesignLab, CloudNative Co., GrowthHQ, InfraStack, DocuTech)
 - 3 learning modules (Async Communication Basics, Remote Work Mindset, Career Growth in Remote Teams)
+
+---
+
+### Migration 003: `jobs` table with dual posting workflow
+
+**Location:** `supabase/migrations/003_create_jobs_table.sql`
+
+#### Enums
+
+```sql
+CREATE TYPE job_type_enum AS ENUM ('full-time', 'part-time', 'project', 'freelance');
+CREATE TYPE job_status_enum AS ENUM ('draft', 'pending', 'approved', 'rejected', 'published', 'expired');
+CREATE TYPE apply_method_enum AS ENUM ('url', 'email');
+```
+
+#### Table: `jobs`
+
+| Column | Type | Constraints |
+|--------|------|-------------|
+| `id` | UUID | Primary Key, `gen_random_uuid()` |
+| `title` | TEXT | NOT NULL |
+| `company` | TEXT | NOT NULL |
+| `description_html` | TEXT | NOT NULL |
+| `job_type` | job_type_enum | NOT NULL |
+| `salary_min` | INTEGER | Nullable |
+| `salary_max` | INTEGER | Nullable |
+| `salary_currency` | TEXT | DEFAULT 'IDR' |
+| `location` | TEXT | NOT NULL, DEFAULT 'Remote' |
+| `apply_method` | apply_method_enum | NOT NULL, DEFAULT 'url' |
+| `apply_url` | TEXT | Nullable |
+| `apply_email` | TEXT | Nullable |
+| `deadline` | DATE | Nullable |
+| `duration_estimate` | TEXT | Nullable |
+| `status` | job_status_enum | NOT NULL, DEFAULT 'draft' |
+| `is_verified_by_admin` | BOOLEAN | DEFAULT false |
+| `rejection_reason` | TEXT | Nullable |
+| `posted_by_user_id` | UUID | FK → `auth.users(id)` ON DELETE CASCADE |
+| `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() |
+| `updated_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() |
+| `published_at` | TIMESTAMPTZ | Nullable |
+
+**Constraints:**
+- `salary_min_positive` — salary_min >= 0
+- `salary_max_positive` — salary_max >= 0
+- `salary_range_valid` — salary_max >= salary_min
+- `apply_url_present` — apply_url required when apply_method='url'
+- `apply_email_present` — apply_email required when apply_method='email'
+- `deadline_future` — deadline >= CURRENT_DATE
+
+#### Indexes
+
+- `idx_jobs_status` on `status` column
+- `idx_jobs_job_type` on `job_type` column
+- `idx_jobs_deadline` on `deadline` column
+- `idx_jobs_posted_by` on `posted_by_user_id` column
+- `idx_jobs_published_at` on `published_at` column
+- `idx_jobs_company` on `company` column
+- `idx_jobs_status_type` on `(status, job_type)` — composite index for queries
+
+#### Triggers
+
+- **`update_jobs_updated_at()`** — auto-updates `updated_at` on row updates
+- **`expire_old_jobs()`** — function to mark expired jobs as status='expired' (to be called via cron)
+
+#### RLS Policies
+
+1. **Public can read published jobs**
+   ```sql
+   CREATE POLICY "Public can read published jobs"
+     ON jobs FOR SELECT
+     USING (status = 'published');
+   ```
+
+2. **Users can read own jobs**
+   ```sql
+   CREATE POLICY "Users can read own jobs"
+     ON jobs FOR SELECT
+     USING (auth.uid() = posted_by_user_id);
+   ```
+
+3. **Users can create jobs**
+   ```sql
+   CREATE POLICY "Users can create jobs"
+     ON jobs FOR INSERT
+     WITH CHECK (auth.uid() = posted_by_user_id);
+   ```
+
+4. **Users can update own jobs** (draft or pending only)
+   ```sql
+   CREATE POLICY "Users can update own jobs"
+     ON jobs FOR UPDATE
+     USING (auth.uid() = posted_by_user_id AND status IN ('draft', 'pending'))
+     WITH CHECK (auth.uid() = posted_by_user_id);
+   ```
+
+5. **Users can delete own jobs** (draft or pending only)
+   ```sql
+   CREATE POLICY "Users can delete own jobs"
+     ON jobs FOR DELETE
+     USING (auth.uid() = posted_by_user_id AND status IN ('draft', 'pending'));
+   ```
+
+6. **Admins can read all jobs**
+   ```sql
+   CREATE POLICY "Admins can read all jobs"
+     ON jobs FOR SELECT
+     USING (EXISTS (
+       SELECT 1 FROM user_profiles
+       WHERE id = auth.uid() AND role = 'admin'
+     ));
+   ```
+
+7. **Admins can update any job**
+   ```sql
+   CREATE POLICY "Admins can update any job"
+     ON jobs FOR UPDATE
+     USING (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin'))
+     WITH CHECK (EXISTS (SELECT 1 FROM user_profiles WHERE id = auth.uid() AND role = 'admin'));
+   ```
+
+8. **Admins can delete any job**
+   ```sql
+   CREATE POLICY "Admins can delete any job"
+     ON jobs FOR DELETE
+     USING (EXISTS (
+       SELECT 1 FROM user_profiles
+       WHERE id = auth.uid() AND role = 'admin'
+     ));
+   ```
+
+#### Seed Data
+
+- 4 sample jobs (1 published full-time, 1 pending part-time, 1 published freelance, 1 published project)
+
+#### Posting Workflow
+
+**Admin Flow:**
+- Admin submits → status='published' immediately
+- is_verified_by_admin=true
+- published_at set to NOW()
+
+**Client Flow:**
+- Client submits → status='pending'
+- is_verified_by_admin=false
+- Admin reviews → approves (status='published', is_verified_by_admin=true) or rejects (status='rejected', rejection_reason set)
 
 ---
 
@@ -1263,9 +1457,14 @@ Embedded in landing page:
    - Connect `/learning/[slug]` to DB
 
 9. **Job Board**
-   - Connect `/jobs` to DB queries
-   - Implement search/filter functionality
-   - Wire up "Apply" button to `applyToJob()` server action
+   - ✅ Connect `/jobs` to DB queries — server actions created in `src/lib/jobs/actions.ts`
+   - ✅ Implement search/filter functionality — `getJobs(filters)` supports job_type, search, location
+   - Create `/jobs` public job board page with Supabase integration
+   - Create `/jobs/[id]` single job detail page
+   - Create `/jobs/post` job posting form page (use `PostJobForm` component)
+   - Create `/dashboard/jobs` user's job management page
+   - Wire up "Apply" button functionality (currently opens URL/email)
+   - Implement `applyToJob()` server action integration
 
 ### Lower Priority
 
@@ -1292,9 +1491,9 @@ Embedded in landing page:
 | Dashboard | ✅ | ✅ (Supabase) | ✅ Server actions | ✅ Complete (real data + activity feed) |
 | Settings | ✅ | ✅ (Supabase) | ✅ Server actions | ✅ Complete (profile, notifications, password) |
 | Applications | ✅ | ✅ (Supabase) | ✅ Server actions | ✅ Complete (real applications with join) |
-| Admin Panel | ⚠️ | ⚠️ Mock | ⚠️ Server actions | ⚠️ Partially complete (jobs + learning form done, index pages missing) |
+| Admin Panel | ⚠️ | ✅ Supabase | ✅ Server actions | ⚠️ Partially complete (jobs + approval workflow + learning form done, index pages missing) |
 | Learning Modules | ✅ | ⚠️ Hardcoded + DB seed | ❌ | ⚠️ UI complete, DB tables exist, not wired to pages |
-| Job Board | ✅ | ⚠️ Hardcoded + DB seed | ❌ | ⚠️ UI complete, DB tables exist, not wired to pages |
+| Job Board | ✅ | ✅ Supabase + seed | ✅ Server actions | ⚠️ UI components + server actions + admin workflow complete, public pages need Supabase integration |
 | CV Builder | ✅ | ❌ None | ❌ | ⚠️ Skeleton |
 | Portfolio Builder | ✅ | ❌ None | ❌ | ⚠️ Skeleton |
 | Public Portfolio | ✅ | ⚠️ Hardcoded | ❌ | ⚠️ UI Only |
@@ -1349,8 +1548,8 @@ STRIPE_WEBHOOK_SECRET=
 
 ## Next Steps
 
-1. **Run migrations on Supabase** — apply `002_create_dashboard_tables.sql`
-2. **Wire up Job Board** — connect `/jobs` and `/jobs/[id]` to DB queries
+1. **Run migrations on Supabase** — apply `002_create_dashboard_tables.sql` and `003_create_jobs_table.sql`
+2. **Create Job Board Pages** — `/jobs`, `/jobs/[id]`, `/jobs/post`, `/dashboard/jobs` using `getJobs()` and `JobCard` components
 3. **Wire up Learning Modules** — connect `/learning` and `/learning/[slug]` to DB
 4. **Implement CV Builder** — form state, Supabase persistence, PDF export
 5. **Implement Portfolio Builder** — image upload, persistence

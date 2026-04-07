@@ -1,8 +1,11 @@
-import { Suspense } from "react";
-import { DataTable } from "@/components/admin/data-table";
-import { columns } from "@/components/admin/job-columns";
-import { mockJobs } from "@/lib/admin/mock-data";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Suspense } from 'react';
+import { AdminApprovalTable } from '@/components/jobs';
+import { DataTable } from '@/components/admin/data-table';
+import { columns } from '@/components/admin/job-columns';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getAllJobs } from '@/lib/jobs/actions';
+import { Loader2 } from 'lucide-react';
 
 function LoadingState() {
   return (
@@ -29,11 +32,21 @@ function LoadingState() {
   );
 }
 
-async function JobsContent() {
-  // Simulate async data fetch (replace with real API call later)
-  await new Promise((resolve) => setTimeout(resolve, 500));
+async function AllJobsContent() {
+  const jobs = await getAllJobs();
 
-  return <DataTable data={mockJobs} columns={columns} />;
+  // Transform jobs to match the mock data structure for DataTable
+  const transformedJobs = jobs.map((job: any) => ({
+    id: job.id,
+    title: job.title,
+    company: job.company,
+    type: job.job_type,
+    status: job.status,
+    location: job.location,
+    created_at: job.created_at,
+  }));
+
+  return <DataTable data={transformedJobs} columns={columns} />;
 }
 
 export default function AdminJobsPage() {
@@ -41,16 +54,39 @@ export default function AdminJobsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Job Approvals</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Manajemen Lowongan Kerja
+          </h1>
           <p className="text-sm text-muted-foreground">
-            Review and manage pending job listings from employers.
+            Tinjau dan kelola lowongan kerja dari pemberi kerja
           </p>
         </div>
       </div>
 
-      <Suspense fallback={<LoadingState />}>
-        <JobsContent />
-      </Suspense>
+      <Tabs defaultValue="pending" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="pending">Menunggu Persetujuan</TabsTrigger>
+          <TabsTrigger value="all">Semua Lowongan</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="pending" className="space-y-4">
+          <Suspense
+            fallback={
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            }
+          >
+            <AdminApprovalTable />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="all" className="space-y-4">
+          <Suspense fallback={<LoadingState />}>
+            <AllJobsContent />
+          </Suspense>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
