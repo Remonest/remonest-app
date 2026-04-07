@@ -1,4 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -35,6 +36,8 @@ export function getSupabaseServerClient(): SupabaseClient<Database> {
  * Admin-only server client that uses the service role key.
  * NEVER expose this to the browser — only use in Server Components,
  * Route Handlers, and Server Actions that require elevated privileges.
+ * 
+ * Uses createClient directly since service role doesn't need session/cookie management.
  */
 export function getSupabaseServiceClient(): SupabaseClient<Database> {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -46,20 +49,7 @@ export function getSupabaseServiceClient(): SupabaseClient<Database> {
     );
   }
 
-  return createServerClient<Database>(supabaseUrl, supabaseServiceKey, {
-    cookies: {
-      async getAll() {
-        const cookieStore = await cookies();
-        return cookieStore.getAll();
-      },
-      async setAll(cookiesToSet) {
-        const cookieStore = await cookies();
-        for (const { name, value, options } of cookiesToSet) {
-          cookieStore.set(name, value, options);
-        }
-      },
-    },
-  });
+  return createClient<Database>(supabaseUrl, supabaseServiceKey);
 }
 
 /**

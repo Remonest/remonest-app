@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import {
   Briefcase,
   BookOpen,
@@ -33,18 +34,23 @@ function LoadingSkeleton() {
   );
 }
 
-const statusIconMap: Record<string, { icon: typeof CheckCircle2; color: string }> = {
-  pending: { icon: Clock, color: "text-muted-foreground" },
-  completed: { icon: CheckCircle2, color: "text-emerald-500" },
-  "in-progress": { icon: AlertCircle, color: "text-amber-500" },
-};
+export default function DashboardPage() {
+  return (
+    <Suspense fallback={<LoadingSkeleton />}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
 
-export default async function DashboardPage() {
-  // Fetch data in parallel
-  const [stats, activities] = await Promise.all([
-    getDashboardStats(),
-    getRecentActivity(5),
-  ]);
+function DashboardContentInner({ stats, activities }: {
+  stats: Awaited<ReturnType<typeof getDashboardStats>>;
+  activities: Awaited<ReturnType<typeof getRecentActivity>>;
+}) {
+  const statusIconMap: Record<string, { icon: typeof CheckCircle2; color: string }> = {
+    pending: { icon: Clock, color: "text-muted-foreground" },
+    completed: { icon: CheckCircle2, color: "text-emerald-500" },
+    "in-progress": { icon: AlertCircle, color: "text-amber-500" },
+  };
 
   const statsCards = [
     {
@@ -240,4 +246,13 @@ export default async function DashboardPage() {
       </div>
     </div>
   );
+}
+
+async function DashboardContent() {
+  const [stats, activities] = await Promise.all([
+    getDashboardStats(),
+    getRecentActivity(5),
+  ]);
+
+  return <DashboardContentInner stats={stats} activities={activities} />;
 }
