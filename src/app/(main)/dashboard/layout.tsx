@@ -1,10 +1,11 @@
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getSupabaseServerClient, getUserRole } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Briefcase, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, Briefcase, Settings, LogOut, Shield } from "lucide-react";
+import { getUserRoleInfo } from "@/lib/roles";
 
 const MobileMenu = dynamic(() => import("@/components/mobile-menu"));
 
@@ -75,6 +76,18 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
     redirect("/login");
   }
 
+  const roleInfo = await getUserRoleInfo();
+  const role = await getUserRole();
+  
+  // Debug logging
+  console.log("=== DASHBOARD LAYOUT DEBUG ===");
+  console.log("User ID:", user.id);
+  console.log("User Email:", user.email);
+  console.log("Role from getUserRole():", role);
+  console.log("RoleInfo from getUserRoleInfo():", roleInfo);
+  console.log("Is Admin?", role === "admin");
+  console.log("==============================");
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* Authenticated header variant */}
@@ -102,7 +115,7 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-2">
+          <nav className="hidden md:flex items-center gap-4">
             <Link
               href="/dashboard"
               className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -124,6 +137,30 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
               <Settings className="size-4" />
               Settings
             </Link>
+            
+            {/* Debug: Show current role */}
+            <span className="text-xs text-muted-foreground">
+              Role: {role || "null"}
+            </span>
+            
+            {/* Admin Link - Only visible to admins */}
+            {role === "admin" && (
+              <Link
+                href="/admin/jobs"
+                className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-red-600 dark:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-950"
+              >
+                <Shield className="size-4" />
+                Admin
+              </Link>
+            )}
+            
+            {/* Role Badge */}
+            {roleInfo && (
+              <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${roleInfo.color}`}>
+                {roleInfo.label}
+              </span>
+            )}
+
             <form action={async () => {
               "use server";
               const { logoutAction } = await import("@/lib/auth/actions");
@@ -137,7 +174,7 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           {/* Mobile menu button */}
-          <MobileMenu />
+          <MobileMenu roleInfo={roleInfo} role={role} />
         </div>
       </header>
 

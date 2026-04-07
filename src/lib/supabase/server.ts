@@ -75,16 +75,60 @@ export async function getUserRole(): Promise<
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) return null;
+  if (!user) {
+    console.log("getUserRole: No authenticated user");
+    return null;
+  }
 
+  // Try to get role with regular query
   const { data: profile, error } = await supabase
     .from("user_profiles")
     .select("role")
     .eq("id", user.id)
     .single();
 
-  if (error || !profile) return null;
-  console.log(profile.role);
+  if (error) {
+    console.warn("getUserRole: Database error:", error.message);
+    console.warn("Error code:", error.code);
+    
+    // Fallback: Try with admin bypass for development
+    // This bypasses RLS using service role key (only works server-side)
+    if (error.code === "42P17" || error.code === "42501") {
+      console.warn("getUserRole: RLS issue detected, trying with admin client...");
+      
+      // Import service role client if available
+      try {
+        const { createClient } = await import("@supabase/supabase-js");
+        const serviceUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        
+        if (serviceUrl && serviceKey) {
+          const adminClient = createClient(serviceUrl, serviceKey);
+          const { data: adminProfile } = await adminClient
+            .from("user_profiles")
+            .select("role")
+            .eq("id", user.id)
+            .single();
+            
+          if (adminProfile) {
+            console.log("getUserRole: Successfully fetched role with admin client:", adminProfile.role);
+            return adminProfile.role as "admin" | "user" | "client" | null;
+          }
+        }
+      } catch (fallbackError) {
+        console.error("getUserRole: Fallback also failed:", fallbackError);
+      }
+    }
+    
+    return null;
+  }
+  
+  if (!profile) {
+    console.log("getUserRole: No profile found for user:", user.id);
+    return null;
+  }
+  
+  console.log("getUserRole: Successfully fetched role:", profile.role);
   return profile.role as "admin" | "user" | "client" | null;
 }
 

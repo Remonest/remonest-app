@@ -69,12 +69,20 @@ export function TestimonialsSection() {
                     "{t.quote}"
                   </p>
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-full overflow-hidden bg-secondary shrink-0">
-                      <img
-                        src={t.avatar}
-                        alt={t.name}
-                        className="w-full h-full object-cover block"
-                      />
+                    <div className="w-11 h-11 rounded-full overflow-hidden bg-secondary shrink-0 flex items-center justify-center">
+                      {/* Placeholder avatar - replace with actual avatars if needed */}
+                      <svg
+                        className="w-6 h-6 text-muted-foreground"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                     </div>
                     <div>
                       <p className="m-0 text-sm font-semibold leading-[1.3]">
