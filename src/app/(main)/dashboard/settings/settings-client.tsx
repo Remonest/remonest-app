@@ -35,59 +35,61 @@ export default function SettingsClient({
   data: SettingsData;
 }) {
   const [activeTab, setActiveTab] = useState("profile");
-  const [profileForm, setProfileForm] = useState(data.profile ?? {
+
+  const profileData = data.profile ?? {
     fullName: "",
     email: "",
     location: "",
     role: "",
     bio: "",
-  });
+  };
 
-  const [notifForm, setNotifForm] = useState({
+  const notifData = {
     emailNotifications: data.settings?.emailNotifications ?? true,
     jobAlerts: data.settings?.jobAlerts ?? true,
     learningReminders: data.settings?.learningReminders ?? false,
     marketingEmails: data.settings?.marketingEmails ?? false,
-  });
+  };
 
   return (
-    <div className="py-8">
-      <div className="w-full max-w-[900px] mx-auto px-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-semibold tracking-tight text-foreground">
+    <div className="py-4 sm:py-8">
+      <div className="mx-auto w-full max-w-[900px]">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground">
             Settings
           </h1>
-          <p className="mt-2 text-base text-muted-foreground">
+          <p className="mt-1.5 sm:mt-2 text-sm sm:text-base text-muted-foreground">
             Manage your profile, preferences, and account settings.
           </p>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 p-1 bg-muted rounded-lg mb-6 overflow-x-auto">
+        <div className="flex gap-1 p-1 bg-muted rounded-lg mb-4 sm:mb-6 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors flex-1 justify-center ${
+              className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 rounded-md text-xs sm:text-sm font-medium whitespace-nowrap transition-colors flex-1 justify-center ${
                 activeTab === tab.id
                   ? "bg-background text-foreground shadow-sm"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              <tab.icon className="size-4" />
-              {tab.label}
+              <tab.icon className="size-3.5 sm:size-4" />
+              <span className="sm:hidden">{tab.label === "Profile" ? "Profile" : tab.label === "Notifications" ? "Notifs" : tab.label === "Appearance" ? "Theme" : "Secure"}</span>
+              <span className="hidden sm:inline">{tab.label}</span>
             </button>
           ))}
         </div>
 
         {/* Profile Tab */}
         {activeTab === "profile" && (
-          <ProfileTab initialData={profileForm} />
+          <ProfileTab key={`profile-${profileData.fullName}-${profileData.email}`} initialData={profileData} />
         )}
 
         {/* Notifications Tab */}
         {activeTab === "notifications" && (
-          <NotificationsTab initialData={notifForm} />
+          <NotificationsTab key={`notif-${notifData.emailNotifications}-${notifData.jobAlerts}`} initialData={notifData} />
         )}
 
         {/* Appearance Tab */}
@@ -133,11 +135,11 @@ function ProfileTab({
   }, [state, router]);
 
   return (
-    <form action={formAction} className="p-5 border border-border rounded-xl bg-card space-y-4">
-      <h2 className="text-lg font-semibold text-foreground">
+    <form action={formAction} className="p-4 sm:p-5 border border-border rounded-xl bg-card space-y-4">
+      <h2 className="text-base sm:text-lg font-semibold text-foreground">
         Profile Information
       </h2>
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
           <label htmlFor="fullName" className="text-sm font-medium">
             Full Name
@@ -279,8 +281,8 @@ function NotificationsTab({
   ];
 
   return (
-    <form action={formAction} className="p-5 border border-border rounded-xl bg-card space-y-4">
-      <h2 className="text-lg font-semibold text-foreground">
+    <form action={formAction} className="p-4 sm:p-5 border border-border rounded-xl bg-card space-y-4">
+      <h2 className="text-base sm:text-lg font-semibold text-foreground">
         Notification Preferences
       </h2>
       {preferences.map((pref) => (
@@ -357,26 +359,26 @@ function AppearanceTab() {
   };
 
   return (
-    <div className="p-5 border border-border rounded-xl bg-card space-y-4">
-      <h2 className="text-lg font-semibold text-foreground">
+    <div className="p-4 sm:p-5 border border-border rounded-xl bg-card space-y-4">
+      <h2 className="text-base sm:text-lg font-semibold text-foreground">
         Appearance
       </h2>
       <p className="text-sm text-muted-foreground">
         Customize how Remonest looks on your device.
       </p>
-      <div className="flex gap-4">
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
         {["Light", "Dark", "System"].map((mode) => (
           <button
             key={mode}
             onClick={() => applyTheme(mode.toLowerCase())}
-            className={`flex-1 p-4 border rounded-lg text-center transition-colors ${
+            className={`flex-1 p-3 sm:p-4 border rounded-lg text-center transition-colors ${
               theme === mode.toLowerCase()
                 ? "border-primary ring-2 ring-primary/20"
                 : "border-border hover:border-primary/50"
             }`}
           >
             <div
-              className={`w-full h-16 rounded-md mb-2 ${
+              className={`w-full h-14 sm:h-16 rounded-md mb-2 ${
                 mode === "Light"
                   ? "bg-white border border-border"
                   : mode === "Dark"
@@ -420,8 +422,8 @@ function SecurityTab() {
   }, [state, router]);
 
   return (
-    <form action={formAction} className="p-5 border border-border rounded-xl bg-card space-y-4">
-      <h2 className="text-lg font-semibold text-foreground">
+    <form action={formAction} className="p-4 sm:p-5 border border-border rounded-xl bg-card space-y-4">
+      <h2 className="text-base sm:text-lg font-semibold text-foreground">
         Security
       </h2>
       <div className="space-y-4">

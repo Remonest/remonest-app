@@ -180,7 +180,28 @@ export async function getUserSettings(): Promise<UserSettings | null> {
     .eq("user_id", user.id)
     .single();
 
-  if (error) return null;
+  // If row doesn't exist, create it with defaults so future calls succeed
+  if (error) {
+    await supabase
+      .from("user_settings")
+      .insert({
+        user_id: user.id,
+        email_notifications: true,
+        job_alerts: true,
+        learning_reminders: false,
+        marketing_emails: false,
+      });
+
+    return {
+      location: null,
+      role: null,
+      bio: null,
+      emailNotifications: true,
+      jobAlerts: true,
+      learningReminders: false,
+      marketingEmails: false,
+    };
+  }
 
   return {
     location: data.location,
@@ -207,12 +228,32 @@ export async function getUserProfile() {
     .eq("id", user.id)
     .single();
 
-  if (error) return null;
+  // If row doesn't exist, create it so future calls succeed
+  if (error) {
+    const fallbackName =
+      user.user_metadata?.full_name ??
+      user.email?.split("@")[0] ??
+      "User";
+
+    await supabase
+      .from("user_profiles")
+      .insert({
+        id: user.id,
+        full_name: fallbackName,
+        role: "user",
+      });
+
+    return {
+      fullName: fallbackName,
+      avatarUrl: null,
+      email: user.email ?? "",
+    };
+  }
 
   return {
-    fullName: data.full_name,
+    fullName: data.full_name ?? user.email?.split("@")[0] ?? "User",
     avatarUrl: data.avatar_url,
-    email: user.email,
+    email: user.email ?? "",
   };
 }
 

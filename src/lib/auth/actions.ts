@@ -163,3 +163,66 @@ export async function resendConfirmationAction(formData: FormData): Promise<{ su
 
   return { success: true };
 }
+
+// ============================================================
+// Forgot / Reset Password
+// ============================================================
+
+const origin = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+
+export async function forgotPasswordAction(formData: FormData): Promise<{ success: boolean; error?: string }> {
+  const email = formData.get("email") as string;
+
+  if (!email || !email.includes("@")) {
+    return { success: false, error: "Please enter a valid email address" };
+  }
+
+  const supabase = getSupabaseServerClient();
+
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/reset-password`,
+  });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  return { success: true };
+}
+
+export async function updatePasswordAction(formData: FormData): Promise<{ success: boolean; error?: string }> {
+  const password = formData.get("password") as string;
+  const confirmPassword = formData.get("confirmPassword") as string;
+
+  if (!password || password.length < 8) {
+    return { success: false, error: "Password must be at least 8 characters" };
+  }
+
+  if (password !== confirmPassword) {
+    return { success: false, error: "Passwords do not match" };
+  }
+
+  if (!/[A-Z]/.test(password)) {
+    return { success: false, error: "Password must contain at least one uppercase letter" };
+  }
+
+  if (!/[a-z]/.test(password)) {
+    return { success: false, error: "Password must contain at least one lowercase letter" };
+  }
+
+  if (!/[0-9]/.test(password)) {
+    return { success: false, error: "Password must contain at least one number" };
+  }
+
+  const supabase = getSupabaseServerClient();
+
+  const { error } = await supabase.auth.updateUser({
+    password,
+  });
+
+  if (error) {
+    return { success: false, error: error.message };
+  }
+
+  redirect("/login?reset=success");
+}

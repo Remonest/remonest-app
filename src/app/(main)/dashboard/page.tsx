@@ -78,23 +78,23 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="py-8">
-      <div className="w-full max-w-[1200px] mx-auto px-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-semibold tracking-tight text-foreground">
+    <div className="py-4 sm:py-8">
+      <div className="mx-auto w-full max-w-[1200px]">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground">
             Dashboard
           </h1>
-          <p className="mt-2 text-base text-muted-foreground">
+          <p className="mt-1.5 sm:mt-2 text-sm sm:text-base text-muted-foreground">
             Track your progress, applications, and learning journey.
           </p>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {statsCards.map((stat) => (
             <div
               key={stat.label}
-              className="p-5 border border-border rounded-xl bg-card"
+              className="p-4 sm:p-5 border border-border rounded-xl bg-card"
             >
               <div className="flex items-center justify-between mb-3">
                 <div className="w-9 h-9 rounded-md bg-secondary text-primary flex items-center justify-center">
@@ -104,7 +104,7 @@ export default async function DashboardPage() {
                   <ArrowUpRight className="size-4 text-emerald-500" />
                 )}
               </div>
-              <div className="text-2xl font-bold text-foreground">
+              <div className="text-xl sm:text-2xl font-bold text-foreground">
                 {stat.value}
               </div>
               <div className="text-sm text-muted-foreground mt-0.5">
@@ -117,10 +117,10 @@ export default async function DashboardPage() {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Recent Activity */}
-          <div className="lg:col-span-2 p-5 border border-border rounded-xl bg-card">
-            <h2 className="text-lg font-semibold text-foreground mb-4">
+          <div className="lg:col-span-2 p-4 sm:p-5 border border-border rounded-xl bg-card">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4">
               Recent Activity
             </h2>
             {activities.length === 0 ? (
@@ -141,7 +141,7 @@ export default async function DashboardPage() {
                       key={activity.id}
                       className="flex items-start gap-3 pb-4 last:pb-0 border-b last:border-b-0 border-border last:mb-0"
                     >
-                      <div className={`mt-0.5 ${iconConfig.color}`}>
+                      <div className={`mt-0.5 shrink-0 ${iconConfig.color}`}>
                         <Icon className="size-5" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -165,8 +165,8 @@ export default async function DashboardPage() {
           </div>
 
           {/* Quick Actions */}
-          <div className="p-5 border border-border rounded-xl bg-card">
-            <h2 className="text-lg font-semibold text-foreground mb-4">
+          <div className="p-4 sm:p-5 border border-border rounded-xl bg-card">
+            <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4">
               Quick Actions
             </h2>
             <div className="space-y-2">

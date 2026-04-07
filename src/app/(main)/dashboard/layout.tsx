@@ -1,8 +1,12 @@
 import { Suspense } from "react";
+import dynamic from "next/dynamic";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { LayoutDashboard, Briefcase, Settings, LogOut } from "lucide-react";
+
+const MobileMenu = dynamic(() => import("@/components/mobile-menu"));
 
 function LoadingSkeleton() {
   return (
@@ -94,25 +98,30 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
                 <rect width="7" height="5" x="3" y="16" rx="1" />
               </svg>
             </div>
-            Dashboard
+            <span className="hidden sm:inline">Dashboard</span>
           </Link>
-          <nav className="flex items-center gap-2">
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-2">
             <Link
               href="/dashboard"
-              className="h-9 px-3 inline-flex items-center rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
+              <LayoutDashboard className="size-4" />
               Overview
             </Link>
             <Link
               href="/dashboard/applications"
-              className="h-9 px-3 inline-flex items-center rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
+              <Briefcase className="size-4" />
               Applications
             </Link>
             <Link
               href="/dashboard/settings"
-              className="h-9 px-3 inline-flex items-center rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
+              <Settings className="size-4" />
               Settings
             </Link>
             <form action={async () => {
@@ -121,15 +130,19 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
               await logoutAction();
             }}>
               <Button type="submit" variant="outline" size="sm">
-                Sign Out
+                <LogOut className="size-4" />
+                <span className="ml-1.5">Sign Out</span>
               </Button>
             </form>
           </nav>
+
+          {/* Mobile menu button */}
+          <MobileMenu />
         </div>
       </header>
 
       <main className="flex-1">
-        <div className="mx-auto max-w-7xl px-4 py-8 md:px-8">{children}</div>
+        <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:py-8 md:px-8">{children}</div>
       </main>
     </div>
   );

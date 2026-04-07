@@ -3,7 +3,7 @@
 import { Suspense, useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Globe2, Loader2, Mail } from "lucide-react";
+import { Globe2, Loader2, Mail, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { loginAction, googleSignInAction, resendConfirmationAction } from "@/lib/auth/actions";
 import type { AuthResult } from "@/lib/auth/schemas";
@@ -29,6 +29,7 @@ function LoginFormInner() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [resending, setResending] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // Show toast based on state
   useEffect(() => {
@@ -111,16 +112,31 @@ function LoginFormInner() {
                 Forgot password?
               </Link>
             </div>
-            <Input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                autoComplete="current-password"
+                required
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <EyeOff className="size-4" />
+                ) : (
+                  <Eye className="size-4" />
+                )}
+              </button>
+            </div>
           </div>
 
-          <Button type="submit" className="w-full" disabled={pending}>
+          <Button type="submit" className="w-full p-5 cursor-pointer" disabled={pending}>
             {pending ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
@@ -163,7 +179,7 @@ function LoginFormInner() {
         </div>
 
         <form action={googleSignInAction}>
-          <Button type="submit" variant="outline" className="w-full">
+          <Button type="submit" variant="outline" className="w-full p-5 cursor-pointer">
             {/* Google icon */}
             <svg className="size-4" viewBox="0 0 24 24">
               <path
@@ -187,7 +203,7 @@ function LoginFormInner() {
           </Button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-muted-foreground">
+        <p className="mt-4 text-center text-sm text-muted-foreground cursor-pointer">
           Don&apos;t have an account?{" "}
           <Link
             href="/register"
