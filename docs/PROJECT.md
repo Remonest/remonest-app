@@ -31,7 +31,7 @@ src/
 │   │   └── register/page.tsx          # Registration with validation
 │   │
 │   ├── (main)/                        # Route group: app pages
-│   │   ├── layout.tsx                 # Header + Footer wrapper
+│   │   ├── layout.tsx                 # Auth-aware: Header + Footer for unauth, bare for auth
 │   │   ├── page.tsx                   # Landing page (marketing)
 │   │   │
 │   │   ├── learning/
@@ -53,6 +53,12 @@ src/
 │   │       ├── page.tsx               # Stats + quick actions
 │   │       ├── settings/page.tsx      # Profile, notifications, security
 │   │       └── applications/page.tsx  # Job application history
+│   │
+│   ├── admin/                         # Admin route group (no route group)
+│   │   ├── layout.tsx                 # Admin sidebar + Suspense + requireAdmin()
+│   │   ├── logout-action.ts           # Re-exports logoutAction
+│   │   ├── jobs/page.tsx              # Jobs management with DataTable
+│   │   └── learning/new/page.tsx      # Create learning module form
 │   │
 │   └── api/                           # API Routes
 │       ├── ai/review/route.ts         # POST: CV text → AI feedback
@@ -238,6 +244,11 @@ const goTo = (index: number) => {
 6. **Forms**: Native HTML inputs with Tailwind styling (no form library yet)
 7. **Dark mode**: Toggle via `document.documentElement.classList`
 8. **Fonts**: Inter for everything, Geist Mono for code
+9. **Auth server actions**: Use `useActionState` + client-side `useEffect` with `router.push()` for redirects (Next.js `redirect()` doesn't work inside `useActionState`)
+10. **Admin routes**: Protected at layout level via `requireAdmin()`, not in middleware
+11. **Layout auth awareness**: `(main)/layout.tsx` checks auth status — bare layout for authenticated users, landing layout for unauthenticated
+12. **Dashboard architecture**: Async Server Components for read-only pages (`/dashboard`, `/dashboard/applications`); Server + Client Component split for interactive forms (`/dashboard/settings`)
+13. **Database migrations**: Sequential numbered files (`001_`, `002_`) with rollback comments at bottom
 
 ---
 
@@ -255,4 +266,8 @@ pnpm lint         # Run ESLint
 ## Known Issues
 
 - `@types/react-pdf` type definition warning (pre-existing, harmless)
+- `/forgot-password` route linked from login page but not implemented yet
+- `/admin/learning` and `/admin/settings` sidebar links exist but pages not created
 - Social icons in footer use `X`, `Link`, `Camera` instead of Twitter/LinkedIn/Instagram (not in lucide-react v1.7.0)
+- Profile views and CV downloads on dashboard are placeholder metrics (not yet tracked in DB)
+- `/jobs` and `/learning` pages still use hardcoded data despite DB tables existing with seed data

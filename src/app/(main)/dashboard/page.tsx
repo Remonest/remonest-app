@@ -9,60 +9,74 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
+import { getDashboardStats, getRecentActivity } from "@/lib/dashboard/actions";
 
-const stats = [
-  {
-    label: "Applications Sent",
-    value: "12",
-    change: "+3 this week",
-    icon: Briefcase,
-    trend: "up",
-  },
-  {
-    label: "Modules Completed",
-    value: "8",
-    change: "2 in progress",
-    icon: BookOpen,
-    trend: "up",
-  },
-  {
-    label: "Profile Views",
-    value: "47",
-    change: "+12% vs last week",
-    icon: TrendingUp,
-    trend: "up",
-  },
-  {
-    label: "CV Downloads",
-    value: "3",
-    change: "ATS-ready",
-    icon: FileText,
-    trend: "neutral",
-  },
-];
+function LoadingSkeleton() {
+  return (
+    <div className="py-8">
+      <div className="w-full max-w-[1200px] mx-auto px-8">
+        <div className="mb-8">
+          <div className="h-10 w-48 animate-pulse rounded bg-muted" />
+          <div className="mt-2 h-5 w-96 animate-pulse rounded bg-muted" />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-28 animate-pulse rounded-xl border bg-card" />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 h-64 animate-pulse rounded-xl border bg-card" />
+          <div className="h-64 animate-pulse rounded-xl border bg-card" />
+        </div>
+      </div>
+    </div>
+  );
+}
 
-const recentActivity = [
-  {
-    title: "Applied to Senior Frontend Developer",
-    company: "RemoteFirst Inc.",
-    time: "2 hours ago",
-    status: "pending",
-  },
-  {
-    title: "Completed: Async Communication Basics",
-    company: "Learning Module",
-    time: "Yesterday",
-    status: "completed",
-  },
-  {
-    title: "Applied to Product Designer",
-    company: "DesignLab",
-    time: "3 days ago",
-    status: "viewed",
-  },
-];
+const statusIconMap: Record<string, { icon: typeof CheckCircle2; color: string }> = {
+  pending: { icon: Clock, color: "text-muted-foreground" },
+  completed: { icon: CheckCircle2, color: "text-emerald-500" },
+  "in-progress": { icon: AlertCircle, color: "text-amber-500" },
+};
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  // Fetch data in parallel
+  const [stats, activities] = await Promise.all([
+    getDashboardStats(),
+    getRecentActivity(5),
+  ]);
+
+  const statsCards = [
+    {
+      label: "Applications Sent",
+      value: stats.applicationsSent.toString(),
+      change: stats.applicationsChange,
+      icon: Briefcase,
+      trend: "up" as const,
+    },
+    {
+      label: "Modules Completed",
+      value: stats.modulesCompleted.toString(),
+      change: stats.modulesChange,
+      icon: BookOpen,
+      trend: "up" as const,
+    },
+    {
+      label: "Profile Views",
+      value: stats.profileViews.toString(),
+      change: stats.profileViewsChange,
+      icon: TrendingUp,
+      trend: "up" as const,
+    },
+    {
+      label: "CV Downloads",
+      value: stats.cvDownloads.toString(),
+      change: stats.cvDownloadsChange,
+      icon: FileText,
+      trend: "neutral" as const,
+    },
+  ];
+
   return (
     <div className="py-8">
       <div className="w-full max-w-[1200px] mx-auto px-8">
@@ -77,7 +91,7 @@ export default function DashboardPage() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {stats.map((stat) => (
+          {statsCards.map((stat) => (
             <div
               key={stat.label}
               className="p-5 border border-border rounded-xl bg-card"
@@ -109,35 +123,45 @@ export default function DashboardPage() {
             <h2 className="text-lg font-semibold text-foreground mb-4">
               Recent Activity
             </h2>
-            <div className="space-y-4">
-              {recentActivity.map((activity, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-3 pb-4 last:pb-0 border-b last:border-b-0 border-border last:mb-0"
-                >
-                  <div className="mt-0.5">
-                    {activity.status === "completed" ? (
-                      <CheckCircle2 className="size-5 text-emerald-500" />
-                    ) : activity.status === "viewed" ? (
-                      <AlertCircle className="size-5 text-amber-500" />
-                    ) : (
-                      <Clock className="size-5 text-muted-foreground" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">
-                      {activity.title}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {activity.company}
-                    </p>
-                  </div>
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {activity.time}
-                  </span>
-                </div>
-              ))}
-            </div>
+            {activities.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4">
+                No activity yet. Start by browsing jobs or learning modules.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {activities.map((activity) => {
+                  const iconConfig =
+                    statusIconMap[activity.status] ?? {
+                      icon: Clock,
+                      color: "text-muted-foreground",
+                    };
+                  const Icon = iconConfig.icon;
+                  return (
+                    <div
+                      key={activity.id}
+                      className="flex items-start gap-3 pb-4 last:pb-0 border-b last:border-b-0 border-border last:mb-0"
+                    >
+                      <div className={`mt-0.5 ${iconConfig.color}`}>
+                        <Icon className="size-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {activity.title}
+                        </p>
+                        {activity.company && (
+                          <p className="text-xs text-muted-foreground">
+                            {activity.company}
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {activity.time}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -174,7 +198,7 @@ export default function DashboardPage() {
                     Continue Learning
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    2 modules in progress
+                    Build remote-ready skills
                   </p>
                 </div>
               </Link>

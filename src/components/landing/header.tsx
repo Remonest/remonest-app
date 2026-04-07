@@ -96,13 +96,13 @@ export function Header() {
             </div>
             <div className="hidden md:flex items-center gap-2">
               <Link
-                href="#"
+                href="/login"
                 className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md text-sm font-medium whitespace-nowrap border border-transparent bg-transparent text-foreground no-underline hover:bg-muted transition-colors"
               >
                 Log In
               </Link>
               <Link
-                href="#"
+                href="/register"
                 className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md text-sm font-medium whitespace-nowrap border border-transparent bg-primary text-primary-foreground no-underline hover:bg-primary/90 transition-colors"
               >
                 Get Started Free
@@ -160,14 +160,14 @@ export function Header() {
               </a>
               <div className="flex flex-col gap-2 pt-2 border-t border-border">
                 <Link
-                  href="#"
+                  href="/login"
                   className="h-10 px-3 flex items-center justify-center rounded-md text-sm font-medium border border-transparent bg-transparent text-foreground no-underline hover:bg-muted transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Log In
                 </Link>
                 <Link
-                  href="#"
+                  href="/register"
                   className="h-10 px-3 flex items-center justify-center rounded-md text-sm font-medium border border-transparent bg-primary text-primary-foreground no-underline hover:bg-primary/90 transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
