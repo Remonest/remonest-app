@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { Menu, X, LayoutDashboard, Briefcase, Settings, LogOut, Shield } from "lucide-react"
+import { Menu, X, LayoutDashboard, Briefcase, Settings, LogOut, Shield, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { logoutAction } from "@/lib/auth/actions"
 import { getUserRoleInfo } from "@/lib/roles"
@@ -87,6 +87,18 @@ export default function MobileMenu({ roleInfo, role }: MobileMenuProps) {
             >
               <LayoutDashboard className="size-4" /> Overview
             </Link>
+
+            {/* Client-specific: Job Postings */}
+            {role === "client" && (
+              <Link
+                href="/dashboard/jobs"
+                className="h-10 px-3 flex items-center gap-2 rounded-md text-muted-foreground text-sm font-medium no-underline transition-colors hover:text-foreground hover:bg-muted"
+                onClick={() => setOpen(false)}
+              >
+                <FileText className="size-4" /> Job Postings
+              </Link>
+            )}
+
             <Link
               href="/dashboard/applications"
               className="h-10 px-3 flex items-center gap-2 rounded-md text-muted-foreground text-sm font-medium no-underline transition-colors hover:text-foreground hover:bg-muted"

@@ -1,53 +1,121 @@
-'use client';
+"use client";
 
-import { useState, useActionState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { submitJob, saveJobDraft } from '@/lib/jobs/actions';
-import { toast } from 'sonner';
-import { Loader2, Save, Send } from 'lucide-react';
-import type { JobType } from '@/lib/jobs/utils';
+} from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { submitJob, saveJobDraft } from "@/lib/jobs/actions";
+import { toast } from "sonner";
+import { Loader2, Save, Send } from "lucide-react";
+import type { JobType } from "@/lib/jobs/utils";
 
 interface PostJobFormProps {
   isAdmin?: boolean;
 }
 
+// Helper function to format number with Indonesian separators
+function formatNumber(num: string): string {
+  if (!num) return "";
+  const number = num.replace(/\D/g, "");
+  return number.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+// Helper function to parse formatted number back to raw number
+function parseNumber(formatted: string): string {
+  if (!formatted) return '';
+
+  console.log(`parseNumber input: "${formatted}"`);
+  const result = formatted.replace(/\./g, "");
+  console.log(`parseNumber output: "${result}"`);
+  return result;
+}
+
 export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
   const router = useRouter();
+  const formRef = useRef<HTMLFormElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [salaryMinFormatted, setSalaryMinFormatted] = useState("");
+  const [salaryMaxFormatted, setSalaryMaxFormatted] = useState("");
 
-  const handleSubmitAction = async (formData: FormData, action: 'submit' | 'draft') => {
+  const handleSubmitAction = async (action: "submit" | "draft") => {
+    if (!formRef.current) {
+      console.error("Form ref is null");
+      return;
+    }
+
     setIsLoading(true);
     setErrors({});
 
     try {
+      // Get form data from the form element
+      const formData = new FormData(formRef.current);
+
+      // Debug: Log form data before processing
+      console.log("Form action:", action);
+      console.log("Raw form data:", Object.fromEntries(formData));
+
+      // Convert formatted numbers back to raw numbers
+      const salaryMinFormatted = formData.get("salary_min") as string;
+      const salaryMaxFormatted = formData.get("salary_max") as string;
+
+      // Convert formatted numbers back to raw numbers
+      const salaryMinRaw = parseNumber(salaryMinFormatted);
+      const salaryMaxRaw = parseNumber(salaryMaxFormatted);
+
+      // Set raw numbers back to form data
+      formData.set("salary_min", salaryMinRaw);
+      formData.set("salary_max", salaryMaxRaw);
+
+      // Debug: Verify values after setting
+      console.log("Salary conversion - Formatted→Raw:", {
+        min: `${salaryMinFormatted} → ${salaryMinRaw}`,
+        max: `${salaryMaxFormatted} → ${salaryMaxRaw}`
+      });
+
+      // Debug: Log processed form data
+      console.log("Processed form data:", Object.fromEntries(formData));
+
+      // Submit to server
       const result =
-        action === 'submit'
+        action === "submit"
           ? await submitJob(formData)
           : await saveJobDraft(formData);
 
+      console.log("Server result:", result);
+
       if (result.success) {
         toast.success(result.message);
-        if (action === 'submit') {
-          router.push(isAdmin ? '/admin/jobs' : '/dashboard');
+        if (action === "submit") {
+          console.log(
+            "Redirecting to:",
+            isAdmin ? "/admin/jobs" : "/dashboard",
+          );
+          router.push(isAdmin ? "/admin/jobs" : "/dashboard");
         } else {
-          router.push('/dashboard');
+          console.log("Redirecting to: /dashboard");
+          router.push("/dashboard");
         }
       } else {
         toast.error(result.error);
+        console.error("Server error:", result.error);
         if (result.errors) {
           const formattedErrors: Record<string, string> = {};
           Object.entries(result.errors).forEach(([key, value]) => {
@@ -55,30 +123,44 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
               formattedErrors[key] = value[0];
             }
           });
+          console.error("Form errors:", formattedErrors);
           setErrors(formattedErrors);
         }
       }
     } catch (error) {
-      toast.error('Terjadi kesalahan saat memproses permintaan');
+      console.error("Form submission error:", error);
+      toast.error("Terjadi kesalahan saat memproses permintaan");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSalaryMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatNumber(e.target.value);
+    console.log("Salary min input:", e.target.value, "Formatted:", formatted);
+    setSalaryMinFormatted(formatted);
+  };
+
+  const handleSalaryMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatNumber(e.target.value);
+    console.log("Salary max input:", e.target.value, "Formatted:", formatted);
+    setSalaryMaxFormatted(formatted);
   };
 
   return (
     <Card className="max-w-4xl mx-auto">
       <CardHeader>
         <CardTitle>
-          {isAdmin ? 'Posting Lowongan Kerja Baru' : 'Buat Lowongan Kerja'}
+          {isAdmin ? "Posting Lowongan Kerja Baru" : "Buat Lowongan Kerja"}
         </CardTitle>
         <CardDescription>
           {isAdmin
-            ? 'Admin dapat langsung menerbitkan lowongan tanpa persetujuan'
-            : 'Lowongan Anda akan ditinjau oleh admin sebelum diterbitkan'}
+            ? "Admin dapat langsung menerbitkan lowongan tanpa persetujuan"
+            : "Lowongan Anda akan ditinjau oleh admin sebelum diterbitkan"}
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="space-y-6">
+        <form ref={formRef} className="space-y-6">
           {/* Basic Information */}
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Informasi Dasar</h3>
@@ -90,9 +172,11 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
                 name="title"
                 placeholder="Contoh: Senior Frontend Developer"
                 disabled={isLoading}
-                className={errors.title ? 'border-red-500' : ''}
+                className={errors.title ? "border-red-500" : ""}
               />
-              {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
+              {errors.title && (
+                <p className="text-sm text-red-500">{errors.title}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -102,15 +186,23 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
                 name="company"
                 placeholder="Contoh: TechCorp Indonesia"
                 disabled={isLoading}
-                className={errors.company ? 'border-red-500' : ''}
+                className={errors.company ? "border-red-500" : ""}
               />
-              {errors.company && <p className="text-sm text-red-500">{errors.company}</p>}
+              {errors.company && (
+                <p className="text-sm text-red-500">{errors.company}</p>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="job_type">Jenis Pekerjaan *</Label>
-              <Select name="job_type" defaultValue="full-time" disabled={isLoading}>
-                <SelectTrigger className={errors.job_type ? 'border-red-500' : ''}>
+              <Select
+                name="job_type"
+                defaultValue="full-time"
+                disabled={isLoading}
+              >
+                <SelectTrigger
+                  className={errors.job_type ? "border-red-500" : ""}
+                >
                   <SelectValue placeholder="Pilih jenis pekerjaan" />
                 </SelectTrigger>
                 <SelectContent>
@@ -120,7 +212,9 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
                   <SelectItem value="freelance">Freelance</SelectItem>
                 </SelectContent>
               </Select>
-              {errors.job_type && <p className="text-sm text-red-500">{errors.job_type}</p>}
+              {errors.job_type && (
+                <p className="text-sm text-red-500">{errors.job_type}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -131,10 +225,12 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
                 placeholder="Deskripsi detail tentang pekerjaan (mendukung HTML)..."
                 rows={8}
                 disabled={isLoading}
-                className={errors.description_html ? 'border-red-500' : ''}
+                className={errors.description_html ? "border-red-500" : ""}
               />
               {errors.description_html && (
-                <p className="text-sm text-red-500">{errors.description_html}</p>
+                <p className="text-sm text-red-500">
+                  {errors.description_html}
+                </p>
               )}
             </div>
           </div>
@@ -143,18 +239,34 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold">Informasi Gaji</h3>
 
+            {/* Hidden input for default currency */}
+            <input
+              type="hidden"
+              name="salary_currency"
+              value="IDR"
+            />
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="salary_min">Gaji Minimum (IDR)</Label>
                 <Input
                   id="salary_min"
                   name="salary_min"
-                  type="number"
-                  placeholder="Contoh: 5000000"
+                  type="text"
+                  placeholder="Contoh: 5.000.000"
+                  value={salaryMinFormatted}
+                  onChange={handleSalaryMinChange}
                   disabled={isLoading}
-                  className={errors.salary_min ? 'border-red-500' : ''}
+                  className={errors.salary_min ? "border-red-500" : ""}
                 />
-                {errors.salary_min && <p className="text-sm text-red-500">{errors.salary_min}</p>}
+                <input
+                  type="hidden"
+                  name="salary_min"
+                  value={parseNumber(salaryMinFormatted)}
+                />
+                {errors.salary_min && (
+                  <p className="text-sm text-red-500">{errors.salary_min}</p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -162,12 +274,21 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
                 <Input
                   id="salary_max"
                   name="salary_max"
-                  type="number"
-                  placeholder="Contoh: 10000000"
+                  type="text"
+                  placeholder="Contoh: 10.000.000"
+                  value={salaryMaxFormatted}
+                  onChange={handleSalaryMaxChange}
                   disabled={isLoading}
-                  className={errors.salary_max ? 'border-red-500' : ''}
+                  className={errors.salary_max ? "border-red-500" : ""}
                 />
-                {errors.salary_max && <p className="text-sm text-red-500">{errors.salary_max}</p>}
+                <input
+                  type="hidden"
+                  name="salary_max"
+                  value={parseNumber(salaryMaxFormatted)}
+                />
+                {errors.salary_max && (
+                  <p className="text-sm text-red-500">{errors.salary_max}</p>
+                )}
               </div>
             </div>
           </div>
@@ -183,13 +304,17 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
                 name="location"
                 placeholder="Contoh: Remote / WFH"
                 disabled={isLoading}
-                className={errors.location ? 'border-red-500' : ''}
+                className={errors.location ? "border-red-500" : ""}
               />
-              {errors.location && <p className="text-sm text-red-500">{errors.location}</p>}
+              {errors.location && (
+                <p className="text-sm text-red-500">{errors.location}</p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="duration_estimate">Estimasi Durasi (Opsional)</Label>
+              <Label htmlFor="duration_estimate">
+                Estimasi Durasi (Opsional)
+              </Label>
               <Input
                 id="duration_estimate"
                 name="duration_estimate"
@@ -205,9 +330,11 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
                 name="deadline"
                 type="date"
                 disabled={isLoading}
-                className={errors.deadline ? 'border-red-500' : ''}
+                className={errors.deadline ? "border-red-500" : ""}
               />
-              {errors.deadline && <p className="text-sm text-red-500">{errors.deadline}</p>}
+              {errors.deadline && (
+                <p className="text-sm text-red-500">{errors.deadline}</p>
+              )}
             </div>
           </div>
 
@@ -217,7 +344,11 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
 
             <div className="space-y-2">
               <Label>Metode Lamaran *</Label>
-              <RadioGroup name="apply_method" defaultValue="url" className="flex flex-col space-y-2">
+              <RadioGroup
+                name="apply_method"
+                defaultValue="url"
+                className="flex flex-col space-y-2"
+              >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="url" id="url" disabled={isLoading} />
                   <Label htmlFor="url" className="font-normal">
@@ -225,7 +356,11 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="email" id="email" disabled={isLoading} />
+                  <RadioGroupItem
+                    value="email"
+                    id="email"
+                    disabled={isLoading}
+                  />
                   <Label htmlFor="email" className="font-normal">
                     Email Lamaran
                   </Label>
@@ -241,9 +376,11 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
                 type="url"
                 placeholder="https://example.com/apply"
                 disabled={isLoading}
-                className={errors.apply_url ? 'border-red-500' : ''}
+                className={errors.apply_url ? "border-red-500" : ""}
               />
-              {errors.apply_url && <p className="text-sm text-red-500">{errors.apply_url}</p>}
+              {errors.apply_url && (
+                <p className="text-sm text-red-500">{errors.apply_url}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -254,9 +391,11 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
                 type="email"
                 placeholder="careers@company.com"
                 disabled={isLoading}
-                className={errors.apply_email ? 'border-red-500' : ''}
+                className={errors.apply_email ? "border-red-500" : ""}
               />
-              {errors.apply_email && <p className="text-sm text-red-500">{errors.apply_email}</p>}
+              {errors.apply_email && (
+                <p className="text-sm text-red-500">{errors.apply_email}</p>
+              )}
             </div>
           </div>
 
@@ -264,14 +403,9 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
           <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t">
             <Button
               type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                const formElement = document.querySelector('form') as HTMLFormElement;
-                const formData = new FormData(formElement);
-                handleSubmitAction(formData, 'submit');
-              }}
+              onClick={() => handleSubmitAction("submit")}
               disabled={isLoading}
-              className="flex-1"
+              className="flex-1 p-5"
             >
               {isLoading ? (
                 <>
@@ -281,7 +415,7 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
               ) : (
                 <>
                   <Send className="mr-2 h-4 w-4" />
-                  {isAdmin ? 'Terbitkan Sekarang' : 'Kirim untuk Persetujuan'}
+                  {isAdmin ? "Terbitkan Sekarang" : "Kirim untuk Persetujuan"}
                 </>
               )}
             </Button>
@@ -290,11 +424,8 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
               type="button"
               variant="outline"
               disabled={isLoading}
-              onClick={(e) => {
-                const formData = new FormData((e.target as HTMLElement).closest('form') as HTMLFormElement);
-                handleSubmitAction(formData, 'draft');
-              }}
-              className="flex-1"
+              onClick={() => handleSubmitAction("draft")}
+              className="flex-1 p-5"
             >
               {isLoading ? (
                 <>

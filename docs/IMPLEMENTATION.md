@@ -1,7 +1,7 @@
 # Remonest - Implementation Documentation
 
-**Version:** v0.2.0
-**Last Updated:** April 7, 2026
+**Version:** v0.3.0
+**Last Updated:** April 8, 2026
 
 ---
 
@@ -32,6 +32,8 @@
    - [Applications Tracker](#applications-tracker)
    - [Dashboard Integration](#dashboard-integration)
    - [Admin Panel](#admin-panel)
+   - [Client Role System](#client-role-system)
+   - [Profile Page](#profile-page)
 7. [Database Schema](#database-schema)
 8. [API Routes](#api-routes)
 9. [Authentication Flow](#authentication-flow)
@@ -731,6 +733,142 @@ remonest-app/
 
 ---
 
+### Client Role System
+
+**Location:** `src/app/(main)/profile/`, `src/app/(main)/dashboard/jobs/`, `src/app/(main)/jobs/post/`
+
+**Implemented:**
+- **Database Migration** (009_add_client_role.sql):
+  - Added `'client'` role to `user_profiles` CHECK constraint: `CHECK (role IN ('user', 'admin', 'client'))`
+  - Added RLS policy: "Clients can view all profiles" for networking context
+  - Updated `handle_new_user()` trigger to support role from user metadata
+  - Column comment explaining role purposes
+
+- **Role Definitions:**
+  - **`user`** — Standard job seeker (blue badge)
+  - **`admin`** — Full administrative access (red badge)
+  - **`client`** — Employer/job poster (green badge)
+
+- **Profile Page** (`/profile`):
+  - Dedicated profile page with role-aware UI
+  - Different stats display based on role:
+    - Job seekers: Applications Sent, Modules Completed, Profile Views, CV Downloads
+    - Clients: Jobs Posted, Active Listings, Total Applicants, Jobs Filled
+  - Different quick actions based on role:
+    - Job seekers: Applications, Portfolio, CV Builder
+    - Clients: Post New Job, Manage Jobs, Applicants
+  - Edit Profile modal with form validation
+  - Activity feed showing recent actions
+  - Bio section display
+
+- **Dashboard Jobs** (`/dashboard/jobs`):
+  - Job management page for clients and admins
+  - Stats summary: Total, Pending, Published, Drafts
+  - Job list with status badges (draft, pending, published, rejected, expired)
+  - Indonesian labels: "Menunggu Persetujuan", "Diterbitkan", etc.
+  - Action buttons: View, Edit (drafts only)
+  - Empty state with CTA
+  - Rejected jobs notice banner
+
+- **Job Posting Form** (`/jobs/post`):
+  - Uses existing `PostJobForm` component
+  - Approval workflow: Client submits → pending → admin approves
+  - Admin posts → published immediately
+  - Info banner explaining approval process (clients only)
+  - Tips section for creating quality postings
+  - Back navigation adapts to role
+
+- **Navigation Updates:**
+  - Desktop: Added "Job Postings" link for clients in dashboard header
+  - Mobile: Added "Job Postings" link in mobile menu
+  - Navigation order: Overview → Job Postings (clients) → Applications → Settings → Admin (admins)
+
+**Workflow:**
+1. Client logs in → sees green "Client" badge
+2. Access `/profile` → sees employer stats and actions
+3. Click "Post New Job" → fills out form → job goes to "Pending" status
+4. Admin reviews at `/admin/jobs` → approves/rejects
+5. Client views all postings at `/dashboard/jobs`
+
+**Access Control:**
+- `/dashboard/jobs` — Requires auth, only `client` and `admin` roles
+- `/jobs/post` — Requires auth, only `client` and `admin` roles
+- `/profile` — Requires auth (all authenticated users)
+
+**Status:** ✅ Complete (core client functionality implemented)
+
+---
+
+### Profile Page
+
+**Location:** `src/app/(main)/profile/`
+
+**Files:**
+- `page.tsx` — Server component fetching user data, settings, stats, activity, and role
+- `profile-client.tsx` — Client component with role-aware UI (601 lines)
+
+**Features:**
+
+#### Common Elements (All Roles)
+- Cover photo with gradient (`from-primary/20 via-primary/10 to-background`)
+- Large avatar (size-28/32) with online status indicator (green dot)
+- Profile header showing name, role, location, email with icons
+- Edit Profile modal with form validation (Zod schemas)
+- Activity feed showing recent actions (clock icons, status indicators)
+- Bio section display (whitespace-pre-wrap)
+- Two tabs: Overview and Activity
+
+#### Role-Specific Stats
+
+**Job Seekers (User Role):**
+| Metric | Icon | Color | Source |
+|--------|------|-------|--------|
+| Applications Sent | Send | Blue (#2563eb) | job_applications table |
+| Modules Completed | BookOpen | Green (#10b981) | user_learning_progress table |
+| Profile Views | Eye | Purple (#8b5cf6) | TODO: Track in DB |
+| CV Downloads | Download | Orange (#f97316) | TODO: Track in DB |
+
+**Clients (Client Role):**
+| Metric | Icon | Color | Source |
+|--------|------|-------|--------|
+| Jobs Posted | FileText | Blue (#2563eb) | TODO: Connect to DB |
+| Active Listings | TrendingUp | Green (#10b981) | TODO: Connect to DB |
+| Total Applicants | Users | Purple (#8b5cf6) | TODO: Connect to DB |
+| Jobs Filled | CheckSquare | Orange (#f97316) | TODO: Connect to DB |
+
+#### Quick Actions
+
+**For Job Seekers:**
+- Applications → `/dashboard/applications`
+- Portfolio → `/portfolio`
+- CV Builder → `/cv-builder`
+
+**For Clients:**
+- Post New Job → `/jobs/post`
+- Manage Jobs → `/dashboard/jobs`
+- Applicants → `/dashboard/applications`
+
+#### Edit Profile Modal
+- Full Name (required, min 2 chars, max 100)
+- Location (optional, max 200 chars)
+- Role/Job Title (optional, max 100 chars)
+- Bio (optional, max 1000 chars, textarea 3 rows)
+- Save button with loading state (Loader2 spinner)
+- Toast notifications for success/error (sonner)
+- Form validation with Zod schemas
+
+**Data Sources:**
+- `getUserProfile()` — Fetches from `user_profiles` table
+- `getUserSettings()` — Fetches from `user_settings` table
+- `getDashboardStats()` — Fetches dashboard metrics
+- `getRecentActivity(5)` — Fetches last 5 activities
+- `getUserRole()` — Fetches user role from database
+- `saveProfileSettings()` — Updates both `user_profiles` and `user_settings`
+
+**Status:** ✅ Complete (role-aware UI with edit functionality)
+
+---
+
 ### Dashboard Integration
 
 **Location:** `src/lib/dashboard/actions.ts`, `src/app/(main)/dashboard/`
@@ -780,7 +918,7 @@ remonest-app/
 | `id` | UUID | Primary Key, references `auth.users(id)` ON DELETE CASCADE |
 | `full_name` | TEXT | Nullable |
 | `avatar_url` | TEXT | Nullable |
-| `role` | TEXT | NOT NULL, DEFAULT 'user', CHECK IN ('user', 'admin') |
+| `role` | TEXT | NOT NULL, DEFAULT 'user', CHECK IN ('user', 'admin', 'client')¹ |
 | `created_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() |
 | `updated_at` | TIMESTAMPTZ | NOT NULL, DEFAULT NOW() |
 
@@ -1112,6 +1250,29 @@ CREATE TYPE apply_method_enum AS ENUM ('url', 'email');
 - Client submits → status='pending'
 - is_verified_by_admin=false
 - Admin reviews → approves (status='published', is_verified_by_admin=true) or rejects (status='rejected', rejection_reason set)
+
+---
+
+### Migration 009: `add_client_role`
+
+**Location:** `supabase/migrations/009_add_client_role.sql`
+
+**Changes:**
+1. Dropped existing CHECK constraint: `user_profiles_role_check`
+2. Added new CHECK constraint with three roles: `CHECK (role IN ('user', 'admin', 'client'))`
+3. Added RLS policy: "Clients can view all profiles"
+4. Updated `handle_new_user()` trigger to support role from user metadata
+5. Added column comment explaining role purposes
+
+**Purpose:**
+Resolves code/schema mismatch where TypeScript defined three roles but database only allowed two. Enables employer/job poster functionality with dedicated profile UI and job posting workflow.
+
+**Rollback:**
+```sql
+ALTER TABLE public.user_profiles DROP CONSTRAINT user_profiles_role_check;
+ALTER TABLE public.user_profiles ADD CONSTRAINT user_profiles_role_check CHECK (role IN ('user', 'admin'));
+DROP POLICY IF EXISTS "Clients can view all profiles" ON public.user_profiles;
+```
 
 ---
 

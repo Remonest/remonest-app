@@ -22,6 +22,23 @@ export const jobSubmissionSchema = z.object({
   duration_estimate: z.string().max(100, 'Estimasi durasi terlalu panjang').optional(),
 });
 
+// More lenient schema for drafts - allows partial data
+export const jobDraftSchema = z.object({
+  title: z.string().min(1).optional(), // Very minimal requirement
+  company: z.string().min(1).optional(), // Very minimal requirement
+  description_html: z.string().min(1).optional(), // Very minimal requirement
+  job_type: z.enum(['full-time', 'part-time', 'project', 'freelance']).optional(),
+  salary_min: z.coerce.number().int().min(0).optional(),
+  salary_max: z.coerce.number().int().min(0).optional(),
+  salary_currency: z.string().default('IDR'),
+  location: z.string().min(1).optional(), // Very minimal requirement
+  apply_method: z.enum(['url', 'email']).optional(),
+  apply_url: z.string().optional().or(z.literal('')),
+  apply_email: z.string().optional().or(z.literal('')),
+  deadline: z.coerce.date().optional(),
+  duration_estimate: z.string().optional(),
+});
+
 export const jobApprovalSchema = z.object({
   job_id: z.string().uuid(),
   rejection_reason: z.string().max(500, 'Alasan penolakan maksimal 500 karakter').optional(),

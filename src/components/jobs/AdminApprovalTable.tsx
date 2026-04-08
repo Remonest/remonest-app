@@ -39,10 +39,6 @@ interface PendingJob {
   deadline: string | null;
   created_at: string;
   status: string;
-  user_profiles: {
-    full_name: string;
-    email: string;
-  };
 }
 
 export function AdminApprovalTable() {
@@ -62,6 +58,7 @@ export function AdminApprovalTable() {
   const loadPendingJobs = async () => {
     setLoading(true);
     const data = await getPendingJobs();
+    console.log('📊 Pending jobs loaded:', data);
     setJobs(data);
     setLoading(false);
   };
@@ -150,7 +147,7 @@ export function AdminApprovalTable() {
                   <TableHead>Perusahaan</TableHead>
                   <TableHead>Tipe</TableHead>
                   <TableHead>Gaji</TableHead>
-                  <TableHead>Poster</TableHead>
+                  <TableHead>User ID</TableHead>
                   <TableHead>Tanggal</TableHead>
                   <TableHead className="text-right">Aksi</TableHead>
                 </TableRow>
@@ -172,10 +169,7 @@ export function AdminApprovalTable() {
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
-                        <div>{job.user_profiles.full_name}</div>
-                        <div className="text-muted-foreground text-xs">
-                          {job.user_profiles.email}
-                        </div>
+                        <div>{job.location}</div>
                       </div>
                     </TableCell>
                     <TableCell className="text-sm text-muted-foreground">

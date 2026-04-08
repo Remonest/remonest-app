@@ -8,6 +8,11 @@ This directory contains documentation for the Remonest application features.
 - **[Project](./PROJECT.md)** - Project overview, architecture, and development guidelines
 - **[Implementation Guide](./IMPLEMENTATION.md)** - Detailed implementation guide for the Remonest platform
 - **[Job Board Implementation](./JOB_BOARD_IMPLEMENTATION.md)** - Guide to the job board feature implementation
+- **[Client Role Implementation](./CLIENT_ROLE_IMPLEMENTATION.md)** - Complete guide to the client role (employer/job poster) system
+- **[Auto-Verified Job Posting](./AUTO_VERIFIED_JOB_POSTING.md)** - Auto-verified publishing workflow (v0.3.1) - NEW
+- **[Admin Access](./ADMIN_ACCESS.md)** - Quick start and detailed guide for admin panel access
+- **[Quick Admin Access](./QUICK_ADMIN_ACCESS.md)** - Step-by-step instructions for accessing admin features
+- **[Role System](./ROLE_SYSTEM.md)** - User role system (admin/user/client) with usage examples
 
 ## Getting Started
 

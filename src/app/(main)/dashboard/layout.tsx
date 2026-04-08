@@ -10,6 +10,7 @@ import {
   Settings,
   LogOut,
   Shield,
+  FileText,
 } from "lucide-react";
 import { getUserRoleInfo } from "@/lib/roles";
 
@@ -123,6 +124,18 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
               <LayoutDashboard className="size-4" />
               Overview
             </Link>
+
+            {/* Client-specific: Job Postings */}
+            {role === "client" && (
+              <Link
+                href="/dashboard/jobs"
+                className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <FileText className="size-4" />
+                Job Postings
+              </Link>
+            )}
+
             <Link
               href="/dashboard/applications"
               className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"

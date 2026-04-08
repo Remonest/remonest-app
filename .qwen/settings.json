@@ -22,7 +22,8 @@
       "Bash(git push *)",
       "Bash(type *)",
       "Bash(move *)",
-      "Bash(rd *)"
+      "Bash(rd *)",
+      "Bash(select-object *)"
     ]
   },
   "$version": 3

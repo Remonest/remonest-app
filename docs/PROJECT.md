@@ -40,7 +40,8 @@ src/
 │   │   │
 │   │   ├── jobs/
 │   │   │   ├── page.tsx               # Job list + search/filters
-│   │   │   └── [id]/page.tsx          # Job detail + apply CTA
+│   │   │   ├── [id]/page.tsx          # Job detail + apply CTA
+│   │   │   └── post/page.tsx          # Job posting form (client/admin)
 │   │   │
 │   │   ├── cv-builder/
 │   │   │   └── page.tsx               # Split-view form + preview
@@ -52,7 +53,8 @@ src/
 │   │   └── dashboard/
 │   │       ├── page.tsx               # Stats + quick actions
 │   │       ├── settings/page.tsx      # Profile, notifications, security
-│   │       └── applications/page.tsx  # Job application history
+│   │       ├── applications/page.tsx  # Job application history
+│   │       └── jobs/page.tsx          # Client job management
 │   │
 │   ├── admin/                         # Admin route group (no route group)
 │   │   ├── layout.tsx                 # Admin sidebar + Suspense + requireAdmin()
@@ -300,8 +302,13 @@ Complete Job Board feature with dual posting workflow (Admin vs Client), approva
 ⚠️ **In Progress:**
 - `/jobs` public job board page (UI exists, needs Supabase integration)
 - `/jobs/[id]` single job detail page
-- `/jobs/post` job posting form page
-- `/dashboard/jobs` user's job management
+- `/jobs/[id]/edit` job editing page
+
+✅ **Recently Completed:**
+- `/jobs/post` job posting form (client/admin) - April 8, 2026
+- `/dashboard/jobs` client job management - April 8, 2026
+- `/profile` dedicated profile page with role-aware UI - April 8, 2026
+- Client role database migration (009) - April 8, 2026
 
 ### Documentation
 
@@ -324,6 +331,8 @@ Full details in `docs/JOB_BOARD_IMPLEMENTATION.md`
 11. **Layout auth awareness**: `(main)/layout.tsx` checks auth status — bare layout for authenticated users, landing layout for unauthenticated
 12. **Dashboard architecture**: Async Server Components for read-only pages (`/dashboard`, `/dashboard/applications`); Server + Client Component split for interactive forms (`/dashboard/settings`)
 13. **Database migrations**: Sequential numbered files (`001_`, `002_`) with rollback comments at bottom
+14. **Role-based UI**: Client components receive role as prop from server (never call `getUserRole()` in client components)
+15. **Client role features**: Employers see job posting stats and actions, job seekers see application stats
 
 ---
 
@@ -346,5 +355,17 @@ pnpm lint         # Run ESLint
 - Social icons in footer use `X`, `Link`, `Camera` instead of Twitter/LinkedIn/Instagram (not in lucide-react v1.7.0)
 - Profile views and CV downloads on dashboard are placeholder metrics (not yet tracked in DB)
 - `/learning` pages still use hardcoded data despite DB tables existing with seed data
-- `/jobs` public pages need Supabase integration (server actions and UI components complete, just need page wiring)
-- Missing job board pages: `/jobs/post`, `/jobs/[id]`, `/dashboard/jobs`
+- `/jobs` public job board needs Supabase integration (server actions and UI components complete, just need page wiring)
+- Missing job board pages: `/jobs/[id]` detail page
+- Client profile stats use placeholder values (not yet connected to real database queries)
+- `/jobs/[id]/edit` page for editing job postings not yet created
+
+## Recent Updates (April 8, 2026)
+
+✅ **Client Role Implementation (v0.3.0):**
+- Added 'client' role to database schema (migration 009)
+- Created `/profile` page with role-aware UI (different stats/actions per role)
+- Created `/dashboard/jobs` for client job posting management
+- Created `/jobs/post` for submitting new jobs (with approval workflow)
+- Updated navigation to show client-specific links (desktop + mobile)
+- Full documentation: `docs/CLIENT_ROLE_IMPLEMENTATION.md`
