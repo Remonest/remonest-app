@@ -369,3 +369,11 @@ pnpm lint         # Run ESLint
 - Created `/jobs/post` for submitting new jobs (with approval workflow)
 - Updated navigation to show client-specific links (desktop + mobile)
 - Full documentation: `docs/CLIENT_ROLE_IMPLEMENTATION.md`
+
+✅ **Job Posting Workflow (v0.3.2):**
+- Reverted to role-based job posting (admin auto-publish, client pending review)
+- Changed `is_verified_by_admin` to nullable (null = pending, true = verified)
+- Added migration 010 for schema update
+- Updated job posting page with role-based banners
+- Restored admin approval queue for client submissions
+- Full documentation: `docs/JOB_POSTING_WORKFLOW.md`

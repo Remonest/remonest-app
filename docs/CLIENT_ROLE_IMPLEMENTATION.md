@@ -18,7 +18,7 @@ Complete implementation of the **Client** role (employer/job poster) with dedica
 | **Database Migration** | ✅ Complete | Added 'client' role to CHECK constraint |
 | **Profile Page** | ✅ Complete | Role-aware UI with client-specific stats and actions |
 | **Dashboard Jobs** | ✅ Complete | Job management page with status tracking |
-| **Job Posting Form** | ✅ Complete | Auto-verified publishing (immediate publish) |
+| **Job Posting Form** | ✅ Complete | Approval workflow (admin auto-publish, client pending review) |
 | **Navigation** | ✅ Complete | Client-specific links in desktop and mobile |
 
 ---
@@ -183,15 +183,14 @@ If any jobs are rejected, shows warning banner:
 - Title: "Post a New Job"
 - Description: "Fill in the details below..."
 
-#### Auto-Verified Banner (All Users)
-Green success box explaining:
-- "Auto-Verified Publishing"
-- Immediate publication with verified status
-- Shown to all users (admin and client)
+#### Role-Based Banner
+- **Admin**: Green "Admin Posting" banner (immediate publish)
+- **Client**: Amber "Pending Admin Review" banner (24-48 hour review)
 
 #### Form
 Uses existing `PostJobForm` component from `@/components/jobs`:
-- `isAdmin={true}` for all users → immediate publish + verified
+- `isAdmin={true}` for admin → immediate publish + verified
+- `isAdmin={false}` for client → pending approval + null verification
 
 #### Tips Section
 Helpful guidance for creating quality postings:
@@ -278,14 +277,15 @@ Helpful guidance for creating quality postings:
    ↓
    Click "Post New Job" → /jobs/post
    - Fill out PostJobForm
-   - Submit → status = 'published' ✓
-   - Auto-verified: is_verified_by_admin = true ✓
-   - Published immediately ✓
+   - Submit → status = 'pending'
+   - is_verified_by_admin = null (not reviewed)
    ↓
-6. Job Goes Live
+6. Admin Review
    ↓
-   Job appears on /jobs public board
-   Job shows verification badge ✓
+   Admin visits /admin/jobs
+   - Reviews pending jobs
+   - Approves → status = 'published', is_verified = true ✓
+   - OR Rejects → status = 'rejected'
    ↓
 7. Job Management
    ↓
@@ -407,7 +407,7 @@ SELECT role FROM user_profiles WHERE id = 'your-user-uuid';
 ### 4. Test Job Posting
 
 1. Click "Post New Job" → redirects to `/jobs/post`
-2. Verify green "Auto-Verified Publishing" banner appears
+2. Verify amber "Pending Admin Review" banner appears
 3. Fill out job form:
    - Title: "Senior React Developer"
    - Company: "Test Company"
@@ -416,20 +416,41 @@ SELECT role FROM user_profiles WHERE id = 'your-user-uuid';
    - Location: "Remote"
    - Description: "Test description"
    - Apply Method: URL
-4. Submit → should show success toast "Lowongan berhasil diterbitkan dan terverifikasi"
-5. Verify job status = 'published' in database
-6. Verify `is_verified_by_admin = true` in database
+4. Submit → should show success toast "Lowongan berhasil dikirim untuk persetujuan admin"
+5. Verify job status = 'pending' in database
+6. Verify `is_verified_by_admin = null` in database
 
 ### 5. Test Dashboard Jobs
 
 1. Navigate to `/dashboard/jobs`
 2. Verify stats summary shows correct counts
-3. Verify job appears in list with "Diterbitkan" (Published) badge
-4. Verify green checkmark icon on status badge
+3. Verify job appears in list with "Menunggu Persetujuan" (Pending) badge
+4. Verify amber clock icon on status badge
 5. Test View button → redirects to `/jobs/[id]`
 6. Verify "Job Postings" link appears in navigation
 
-**Desktop:**
+### 6. Test Admin Approval Workflow
+
+1. Login as admin user
+2. Navigate to `/admin/jobs`
+3. Switch to "Menunggu Persetujuan" tab
+4. Find the pending job from client
+5. Click approve (checkmark) button
+6. Job status changes to "Diterbitkan" (Published)
+
+```sql
+-- Verify in database
+SELECT id, title, status, is_verified_by_admin, published_at
+FROM jobs
+WHERE title = 'Senior React Developer';
+
+-- Expected after approval:
+-- status: 'published'
+-- is_verified_by_admin: true
+-- published_at: <timestamp>
+```
+
+### 7. Test Navigation
 - Verify "Job Postings" link appears between Overview and Applications
 - Click → navigates to `/dashboard/jobs`
 

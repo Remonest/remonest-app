@@ -3,7 +3,7 @@ import { getUserRole } from "@/lib/supabase/server";
 import { PostJobForm } from "@/components/jobs";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CircleCheck } from "lucide-react";
+import { ArrowLeft, CircleCheck, Clock } from "lucide-react";
 
 export default async function PostJobPage() {
   const user = await requireAuth();
@@ -36,24 +36,41 @@ export default async function PostJobPage() {
           </p>
         </div>
 
-        {/* Auto-Verified Banner */}
-        <div className="mb-6 p-4 border border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-900 rounded-xl">
-          <div className="flex gap-3">
-            <CircleCheck className="size-5 text-green-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-green-900 dark:text-green-200">
-                Auto-Verified Publishing
-              </p>
-              <p className="text-xs text-green-700 dark:text-green-300 mt-1">
-                Your job posting will be published immediately with verified status.
-              </p>
+        {/* Role-Based Banner */}
+        {isAdmin ? (
+          <div className="mb-6 p-4 border border-green-200 bg-green-50 dark:bg-green-950/20 dark:border-green-900 rounded-xl">
+            <div className="flex gap-3">
+              <CircleCheck className="size-5 text-green-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-green-900 dark:text-green-200">
+                  Admin Posting
+                </p>
+                <p className="text-xs text-green-700 dark:text-green-300 mt-1">
+                  Your job posting will be published immediately with verified status.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="mb-6 p-4 border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900 rounded-xl">
+            <div className="flex gap-3">
+              <Clock className="size-5 text-amber-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-medium text-amber-900 dark:text-amber-200">
+                  Pending Admin Review
+                </p>
+                <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                  Your job posting will be reviewed by our team before it goes
+                  live. This typically takes 24-48 hours.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Form */}
         <div className="p-4 sm:p-6 border border-border rounded-xl bg-card">
-          <PostJobForm isAdmin={true} />
+          <PostJobForm isAdmin={isAdmin} />
         </div>
 
         {/* Help Section */}

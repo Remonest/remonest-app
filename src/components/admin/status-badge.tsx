@@ -1,12 +1,12 @@
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, XCircle, Clock } from "lucide-react";
+import { CheckCircle, XCircle, Clock, FileText, CheckCircle2, AlertCircle } from "lucide-react";
 import { type JobStatus, statusLabels } from "@/lib/admin/mock-data";
 
 interface StatusBadgeProps {
-  status: JobStatus;
+  status: JobStatus | string;
 }
 
-const statusConfig: Record<JobStatus, { icon: React.ComponentType<{ className?: string }>; variant: "default" | "destructive" | "secondary" }> = {
+const statusConfig: Record<string, { icon: React.ComponentType<{ className?: string }>; variant: "default" | "destructive" | "secondary" | "outline" }> = {
   pending: {
     icon: Clock,
     variant: "secondary",
@@ -19,16 +19,31 @@ const statusConfig: Record<JobStatus, { icon: React.ComponentType<{ className?: 
     icon: XCircle,
     variant: "destructive",
   },
+  published: {
+    icon: CheckCircle2,
+    variant: "default",
+  },
+  draft: {
+    icon: FileText,
+    variant: "outline",
+  },
+  expired: {
+    icon: AlertCircle,
+    variant: "secondary",
+  },
 };
 
 export function StatusBadge({ status }: StatusBadgeProps) {
-  const config = statusConfig[status];
+  const config = statusConfig[status] || {
+    icon: FileText,
+    variant: "outline",
+  };
   const Icon = config.icon;
 
   return (
     <Badge variant={config.variant} className="gap-1.5 px-2.5 py-1">
       <Icon className="h-3.5 w-3.5" />
-      {statusLabels[status]}
+      {statusLabels[status as JobStatus] || status}
     </Badge>
   );
 }

@@ -1,6 +1,6 @@
 # Remonest - Implementation Documentation
 
-**Version:** v0.3.0
+**Version:** v0.3.2
 **Last Updated:** April 8, 2026
 
 ---
@@ -1272,6 +1272,35 @@ Resolves code/schema mismatch where TypeScript defined three roles but database 
 ALTER TABLE public.user_profiles DROP CONSTRAINT user_profiles_role_check;
 ALTER TABLE public.user_profiles ADD CONSTRAINT user_profiles_role_check CHECK (role IN ('user', 'admin'));
 DROP POLICY IF EXISTS "Clients can view all profiles" ON public.user_profiles;
+```
+
+---
+
+### Migration 010: `make_is_verified_by_admin_nullable`
+
+**Location:** `supabase/migrations/010_make_is_verified_by_admin_nullable.sql`
+
+**Changes:**
+1. Dropped `DEFAULT false` constraint on `is_verified_by_admin` column
+2. Changed column to allow `NULL` values
+3. Set existing pending jobs to `NULL` (not yet reviewed)
+4. Added column comment explaining three-state logic
+
+**Column States:**
+| Value | Meaning |
+|-------|---------|
+| `true` | Admin verified (admin-posted or approved) |
+| `null` | Not yet reviewed (client-posted, pending) |
+| `false` | Rejected or explicitly unverified |
+
+**Purpose:**
+Enables role-based job posting workflow where admin posts are auto-verified but client posts require approval.
+
+**Rollback:**
+```sql
+UPDATE public.jobs SET is_verified_by_admin = false WHERE is_verified_by_admin IS NULL;
+ALTER TABLE public.jobs ALTER COLUMN is_verified_by_admin SET DEFAULT false;
+ALTER TABLE public.jobs ALTER COLUMN is_verified_by_admin SET NOT NULL;
 ```
 
 ---
