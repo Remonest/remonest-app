@@ -1,6 +1,11 @@
+"use client";
+
 import { Globe2, X, Link, Camera } from "lucide-react";
+import { useTranslations } from "@/lib/translations";
 
 export function Footer() {
+  const { t } = useTranslations();
+
   return (
     <footer id="site-footer" className="py-0 md:py-6 pb-8 md:pb-10">
       <div className="w-full max-w-[1200px] mx-auto px-4 md:px-8">
@@ -14,34 +19,33 @@ export function Footer() {
               <span>Remonest</span>
             </div>
             <p className="mt-3 mb-0 text-sm leading-relaxed text-muted-foreground">
-              Empowering Indonesian professionals to build sustainable remote
-              careers with practical tools and global-ready guidance.
+              {t.footer.description}
             </p>
           </div>
 
           {/* Platform */}
           <div>
             <p className="m-0 mb-3 text-sm leading-[1.4] font-semibold">
-              Platform
+              {t.footer.product}
             </p>
             <div className="flex flex-col gap-3">
               <a
                 href="#"
                 className="text-sm text-muted-foreground no-underline whitespace-nowrap hover:text-foreground transition-colors"
               >
-                Job Board
+                {t.footer.links.jobBoard}
               </a>
               <a
                 href="#"
                 className="text-sm text-muted-foreground no-underline whitespace-nowrap hover:text-foreground transition-colors"
               >
-                Learning Modules
+                {t.footer.links.learningModules}
               </a>
               <a
                 href="#"
                 className="text-sm text-muted-foreground no-underline whitespace-nowrap hover:text-foreground transition-colors"
               >
-                Portfolio Builder
+                {t.footer.links.portfolioBuilder}
               </a>
             </div>
           </div>
@@ -49,26 +53,26 @@ export function Footer() {
           {/* Company */}
           <div>
             <p className="m-0 mb-3 text-sm leading-[1.4] font-semibold">
-              Company
+              {t.footer.company}
             </p>
             <div className="flex flex-col gap-3">
               <a
                 href="#"
                 className="text-sm text-muted-foreground no-underline whitespace-nowrap hover:text-foreground transition-colors"
               >
-                About
+                {t.footer.links.about}
               </a>
               <a
                 href="#"
                 className="text-sm text-muted-foreground no-underline whitespace-nowrap hover:text-foreground transition-colors"
               >
-                Success Stories
+                {t.footer.links.successStories}
               </a>
               <a
                 href="#"
                 className="text-sm text-muted-foreground no-underline whitespace-nowrap hover:text-foreground transition-colors"
               >
-                Contact
+                {t.footer.links.contact}
               </a>
             </div>
           </div>
@@ -76,26 +80,26 @@ export function Footer() {
           {/* Legal */}
           <div className="col-span-2 md:col-span-1">
             <p className="m-0 mb-3 text-sm leading-[1.4] font-semibold">
-              Legal
+              {t.footer.legal}
             </p>
             <div className="flex flex-col gap-3">
               <a
                 href="#"
                 className="text-sm text-muted-foreground no-underline whitespace-nowrap hover:text-foreground transition-colors"
               >
-                Terms &amp; Conditions
+                {t.footer.links.termsConditions}
               </a>
               <a
                 href="#"
                 className="text-sm text-muted-foreground no-underline whitespace-nowrap hover:text-foreground transition-colors"
               >
-                Privacy Policy
+                {t.footer.links.privacyPolicy}
               </a>
               <a
                 href="#"
                 className="text-sm text-muted-foreground no-underline whitespace-nowrap hover:text-foreground transition-colors"
               >
-                Cookie Settings
+                {t.footer.links.cookieSettings}
               </a>
             </div>
           </div>
@@ -104,26 +108,26 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="flex flex-col-reverse md:flex-row items-center justify-between gap-4 mt-6 px-1">
           <div className="text-[13px] text-muted-foreground">
-            © {new Date().getFullYear()} Remonest. All rights reserved.
+            © {new Date().getFullYear()} Remonest. {t.footer.allRightsReserved}
           </div>
           <div className="flex gap-2 items-center">
             <a
               href="#"
-              aria-label="X (Twitter)"
+              aria-label={t.footer.social.twitter}
               className="w-10 h-10 md:w-9 md:h-9 border border-border rounded-md flex items-center justify-center bg-card text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="size-4" />
             </a>
             <a
               href="#"
-              aria-label="LinkedIn"
+              aria-label={t.footer.social.linkedin}
               className="w-10 h-10 md:w-9 md:h-9 border border-border rounded-md flex items-center justify-center bg-card text-muted-foreground hover:text-foreground transition-colors"
             >
               <Link className="size-4" />
             </a>
             <a
               href="#"
-              aria-label="Instagram"
+              aria-label={t.footer.social.instagram}
               className="w-10 h-10 md:w-9 md:h-9 border border-border rounded-md flex items-center justify-center bg-card text-muted-foreground hover:text-foreground transition-colors"
             >
               <Camera className="size-4" />

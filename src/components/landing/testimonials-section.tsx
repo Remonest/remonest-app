@@ -1,45 +1,32 @@
-import { Quote } from "lucide-react";
+"use client";
 
-const testimonials = {
-  main: {
-    quote: "Remonest helped me restructure my portfolio and present my experience more clearly. Within weeks, I started getting interviews from companies outside Indonesia.",
-    name: "Nadia S.",
-    role: "Product Designer · Remote startup team",
-    avatar:
-      "https://storage.googleapis.com/banani-avatars/avatar%2Ffemale%2F25-35%2FSoutheast%20Asian%2F1",
-  },
-  secondary: [
-    {
-      quote:
-        "The modules were practical and easy to follow. I finally understood how to position my experience for global remote roles.",
-      name: "Budi P.",
-      role: "Frontend Developer",
-      avatar:
-        "https://storage.googleapis.com/banani-avatars/avatar%2Fmale%2F25-35%2FSoutheast%20Asian%2F2",
-    },
-    {
-      quote:
-        "I used the CV builder and job board together. It made the whole process feel organized instead of overwhelming.",
-      name: "Maya A.",
-      role: "Digital Marketer",
-      avatar:
-        "https://storage.googleapis.com/banani-avatars/avatar%2Ffemale%2F18-25%2FSoutheast%20Asian%2F3",
-    },
-  ],
-};
+import { Quote } from "lucide-react";
+import { useTranslations } from "@/lib/translations";
 
 export function TestimonialsSection() {
+  const { t } = useTranslations();
+
+  const testimonials = {
+    main: {
+      quote: t.testimonials.main.quote,
+      name: t.testimonials.main.name,
+      role: t.testimonials.main.role,
+      avatar:
+        "https://storage.googleapis.com/banani-avatars/avatar%2Ffemale%2F25-35%2FSoutheast%20Asian%2F1",
+    },
+    secondary: t.testimonials.secondary,
+  };
+
   return (
     <section id="testimonials-section" className="py-4 md:py-8">
       <div className="w-full max-w-[1200px] mx-auto px-4 md:px-8">
         <div className="p-6 md:p-8 bg-muted border border-border rounded-xl">
           <div>
             <h2 className="m-0 text-[28px] md:text-[40px] leading-tight tracking-[-0.02em] font-semibold text-foreground">
-              Success stories
+              {t.testimonials.title}
             </h2>
             <p className="mt-3 mb-0 text-base leading-relaxed text-muted-foreground">
-              Real progress from Indonesian professionals using Remonest to
-              build better remote opportunities.
+              {t.testimonials.subtitle}
             </p>
           </div>
 
@@ -82,12 +69,20 @@ export function TestimonialsSection() {
                     "{t.quote}"
                   </p>
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-full overflow-hidden bg-secondary shrink-0">
-                      <img
-                        src={t.avatar}
-                        alt={t.name}
-                        className="w-full h-full object-cover block"
-                      />
+                    <div className="w-11 h-11 rounded-full overflow-hidden bg-secondary shrink-0 flex items-center justify-center">
+                      {/* Placeholder avatar - replace with actual avatars if needed */}
+                      <svg
+                        className="w-6 h-6 text-muted-foreground"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
                     </div>
                     <div>
                       <p className="m-0 text-sm font-semibold leading-[1.3]">

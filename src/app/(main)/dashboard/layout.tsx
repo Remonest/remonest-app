@@ -1,10 +1,17 @@
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { getSupabaseServerClient, getUserRole } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Briefcase, Settings, LogOut } from "lucide-react";
+import {
+  LayoutDashboard,
+  Briefcase,
+  Settings,
+  LogOut,
+  Shield,
+} from "lucide-react";
+import { getUserRoleInfo } from "@/lib/roles";
 
 const MobileMenu = dynamic(() => import("@/components/mobile-menu"));
 
@@ -75,12 +82,18 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
     redirect("/login");
   }
 
+  const roleInfo = await getUserRoleInfo();
+  const role = await getUserRole();
+
   return (
     <div className="flex min-h-screen flex-col bg-background">
       {/* Authenticated header variant */}
       <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-8">
-          <Link href="/dashboard" className="flex items-center gap-2 text-lg font-semibold">
+          <Link
+            href="/dashboard"
+            className="flex items-center gap-2 text-lg font-semibold"
+          >
             <div className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -102,7 +115,7 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
           </Link>
 
           {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-2">
+          <nav className="hidden md:flex items-center gap-4">
             <Link
               href="/dashboard"
               className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
@@ -124,11 +137,34 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
               <Settings className="size-4" />
               Settings
             </Link>
-            <form action={async () => {
-              "use server";
-              const { logoutAction } = await import("@/lib/auth/actions");
-              await logoutAction();
-            }}>
+
+            {/* Admin Link - Only visible to admins */}
+            {role === "admin" && (
+              <Link
+                href="/admin/jobs"
+                className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-red-600 dark:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-950"
+              >
+                <Shield className="size-4" />
+                Admin
+              </Link>
+            )}
+
+            {/* Role Badge */}
+            {roleInfo && (
+              <span
+                className={`px-2.5 py-1 rounded-full text-xs font-semibold ${roleInfo.color}`}
+              >
+                {roleInfo.label}
+              </span>
+            )}
+
+            <form
+              action={async () => {
+                "use server";
+                const { logoutAction } = await import("@/lib/auth/actions");
+                await logoutAction();
+              }}
+            >
               <Button type="submit" variant="outline" size="sm">
                 <LogOut className="size-4" />
                 <span className="ml-1.5">Sign Out</span>
@@ -137,12 +173,14 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
           </nav>
 
           {/* Mobile menu button */}
-          <MobileMenu />
+          <MobileMenu roleInfo={roleInfo} role={role} />
         </div>
       </header>
 
       <main className="flex-1">
-        <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:py-8 md:px-8">{children}</div>
+        <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:py-8 md:px-8">
+          {children}
+        </div>
       </main>
     </div>
   );

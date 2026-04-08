@@ -4,11 +4,14 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Globe2, Menu, X } from "lucide-react";
 import { ThemeToggle } from "./theme-toggle";
+import { LanguageSwitcher } from "./language-switcher";
+import { useTranslations } from "@/lib/translations";
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
+  const { language, setLanguage, t } = useTranslations();
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -74,24 +77,28 @@ export function Header() {
               href="#features-section"
               className="h-9 px-3 inline-flex items-center rounded-md text-muted-foreground text-sm font-medium whitespace-nowrap no-underline transition-colors hover:text-foreground"
             >
-              Features
+              {t.header.features}
             </a>
             <a
               href="#steps-section"
               className="h-9 px-3 inline-flex items-center rounded-md text-muted-foreground text-sm font-medium whitespace-nowrap no-underline transition-colors hover:text-foreground"
             >
-              How it works
+              {t.header.howItWorks}
             </a>
             <a
               href="#testimonials-section"
               className="h-9 px-3 inline-flex items-center rounded-md text-muted-foreground text-sm font-medium whitespace-nowrap no-underline transition-colors hover:text-foreground"
             >
-              Success stories
+              {t.header.successStories}
             </a>
           </nav>
 
           <div className="flex items-center gap-2 whitespace-nowrap">
-            <div className="hidden md:block">
+            <div className="hidden md:flex items-center gap-2">
+              <LanguageSwitcher
+                currentLanguage={language}
+                onLanguageChange={setLanguage}
+              />
               <ThemeToggle />
             </div>
             <div className="hidden md:flex items-center gap-2">
@@ -99,13 +106,13 @@ export function Header() {
                 href="/login"
                 className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md text-sm font-medium whitespace-nowrap border border-transparent bg-transparent text-foreground no-underline hover:bg-muted transition-colors"
               >
-                Log In
+                {t.header.logIn}
               </Link>
               <Link
                 href="/register"
                 className="inline-flex items-center justify-center gap-2 h-10 px-4 rounded-md text-sm font-medium whitespace-nowrap border border-transparent bg-primary text-primary-foreground no-underline hover:bg-primary/90 transition-colors"
               >
-                Get Started Free
+                {t.header.getStartedFree}
               </Link>
             </div>
             {/* Mobile: theme toggle + hamburger */}
@@ -113,7 +120,7 @@ export function Header() {
               <ThemeToggle />
               <button
                 className="w-10 h-10 flex items-center justify-center rounded-md text-foreground hover:bg-muted transition-colors"
-                aria-label="Menu"
+                aria-label={t.header.menu}
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               >
                 {mobileMenuOpen ? (
@@ -142,36 +149,42 @@ export function Header() {
                 className="h-10 px-3 flex items-center rounded-md text-muted-foreground text-sm font-medium no-underline transition-colors hover:text-foreground hover:bg-muted"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Features
+                {t.header.features}
               </a>
               <a
                 href="#steps-section"
                 className="h-10 px-3 flex items-center rounded-md text-muted-foreground text-sm font-medium no-underline transition-colors hover:text-foreground hover:bg-muted"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                How it works
+                {t.header.howItWorks}
               </a>
               <a
                 href="#testimonials-section"
                 className="h-10 px-3 flex items-center rounded-md text-muted-foreground text-sm font-medium no-underline transition-colors hover:text-foreground hover:bg-muted"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Success stories
+                {t.header.successStories}
               </a>
+              <div className="flex items-center justify-center gap-2 pt-2 border-t border-border">
+                <LanguageSwitcher
+                  currentLanguage={language}
+                  onLanguageChange={setLanguage}
+                />
+              </div>
               <div className="flex flex-col gap-2 pt-2 border-t border-border">
                 <Link
                   href="/login"
                   className="h-10 px-3 flex items-center justify-center rounded-md text-sm font-medium border border-transparent bg-transparent text-foreground no-underline hover:bg-muted transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Log In
+                  {t.header.logIn}
                 </Link>
                 <Link
                   href="/register"
                   className="h-10 px-3 flex items-center justify-center rounded-md text-sm font-medium border border-transparent bg-primary text-primary-foreground no-underline hover:bg-primary/90 transition-colors"
                   onClick={() => setMobileMenuOpen(false)}
                 >
-                  Get Started Free
+                  {t.header.getStartedFree}
                 </Link>
               </div>
             </nav>

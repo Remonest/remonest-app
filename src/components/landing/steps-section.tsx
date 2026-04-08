@@ -1,42 +1,47 @@
-const steps = [
-  {
-    number: "01",
-    title: "Build your profile",
-    copy: "Set up your CV, portfolio, and strengths in a format that matches what remote teams want to review quickly.",
-    image:
-      "https://storage.googleapis.com/banani-generated-images/generated-images/d3e84734-8589-4be3-8f1d-54a90fa3074a.jpg",
-    alt: "Build profile preview",
-  },
-  {
-    number: "02",
-    title: "Learn remote-ready skills",
-    copy: "Use short modules to improve communication, collaboration, and confidence before applying to global companies.",
-    image:
-      "https://storage.googleapis.com/banani-generated-images/generated-images/43a1203f-ab37-48f7-bd60-b3e2017d363c.jpg",
-    alt: "Learning remote skills preview",
-  },
-  {
-    number: "03",
-    title: "Apply to verified jobs",
-    copy: "Browse curated listings, prepare with confidence, and submit applications to companies already open to remote hiring.",
-    image:
-      "https://storage.googleapis.com/banani-generated-images/generated-images/07b05fd9-74d4-49c5-abb0-157771215a81.jpg",
-    alt: "Apply to jobs preview",
-  },
-];
+"use client";
+
+import { useTranslations } from "@/lib/translations";
 
 export function StepsSection() {
+  const { t } = useTranslations();
+
+  const steps = [
+    {
+      number: "01",
+      title: t.steps.items.buildProfile.title,
+      copy: t.steps.items.buildProfile.description,
+      image:
+        "https://storage.googleapis.com/banani-generated-images/generated-images/d3e84734-8589-4be3-8f1d-54a90fa3074a.jpg",
+      alt: t.steps.items.buildProfile.alt,
+    },
+    {
+      number: "02",
+      title: t.steps.items.learnSkills.title,
+      copy: t.steps.items.learnSkills.description,
+      image:
+        "https://storage.googleapis.com/banani-generated-images/generated-images/43a1203f-ab37-48f7-bd60-b3e2017d363c.jpg",
+      alt: t.steps.items.learnSkills.alt,
+    },
+    {
+      number: "03",
+      title: t.steps.items.applyJobs.title,
+      copy: t.steps.items.applyJobs.description,
+      image:
+        "https://storage.googleapis.com/banani-generated-images/generated-images/07b05fd9-74d4-49c5-abb0-157771215a81.jpg",
+      alt: t.steps.items.applyJobs.alt,
+    },
+  ];
+
   return (
     <section id="steps-section" className="py-4 md:py-8">
       <div className="w-full max-w-[1200px] mx-auto px-4 md:px-8">
         <div className="p-6 md:p-8 border border-border rounded-xl bg-card">
           <div className="mb-6 md:mb-7">
             <h2 className="m-0 text-[28px] md:text-[40px] leading-tight tracking-[-0.02em] font-semibold text-foreground">
-              How it works
+              {t.steps.title}
             </h2>
             <p className="mt-3 mb-0 text-base leading-relaxed text-muted-foreground">
-              Three clear steps to help professionals move from local experience
-              to a stronger global remote profile.
+              {t.steps.subtitle}
             </p>
           </div>
 

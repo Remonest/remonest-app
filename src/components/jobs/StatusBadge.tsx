@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
-import type { JobStatus } from '@/lib/jobs/actions';
-import { getStatusLabel } from '@/lib/jobs/actions';
+import type { JobStatus } from '@/lib/jobs/utils';
+import { getStatusLabel } from '@/lib/jobs/utils';
 
 interface StatusBadgeProps {
   status: JobStatus;

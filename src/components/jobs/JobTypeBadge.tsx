@@ -1,6 +1,6 @@
 import { Badge } from '@/components/ui/badge';
-import type { JobType } from '@/lib/jobs/actions';
-import { getJobTypeLabel } from '@/lib/jobs/actions';
+import type { JobType } from '@/lib/jobs/utils';
+import { getJobTypeLabel } from '@/lib/jobs/utils';
 
 interface JobTypeBadgeProps {
   type: JobType;

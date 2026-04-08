@@ -2,39 +2,37 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Play, ChevronLeft, ChevronRight } from "lucide-react";
-
-const slides = [
-  {
-    image:
-      "https://storage.googleapis.com/banani-generated-images/generated-images/d66b5ce4-f7d8-48d0-a98c-4a1bff463dbc.jpg",
-    caption: "Work from anywhere",
-    captionDesc:
-      "Discover a more flexible path for ambitious professionals in Indonesia.",
-  },
-  {
-    image:
-      "https://storage.googleapis.com/banani-generated-images/generated-images/5676352a-bd3e-4f5e-9a20-f2e2fd666ded.jpg",
-    caption: "Build a stronger profile",
-    captionDesc:
-      "Create CVs and portfolios that feel clear, polished, and global-ready.",
-  },
-  {
-    image:
-      "https://storage.googleapis.com/banani-generated-images/generated-images/5676352a-bd3e-4f5e-9a20-f2e2fd666ded.jpg",
-    caption: "Showcase your best work",
-    captionDesc:
-      "Present projects in a clean, professional format that impresses employers.",
-  },
-  {
-    image:
-      "https://storage.googleapis.com/banani-generated-images/generated-images/4de1f13f-f292-4c94-b8a4-23704b2c1cb9.jpg",
-    caption: "Land global opportunities",
-    captionDesc:
-      "Move from learning to applying with confidence on verified remote roles.",
-  },
-];
+import { useTranslations } from "@/lib/translations";
 
 export function HeroSection() {
+  const { t } = useTranslations();
+
+  const slides = [
+    {
+      image:
+        "https://storage.googleapis.com/banani-generated-images/generated-images/d66b5ce4-f7d8-48d0-a98c-4a1bff463dbc.jpg",
+      caption: t.hero.carousel.workFromAnywhere.caption,
+      captionDesc: t.hero.carousel.workFromAnywhere.description,
+    },
+    {
+      image:
+        "https://storage.googleapis.com/banani-generated-images/generated-images/5676352a-bd3e-4f5e-9a20-f2e2fd666ded.jpg",
+      caption: t.hero.carousel.buildStrongerProfile.caption,
+      captionDesc: t.hero.carousel.buildStrongerProfile.description,
+    },
+    {
+      image:
+        "https://storage.googleapis.com/banani-generated-images/generated-images/1056ed0c-0a1a-4aa3-b2a2-32ab4c7bb073.jpg",
+      caption: t.hero.carousel.showcaseBestWork.caption,
+      captionDesc: t.hero.carousel.showcaseBestWork.description,
+    },
+    {
+      image:
+        "https://storage.googleapis.com/banani-generated-images/generated-images/4de1f13f-f292-4c94-b8a4-23704b2c1cb9.jpg",
+      caption: t.hero.carousel.landGlobalOpportunities.caption,
+      captionDesc: t.hero.carousel.landGlobalOpportunities.description,
+    },
+  ];
   const [current, setCurrent] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -67,17 +65,16 @@ export function HeroSection() {
           <div className="flex flex-col items-start">
             <div className="inline-flex items-center gap-2 h-8 px-3 border border-border rounded-full bg-secondary text-secondary-foreground text-[13px] font-medium whitespace-nowrap">
               <span className="w-2 h-2 rounded-full bg-primary shrink-0" />
-              Built for Indonesian professionals
+              {t.hero.badge}
             </div>
 
             <h1 className="mt-4 md:mt-5 mb-3 md:mb-4 text-4xl md:text-[56px] leading-tight tracking-[-0.04em] font-semibold text-foreground">
-              Start and grow your{" "}
-              <span className="text-primary">remote career</span>
+              {t.hero.title}{" "}
+              <span className="text-primary">{t.hero.titleHighlight}</span>
             </h1>
 
             <p className="m-0 text-base leading-relaxed text-muted-foreground">
-              Find global opportunities, sharpen remote-ready skills, and build
-              a profile that helps you stand out to international employers.
+              {t.hero.description}
             </p>
 
             <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 mt-6 md:mt-7 w-full md:w-auto">
@@ -85,7 +82,7 @@ export function HeroSection() {
                 href="#"
                 className="inline-flex items-center justify-center gap-2 h-11 md:h-10 px-4 rounded-md text-[15px] md:text-sm font-semibold md:font-medium whitespace-nowrap border border-transparent bg-primary text-primary-foreground no-underline hover:bg-primary/90 transition-colors w-full md:w-auto"
               >
-                Get Started Free
+                {t.hero.getStartedFree}
               </a>
               <a
                 href="#steps-section"
@@ -94,7 +91,7 @@ export function HeroSection() {
                 <span className="w-5 h-5 flex items-center justify-center shrink-0">
                   <Play className="size-4 text-secondary-foreground" />
                 </span>
-                See how it works
+                {t.hero.seeHowItWorks}
               </a>
             </div>
 
@@ -104,7 +101,7 @@ export function HeroSection() {
                   500+
                 </strong>
                 <span className="block mt-1 text-[13px] text-muted-foreground">
-                  Remote roles weekly
+                  {t.hero.stats.remoteRoles}
                 </span>
               </div>
               <div className="p-4 md:p-3.5 border border-border rounded-xl bg-card">
@@ -112,7 +109,7 @@ export function HeroSection() {
                   30+
                 </strong>
                 <span className="block mt-1 text-[13px] text-muted-foreground">
-                  Learning modules
+                  {t.hero.stats.learningModules}
                 </span>
               </div>
               <div className="col-span-2 md:col-span-1 p-4 md:p-3.5 border border-border rounded-xl bg-card">
@@ -120,7 +117,7 @@ export function HeroSection() {
                   ATS-ready
                 </strong>
                 <span className="block mt-1 text-[13px] text-muted-foreground">
-                  CV and portfolio tools
+                  {t.hero.stats.atsReady}
                 </span>
               </div>
             </div>
@@ -131,10 +128,10 @@ export function HeroSection() {
             <div className="w-full md:max-w-[520px] p-3 md:p-3.5 bg-card border border-border rounded-[calc(var(--radius-xl)+4px)]">
               <div className="flex items-center justify-between gap-3 px-1 pb-3">
                 <span className="text-[12px] md:text-[13px] text-muted-foreground font-medium truncate">
-                  Remote career dashboard
+                  {t.carousel.dashboard}
                 </span>
                 <span className="h-6 md:h-7 px-2 md:px-2.5 rounded-full bg-accent text-accent-foreground inline-flex items-center text-[11px] md:text-xs font-medium whitespace-nowrap shrink-0">
-                  Global-ready profile
+                  {t.carousel.globalReady}
                 </span>
               </div>
 
@@ -180,7 +177,7 @@ export function HeroSection() {
                       className={`h-1.5 rounded-full shrink-0 transition-all duration-300 ${
                         i === current ? "w-6 bg-primary" : "w-1.5 bg-border"
                       }`}
-                      aria-label={`Go to slide ${i + 1}`}
+                      aria-label={t.carousel.goToSlide(i + 1)}
                     />
                   ))}
                 </div>
@@ -189,7 +186,7 @@ export function HeroSection() {
                     type="button"
                     className="inline-flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-md border border-border bg-background text-foreground hover:bg-muted transition-colors"
                     onClick={() => goTo(current - 1)}
-                    aria-label="Previous slide"
+                    aria-label={t.carousel.previousSlide}
                   >
                     <ChevronLeft className="size-3.5 md:size-4" />
                   </button>
@@ -197,7 +194,7 @@ export function HeroSection() {
                     type="button"
                     className="inline-flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-md border border-border bg-background text-foreground hover:bg-muted transition-colors"
                     onClick={() => goTo(current + 1)}
-                    aria-label="Next slide"
+                    aria-label={t.carousel.nextSlide}
                   >
                     <ChevronRight className="size-3.5 md:size-4" />
                   </button>
