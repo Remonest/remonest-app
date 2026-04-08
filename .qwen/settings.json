@@ -8,7 +8,21 @@
       "Bash(findstr *)",
       "Bash(pnpm add *)",
       "Bash(taskkill *)",
-      "Bash(pnpm *)"
+      "Bash(pnpm *)",
+      "Bash(mkdir *)",
+      "Bash(del *)",
+      "Bash(@'\n'use *)",
+      "Bash(out-file *)",
+      "Bash(takeown *)",
+      "Bash(icacls *)",
+      "Bash(tasklist)",
+      "Bash(git add *)",
+      "Bash(git reset *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(type *)",
+      "Bash(move *)",
+      "Bash(rd *)"
     ]
   },
   "$version": 3
