@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 type Language = "en" | "id";
 
@@ -42,6 +48,7 @@ interface Translations {
       emailNotConfirmedDesc: string;
       resendConfirmation: string;
       sending: string;
+      orContinueWith: string;
     };
     register: {
       title: string;
@@ -68,6 +75,19 @@ interface Translations {
         upper: string;
         number: string;
       };
+    };
+    forgot: {
+      title: string;
+      description: string;
+      emailLabel: string;
+      emailPlaceholder: string;
+      sendResetLink: string;
+      sending: string;
+      backToLogin: string;
+      successTitle: string;
+      successDesc: string;
+      emailSent: string;
+      emailSentDesc: string;
     };
   };
   hero: {
@@ -302,9 +322,11 @@ const translations: Record<Language, Translations> = {
         noAccount: "Don't have an account?",
         signUp: "Sign up",
         emailNotConfirmed: "Email not confirmed",
-        emailNotConfirmedDesc: "A confirmation email was sent to {email}. Please check your inbox and spam folder.",
+        emailNotConfirmedDesc:
+          "A confirmation email was sent to {email}. Please check your inbox and spam folder.",
         resendConfirmation: "Resend confirmation email",
         sending: "Sending...",
+        orContinueWith: "or continue with",
       },
       register: {
         title: "Create an account",
@@ -315,7 +337,7 @@ const translations: Record<Language, Translations> = {
         emailPlaceholder: "name@example.com",
         workTypeLabel: "I want to work as",
         workTypePlaceholder: "Select your work type",
-        client: "Company / Client — Post jobs and hire",
+        client: "Company — Post jobs and hire",
         freelancer: "Freelancer — Find remote work",
         password: "Password",
         confirmPassword: "Confirm Password",
@@ -338,6 +360,20 @@ const translations: Record<Language, Translations> = {
           number: "Number",
         },
       },
+      forgot: {
+        title: "Reset password",
+        description: "Enter your email and we'll send you a reset link.",
+        emailLabel: "Email",
+        emailPlaceholder: "name@example.com",
+        sendResetLink: "Send Reset Link",
+        sending: "Sending…",
+        backToLogin: "Back to login",
+        successTitle: "Check your email",
+        successDesc: "We've sent a reset link",
+        emailSent: "Email sent",
+        emailSentDesc:
+          "Check your inbox and spam folder. The link expires in 1 hour.",
+      },
     },
     hero: {
       badge: "Built for Indonesian professionals",
@@ -355,19 +391,23 @@ const translations: Record<Language, Translations> = {
       carousel: {
         workFromAnywhere: {
           caption: "Work from anywhere",
-          description: "Discover a more flexible path for ambitious professionals in Indonesia.",
+          description:
+            "Discover a more flexible path for ambitious professionals in Indonesia.",
         },
         buildStrongerProfile: {
           caption: "Build a stronger profile",
-          description: "Create CVs and portfolios that feel clear, polished, and global-ready.",
+          description:
+            "Create CVs and portfolios that feel clear, polished, and global-ready.",
         },
         showcaseBestWork: {
           caption: "Showcase your best work",
-          description: "Present projects in a clean, professional format that impresses employers.",
+          description:
+            "Present projects in a clean, professional format that impresses employers.",
         },
         landGlobalOpportunities: {
           caption: "Land global opportunities",
-          description: "Move from learning to applying with confidence on verified remote roles.",
+          description:
+            "Move from learning to applying with confidence on verified remote roles.",
         },
       },
     },
@@ -385,17 +425,20 @@ const translations: Record<Language, Translations> = {
       items: {
         learningModules: {
           title: "Learning Modules",
-          description: "Follow focused lessons on async communication, global hiring expectations, and practical remote work habits for Indonesian talent.",
+          description:
+            "Follow focused lessons on async communication, global hiring expectations, and practical remote work habits for Indonesian talent.",
           alt: "Learning modules preview",
         },
         jobBoard: {
           title: "Job Board",
-          description: "Explore verified remote opportunities from international teams open to hiring professionals based in Indonesia.",
+          description:
+            "Explore verified remote opportunities from international teams open to hiring professionals based in Indonesia.",
           alt: "Job board preview",
         },
         cvPortfolio: {
           title: "CV & Portfolio Builder",
-          description: "Create structured, ATS-friendly career assets with a polished format that feels professional from first draft.",
+          description:
+            "Create structured, ATS-friendly career assets with a polished format that feels professional from first draft.",
           alt: "CV and portfolio builder preview",
         },
       },
@@ -406,17 +449,20 @@ const translations: Record<Language, Translations> = {
       items: {
         buildProfile: {
           title: "Build your profile",
-          description: "Set up your CV, portfolio, and strengths in a format that matches what remote teams want to review quickly.",
+          description:
+            "Set up your CV, portfolio, and strengths in a format that matches what remote teams want to review quickly.",
           alt: "Build profile preview",
         },
         learnSkills: {
           title: "Learn remote-ready skills",
-          description: "Use short modules to improve communication, collaboration, and confidence before applying to global companies.",
+          description:
+            "Use short modules to improve communication, collaboration, and confidence before applying to global companies.",
           alt: "Learning remote skills preview",
         },
         applyJobs: {
           title: "Apply to verified jobs",
-          description: "Browse curated listings, prepare with confidence, and submit applications to companies already open to remote hiring.",
+          description:
+            "Browse curated listings, prepare with confidence, and submit applications to companies already open to remote hiring.",
           alt: "Apply to jobs preview",
         },
       },
@@ -425,7 +471,8 @@ const translations: Record<Language, Translations> = {
       title: "Success stories",
       subtitle: "See how others have transformed their careers",
       main: {
-        quote: "Remonest helped me restructure my portfolio and present my experience more clearly. Within weeks, I started getting interviews from companies outside Indonesia.",
+        quote:
+          "Remonest helped me restructure my portfolio and present my experience more clearly. Within weeks, I started getting interviews from companies outside Indonesia.",
         name: "Nadia S.",
         role: "Product Designer · Remote startup team",
         alt: "Nadia avatar",
@@ -459,7 +506,8 @@ const translations: Record<Language, Translations> = {
       resources: "Resources",
       legal: "Legal",
       allRightsReserved: "All rights reserved",
-      description: "Empowering Indonesian professionals to build sustainable remote careers with practical tools and global-ready guidance.",
+      description:
+        "Empowering Indonesian professionals to build sustainable remote careers with practical tools and global-ready guidance.",
       links: {
         jobBoard: "Job Board",
         learningModules: "Learning Modules",
@@ -514,7 +562,8 @@ const translations: Record<Language, Translations> = {
         edit: "Edit",
         delete: "Delete",
         noJobs: "No job postings yet",
-        noJobsDesc: "Start by posting your first job opening. Attract qualified candidates from across Indonesia.",
+        noJobsDesc:
+          "Start by posting your first job opening. Attract qualified candidates from across Indonesia.",
       },
       settings: {
         title: "Settings",
@@ -537,7 +586,8 @@ const translations: Record<Language, Translations> = {
         saved: "Profile saved successfully",
         notificationPrefs: "Notification Preferences",
         emailNotifications: "Email notifications",
-        emailNotificationsDesc: "Receive updates about your applications via email",
+        emailNotificationsDesc:
+          "Receive updates about your applications via email",
         jobAlerts: "Job alerts",
         jobAlertsDesc: "Get notified when new jobs match your profile",
         learningReminders: "Learning reminders",
@@ -581,9 +631,11 @@ const translations: Record<Language, Translations> = {
         noAccount: "Belum punya akun?",
         signUp: "Daftar",
         emailNotConfirmed: "Email belum dikonfirmasi",
-        emailNotConfirmedDesc: "Email konfirmasi telah dikirim ke {email}. Silakan periksa kotak masuk dan folder spam Anda.",
+        emailNotConfirmedDesc:
+          "Email konfirmasi telah dikirim ke {email}. Silakan periksa kotak masuk dan folder spam Anda.",
         resendConfirmation: "Kirim ulang email konfirmasi",
         sending: "Mengirim...",
+        orContinueWith: "atau lanjutkan dengan",
       },
       register: {
         title: "Buat akun",
@@ -594,7 +646,7 @@ const translations: Record<Language, Translations> = {
         emailPlaceholder: "nama@contoh.com",
         workTypeLabel: "Saya ingin bekerja sebagai",
         workTypePlaceholder: "Pilih jenis pekerjaan",
-        client: "Perusahaan / Klien — Posting lowongan dan rekrut",
+        client: "Perusahaan — Posting lowongan dan rekrut",
         freelancer: "Freelancer — Cari pekerjaan remote",
         password: "Kata Sandi",
         confirmPassword: "Konfirmasi Kata Sandi",
@@ -617,6 +669,21 @@ const translations: Record<Language, Translations> = {
           number: "Angka",
         },
       },
+      forgot: {
+        title: "Atur ulang kata sandi",
+        description:
+          "Masukkan email Anda dan kami akan mengirimkan tautan atur ulang.",
+        emailLabel: "Email",
+        emailPlaceholder: "nama@contoh.com",
+        sendResetLink: "Kirim Tautan Atur Ulang",
+        sending: "Mengirim…",
+        backToLogin: "Kembali ke halaman login",
+        successTitle: "Periksa email Anda",
+        successDesc: "Kami telah mengirimkan tautan atur ulang ke",
+        emailSent: "Email terkirim",
+        emailSentDesc:
+          "Periksa kotak masuk dan folder spam Anda. Tautan akan kedaluwarsa dalam 1 jam.",
+      },
     },
     hero: {
       badge: "Dibuat untuk profesional Indonesia",
@@ -634,19 +701,23 @@ const translations: Record<Language, Translations> = {
       carousel: {
         workFromAnywhere: {
           caption: "Kerja dari mana saja",
-          description: "Temukan jalur karir yang lebih fleksibel untuk profesional Indonesia yang berambisi.",
+          description:
+            "Temukan jalur karir yang lebih fleksibel untuk profesional Indonesia yang berambisi.",
         },
         buildStrongerProfile: {
           caption: "Bangun profil yang lebih kuat",
-          description: "Buat CV dan portofolio yang jelas, rapi, dan siap untuk pasar global.",
+          description:
+            "Buat CV dan portofolio yang jelas, rapi, dan siap untuk pasar global.",
         },
         showcaseBestWork: {
           caption: "Tampilkan karya terbaik Anda",
-          description: "Sajikan proyek dalam format yang bersih dan profesional untuk memukau pemberi kerja.",
+          description:
+            "Sajikan proyek dalam format yang bersih dan profesional untuk memukau pemberi kerja.",
         },
         landGlobalOpportunities: {
           caption: "Raih peluang global",
-          description: "Berani melamar ke pekerjaan remote terverifikasi setelah melalui pembelajaran.",
+          description:
+            "Berani melamar ke pekerjaan remote terverifikasi setelah melalui pembelajaran.",
         },
       },
     },
@@ -659,22 +730,26 @@ const translations: Record<Language, Translations> = {
     },
     features: {
       title: "Fitur",
-      subtitle: "Semua yang Anda butuhkan untuk memulai dan mengembangkan karir remote",
+      subtitle:
+        "Semua yang Anda butuhkan untuk memulai dan mengembangkan karir remote",
       badge: "Bagian sederhana, terinspirasi shadcn",
       items: {
         learningModules: {
           title: "Modul Pembelajaran",
-          description: "Ikuti pelajaran terfokus tentang komunikasi asinkron, ekspektasi perekrutan global, dan kebiasaan kerja remote praktis untuk talenta Indonesia.",
+          description:
+            "Ikuti pelajaran terfokus tentang komunikasi asinkron, ekspektasi perekrutan global, dan kebiasaan kerja remote praktis untuk talenta Indonesia.",
           alt: "Pratinjau modul pembelajaran",
         },
         jobBoard: {
           title: "Papan Lowongan",
-          description: "Jelajahi peluang remote terverifikasi dari perusahaan internasional yang terbuka untuk merekrut profesional di Indonesia.",
+          description:
+            "Jelajahi peluang remote terverifikasi dari perusahaan internasional yang terbuka untuk merekrut profesional di Indonesia.",
           alt: "Pratinjau papan lowongan",
         },
         cvPortfolio: {
           title: "Pembuat CV & Portofolio",
-          description: "Buat CV dan portofolio terstruktur yang ramah-ATS dengan format profesional sejak draf pertama.",
+          description:
+            "Buat CV dan portofolio terstruktur yang ramah-ATS dengan format profesional sejak draf pertama.",
           alt: "Pratinjau pembuat CV dan portofolio",
         },
       },
@@ -685,17 +760,20 @@ const translations: Record<Language, Translations> = {
       items: {
         buildProfile: {
           title: "Buat profil Anda",
-          description: "Siapkan CV, portofolio, dan keunggulan Anda dalam format yang sesuai dengan kebutuhan tim remote untuk penilaian cepat.",
+          description:
+            "Siapkan CV, portofolio, dan keunggulan Anda dalam format yang sesuai dengan kebutuhan tim remote untuk penilaian cepat.",
           alt: "Pratinjau pembuatan profil",
         },
         learnSkills: {
           title: "Pelajari keterampilan siap-remote",
-          description: "Gunakan modul-modul singkat untuk meningkatkan komunikasi, kolaborasi, dan kepercayaan diri sebelum melamar ke perusahaan global.",
+          description:
+            "Gunakan modul-modul singkat untuk meningkatkan komunikasi, kolaborasi, dan kepercayaan diri sebelum melamar ke perusahaan global.",
           alt: "Pratinjau pembelajaran keterampilan remote",
         },
         applyJobs: {
           title: "Lamar ke pekerjaan terverifikasi",
-          description: "Telusuri daftar lowongan terkurasi, persiapkan diri dengan percaya diri, dan kirim lamaran ke perusahaan yang sudah terbuka untuk perekrutan remote.",
+          description:
+            "Telusuri daftar lowongan terkurasi, persiapkan diri dengan percaya diri, dan kirim lamaran ke perusahaan yang sudah terbuka untuk perekrutan remote.",
           alt: "Pratinjau pelamaran pekerjaan",
         },
       },
@@ -704,7 +782,8 @@ const translations: Record<Language, Translations> = {
       title: "Kisah sukses",
       subtitle: "Lihat bagaimana orang lain telah mengubah karir mereka",
       main: {
-        quote: "Remonest membantu saya menata ulang portofolio dan menyajikan pengalaman saya dengan lebih jelas. Dalam beberapa minggu, saya mulai mendapat wawancara dari perusahaan di luar Indonesia.",
+        quote:
+          "Remonest membantu saya menata ulang portofolio dan menyajikan pengalaman saya dengan lebih jelas. Dalam beberapa minggu, saya mulai mendapat wawancara dari perusahaan di luar Indonesia.",
         name: "Nadia S.",
         role: "Desainer Produk · Tim startup remote",
         alt: "Avatar Nadia",
@@ -738,7 +817,8 @@ const translations: Record<Language, Translations> = {
       resources: "Sumber Daya",
       legal: "Legal",
       allRightsReserved: "Hak cipta dilindungi",
-      description: "Memberdayakan profesional Indonesia untuk membangun karir remote yang berkelanjutan dengan alat praktis dan panduan siap global.",
+      description:
+        "Memberdayakan profesional Indonesia untuk membangun karir remote yang berkelanjutan dengan alat praktis dan panduan siap global.",
       links: {
         jobBoard: "Papan Lowongan",
         learningModules: "Modul Pembelajaran",
@@ -793,7 +873,8 @@ const translations: Record<Language, Translations> = {
         edit: "Edit",
         delete: "Hapus",
         noJobs: "Belum ada lowongan kerja",
-        noJobsDesc: "Mulai dengan memasang lowongan kerja pertama Anda. Tarik kandidat berkualitas dari seluruh Indonesia.",
+        noJobsDesc:
+          "Mulai dengan memasang lowongan kerja pertama Anda. Tarik kandidat berkualitas dari seluruh Indonesia.",
       },
       settings: {
         title: "Pengaturan",
@@ -816,11 +897,14 @@ const translations: Record<Language, Translations> = {
         saved: "Profil berhasil disimpan",
         notificationPrefs: "Preferensi Notifikasi",
         emailNotifications: "Notifikasi email",
-        emailNotificationsDesc: "Terima pembaruan tentang lamaran Anda melalui email",
+        emailNotificationsDesc:
+          "Terima pembaruan tentang lamaran Anda melalui email",
         jobAlerts: "Pencarian kerja",
-        jobAlertsDesc: "Dapatkan pemberitahuan saat pekerjaan baru sesuai dengan profil Anda",
+        jobAlertsDesc:
+          "Dapatkan pemberitahuan saat pekerjaan baru sesuai dengan profil Anda",
         learningReminders: "Pengingat pembelajaran",
-        learningRemindersDesc: "Pengingat untuk melanjutkan modul pembelajaran Anda",
+        learningRemindersDesc:
+          "Pengingat untuk melanjutkan modul pembelajaran Anda",
         marketingEmails: "Email pemasaran",
         marketingEmailsDesc: "Terima tips, berita, dan pembaruan produk",
         savePreferences: "Simpan Preferensi",
@@ -881,7 +965,9 @@ export function TranslationProvider({ children }: { children: ReactNode }) {
 export function useTranslations() {
   const context = useContext(TranslationContext);
   if (!context) {
-    throw new Error("useTranslations must be used within a TranslationProvider");
+    throw new Error(
+      "useTranslations must be used within a TranslationProvider",
+    );
   }
   return context;
 }
