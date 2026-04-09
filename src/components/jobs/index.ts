@@ -1,6 +1,9 @@
 export { JobCard } from './JobCard';
+export { DashboardJobCard } from './DashboardJobCard';
 export { JobTypeBadge } from './JobTypeBadge';
 export { VerificationBadge } from './VerificationBadge';
 export { StatusBadge } from './StatusBadge';
 export { PostJobForm } from './PostJobForm';
 export { AdminApprovalTable } from './AdminApprovalTable';
+export { JobsHero } from './jobs-hero';
+export { JobsEmptyState } from './jobs-empty-state';

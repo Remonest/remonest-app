@@ -106,11 +106,9 @@ export async function getUserJobs() {
 export async function getPendingJobs() {
   const user = await getCurrentUser();
   if (!user || !(await isAdmin(user.id))) {
-    console.log("🚫 User not authenticated or not admin");
     return [];
   }
 
-  console.log("✅ Admin user authenticated:", user.id);
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase
     .from("jobs")
@@ -123,11 +121,6 @@ export async function getPendingJobs() {
     return [];
   }
 
-  console.log(
-    "✅ Pending jobs fetched successfully:",
-    data?.length || 0,
-    "jobs",
-  );
   return data || [];
 }
 
@@ -135,7 +128,6 @@ export async function getPendingJobs() {
 export async function testJobsQuery() {
   const user = await getCurrentUser();
   if (!user) {
-    console.log("🚫 User not authenticated for test query");
     return { authenticated: false };
   }
 
@@ -146,19 +138,6 @@ export async function testJobsQuery() {
     .from("jobs")
     .select("id, title, status")
     .order("created_at", { ascending: false });
-
-  console.log("📊 Test Query Results:");
-  console.log("- Authenticated:", true);
-  console.log("- Total jobs count:", allData?.length || 0);
-  console.log("- Jobs by status:", {
-    draft: allData?.filter((j) => j.status === "draft")?.length || 0,
-    pending: allData?.filter((j) => j.status === "pending")?.length || 0,
-    published: allData?.filter((j) => j.status === "published")?.length || 0,
-    other:
-      allData?.filter(
-        (j) => !["draft", "pending", "published"].includes(j.status),
-      )?.length || 0,
-  });
 
   if (allError) {
     console.error("❌ Test query error:", allError);
@@ -179,11 +158,9 @@ export async function testJobsQuery() {
 export async function getAllJobs() {
   const user = await getCurrentUser();
   if (!user || !(await isAdmin(user.id))) {
-    console.log("🚫 User not authenticated or not admin for getAllJobs");
     return [];
   }
 
-  console.log("✅ Admin user authenticated for getAllJobs:", user.id);
   const supabase = getSupabaseServerClient();
   const { data, error } = await supabase
     .from("jobs")
@@ -195,7 +172,6 @@ export async function getAllJobs() {
     return [];
   }
 
-  console.log("✅ All jobs fetched successfully:", data?.length || 0, "jobs");
   return data || [];
 }
 
@@ -207,12 +183,6 @@ export async function submitJob(formData: FormData) {
       success: false,
       error: "Anda harus login untuk memposting lowongan",
     };
-  }
-
-  // Debug: Log received form data
-  console.log("Server received form data:");
-  for (const [key, value] of formData.entries()) {
-    console.log(`${key}: ${value}`);
   }
 
   // Parse and validate form data
@@ -232,8 +202,6 @@ export async function submitJob(formData: FormData) {
     duration_estimate: formData.get("duration_estimate") as string,
   };
 
-  console.log("Parsed raw form data:", rawFormData);
-
   const validation = jobSubmissionSchema.safeParse(rawFormData);
 
   if (!validation.success) {
@@ -248,7 +216,7 @@ export async function submitJob(formData: FormData) {
 
   // Check if user is admin to determine status and verification
   const userIsAdmin = await isAdmin(user.id);
-  
+
   // Admin: published immediately with verified status
   // Client: pending with null verification (not yet reviewed)
   const initialStatus: JobStatus = userIsAdmin ? "published" : "pending";
@@ -293,12 +261,6 @@ export async function saveJobDraft(formData: FormData) {
     return { success: false, error: "Anda harus login untuk menyimpan draft" };
   }
 
-  // Debug: Log received form data
-  console.log("Server received draft form data:");
-  for (const [key, value] of formData.entries()) {
-    console.log(`${key}: ${value} (type: ${typeof value})`);
-  }
-
   // Parse form data with null safety
   const getSafeValue = (key: string, defaultValue = ""): string => {
     const value = formData.get(key);
@@ -322,8 +284,6 @@ export async function saveJobDraft(formData: FormData) {
     is_verified_by_admin: "",
   };
 
-  console.log("Parsed draft form data:", rawFormData);
-
   // Use lenient draft validation
   const draftValidation = jobDraftSchema.safeParse(rawFormData);
 
@@ -338,16 +298,12 @@ export async function saveJobDraft(formData: FormData) {
 
   const validatedData = draftValidation.data;
 
-  console.log("Validated draft data:", validatedData);
-
   // Filter out undefined values before database insert
   const insertData = Object.fromEntries(
     Object.entries(validatedData || {}).filter(
       ([_, value]) => value !== undefined && value !== "",
     ),
   ) as Record<string, any>;
-
-  console.log("Data to insert:", insertData);
 
   // Handle apply method - allow empty fields for drafts, but clean up
   const applyMethod = insertData.apply_method;
@@ -378,19 +334,7 @@ export async function saveJobDraft(formData: FormData) {
     delete insertData.apply_email;
   }
 
-  console.log("Final data after apply method cleanup:", insertData);
-
-  // Check if required fields are present
-  console.log("Required fields check:");
-  console.log("  Has title:", !!insertData.title);
-  console.log("  Has company:", !!insertData.company);
-  console.log("  Has location:", !!insertData.location);
-  console.log("  Has job_type:", !!insertData.job_type);
-  console.log("  User ID:", user.id);
-
   const supabase = getSupabaseServerClient();
-  console.log("Attempting Supabase insert...");
-  console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
 
   const { data, error } = await supabase
     .from("jobs")
@@ -417,8 +361,6 @@ export async function saveJobDraft(formData: FormData) {
       code: error.code,
     };
   }
-
-  console.log("✅ Draft saved successfully:", data);
 
   revalidatePath("/jobs");
   revalidatePath("/admin/jobs");
@@ -451,10 +393,17 @@ export async function approveJob(jobId: string) {
     .eq("id", jobId)
     .eq("status", "pending")
     .select()
-    .single();
+    .maybeSingle();
 
+  // Handle specific Supabase error for no rows found
   if (error) {
     console.error("Error approving job:", error);
+    if (error.code === "PGRST116") {
+      return {
+        success: false,
+        error: "Lowongan tidak ditemukan atau sudah diproses",
+      };
+    }
     return { success: false, error: "Gagal menyetujui lowongan" };
   }
 
@@ -487,6 +436,8 @@ export async function rejectJob(jobId: string, reason?: string) {
   }
 
   const supabase = getSupabaseServerClient();
+
+  // Single atomic query - will only update if status is 'pending'
   const { data, error } = await supabase
     .from("jobs")
     .update({
@@ -496,10 +447,17 @@ export async function rejectJob(jobId: string, reason?: string) {
     .eq("id", jobId)
     .eq("status", "pending")
     .select()
-    .single();
+    .maybeSingle();
 
+  // Handle specific Supabase error for no rows found
   if (error) {
     console.error("Error rejecting job:", error);
+    if (error.code === "PGRST116") {
+      return {
+        success: false,
+        error: "Lowongan tidak ditemukan atau sudah diproses",
+      };
+    }
     return { success: false, error: "Gagal menolak lowongan" };
   }
 
@@ -563,8 +521,116 @@ export async function deleteJob(jobId: string) {
 
   revalidatePath("/jobs");
   revalidatePath("/admin/jobs");
+  revalidatePath("/dashboard/jobs");
 
   return { success: true, message: "Lowongan berhasil dihapus" };
+}
+
+// Update a job (for clients to edit their draft jobs)
+export async function updateJob(jobId: string, formData: FormData) {
+  const user = await getCurrentUser();
+  if (!user) {
+    return { success: false, error: "Anda harus login untuk mengedit lowongan" };
+  }
+
+  const userIsAdmin = await isAdmin(user.id);
+
+  // Parse and validate form data
+  const rawFormData = {
+    title: formData.get("title") as string,
+    company: formData.get("company") as string,
+    description_html: formData.get("description_html") as string,
+    job_type: formData.get("job_type") as JobType,
+    salary_min: formData.get("salary_min") as string,
+    salary_max: formData.get("salary_max") as string,
+    salary_currency: formData.get("salary_currency") as string,
+    location: formData.get("location") as string,
+    apply_method: formData.get("apply_method") as ApplyMethod,
+    apply_url: formData.get("apply_url") as string,
+    apply_email: formData.get("apply_email") as string,
+    deadline: formData.get("deadline") as string,
+    duration_estimate: formData.get("duration_estimate") as string,
+  };
+
+  const validation = jobSubmissionSchema.safeParse(rawFormData);
+
+  if (!validation.success) {
+    return {
+      success: false,
+      error: "Validasi gagal",
+      errors: validation.error.flatten().fieldErrors,
+    };
+  }
+
+  const validatedData = validation.data;
+
+  // Check if user owns the job
+  const supabase = getSupabaseServerClient();
+  const { data: existingJob, error: checkError } = await supabase
+    .from("jobs")
+    .select("id, posted_by_user_id, status")
+    .eq("id", jobId)
+    .single();
+
+  if (checkError) {
+    console.error("Error checking job ownership:", checkError);
+    return { success: false, error: "Gagal memeriksa kepemilikan lowongan" };
+  }
+
+  if (!existingJob) {
+    return { success: false, error: "Lowongan tidak ditemukan" };
+  }
+
+  // Only job owner or admin can edit
+  if (existingJob.posted_by_user_id !== user.id && !userIsAdmin) {
+    return { success: false, error: "Anda tidak memiliki izin untuk mengedit lowongan ini" };
+  }
+
+  // Non-admins can only edit draft or pending jobs
+  if (!userIsAdmin && !["draft", "pending"].includes(existingJob.status)) {
+    return {
+      success: false,
+      error: "Hanya bisa mengedit lowongan dengan status draft atau pending",
+    };
+  }
+
+  // Prepare update data
+  const updateData: Record<string, any> = {
+    ...validatedData,
+    job_id: jobId,
+  };
+
+  // If publishing draft, change status to pending
+  const action = formData.get("action") as string;
+  if (action === "publish" && existingJob.status === "draft") {
+    updateData.status = "pending";
+  }
+
+  const { data, error } = await supabase
+    .from("jobs")
+    .update(updateData)
+    .eq("id", jobId)
+    .select()
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error updating job:", error);
+    return { success: false, error: "Gagal mengedit lowongan" };
+  }
+
+  if (!data) {
+    return { success: false, error: "Lowongan tidak ditemukan" };
+  }
+
+  revalidatePath("/jobs");
+  revalidatePath("/admin/jobs");
+  revalidatePath("/dashboard/jobs");
+
+  const message = action === "publish"
+    ? "Lowongan berhasil dikirim untuk persetujuan admin"
+    : "Lowongan berhasil diupdate";
+
+  return { success: true, data, message };
 }
 
 // Republish an expired job

@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { JobTypeBadge, StatusBadge } from './index';
-import { approveJob, rejectJob, getPendingJobs } from '@/lib/jobs/actions';
-import { toast } from 'sonner';
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { JobTypeBadge, StatusBadge } from "./index";
+import { approveJob, rejectJob, getPendingJobs } from "@/lib/jobs/actions";
+import { toast } from "sonner";
 import {
   Table,
   TableBody,
@@ -14,8 +14,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Check, X, Loader2, AlertCircle } from 'lucide-react';
+} from "@/components/ui/table";
+import { Check, X, Loader2, AlertCircle } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,8 +24,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '@/components/ui/dialog';
-import { Textarea } from '@/components/ui/textarea';
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import type { JobType } from "@/lib/jobs/utils";
 
 interface PendingJob {
   id: string;
@@ -45,11 +46,23 @@ export function AdminApprovalTable() {
   const [jobs, setJobs] = useState<PendingJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState<string | null>(null);
-  const [rejectDialog, setRejectDialog] = useState<{ open: boolean; jobId: string }>({
+  const [rejectDialog, setRejectDialog] = useState<{
+    open: boolean;
+    jobId: string;
+    job?: PendingJob;
+  }>({
     open: false,
-    jobId: '',
+    jobId: "",
   });
-  const [rejectionReason, setRejectionReason] = useState('');
+  const [approveDialog, setApproveDialog] = useState<{
+    open: boolean;
+    jobId: string;
+    job?: PendingJob;
+  }>({
+    open: false,
+    jobId: "",
+  });
+  const [rejectionReason, setRejectionReason] = useState("");
 
   useEffect(() => {
     loadPendingJobs();
@@ -58,26 +71,38 @@ export function AdminApprovalTable() {
   const loadPendingJobs = async () => {
     setLoading(true);
     const data = await getPendingJobs();
-    console.log('📊 Pending jobs loaded:', data);
+    console.log("📊 Pending jobs loaded:", data);
     setJobs(data);
     setLoading(false);
   };
 
-  const handleApprove = async (jobId: string) => {
-    setProcessing(jobId);
-    const result = await approveJob(jobId);
+  const handleApprove = async () => {
+    if (!approveDialog.jobId) return;
+
+    setProcessing(approveDialog.jobId);
+    const result = await approveJob(approveDialog.jobId);
     if (result.success) {
       toast.success(result.message);
+      setApproveDialog({ open: false, jobId: "" });
       await loadPendingJobs();
     } else {
       toast.error(result.error);
+      // If job was already processed or not found, close the dialog and refresh
+      if (result.error?.includes("sudah diproses") || result.error?.includes("tidak ditemukan")) {
+        setApproveDialog({ open: false, jobId: "" });
+        await loadPendingJobs();
+      }
     }
     setProcessing(null);
   };
 
+  const openApproveDialog = (jobId: string, job: PendingJob) => {
+    setApproveDialog({ open: true, jobId, job });
+  };
+
   const handleReject = async () => {
     if (!rejectionReason.trim()) {
-      toast.error('Silakan isi alasan penolakan');
+      toast.error("Silakan isi alasan penolakan");
       return;
     }
 
@@ -85,28 +110,43 @@ export function AdminApprovalTable() {
     const result = await rejectJob(rejectDialog.jobId, rejectionReason);
     if (result.success) {
       toast.success(result.message);
-      setRejectDialog({ open: false, jobId: '' });
-      setRejectionReason('');
+      setRejectDialog({ open: false, jobId: "" });
+      setRejectionReason("");
       await loadPendingJobs();
     } else {
       toast.error(result.error);
+      // If job was already processed or not found, close the dialog and refresh
+      if (result.error?.includes("sudah diproses") || result.error?.includes("tidak ditemukan")) {
+        setRejectDialog({ open: false, jobId: "" });
+        setRejectionReason("");
+        await loadPendingJobs();
+      }
     }
     setProcessing(null);
   };
 
-  const openRejectDialog = (jobId: string) => {
-    setRejectDialog({ open: true, jobId });
+  const openRejectDialog = (jobId: string, job: PendingJob) => {
+    setRejectDialog({ open: true, jobId, job });
   };
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+    return date.toLocaleDateString("id-ID", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
     });
+  };
+
+  const formatRupiah = (amount: number): string => {
+    return new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
   };
 
   if (loading) {
@@ -164,8 +204,8 @@ export function AdminApprovalTable() {
                     </TableCell>
                     <TableCell>
                       {job.salary_min && job.salary_max
-                        ? `Rp ${(job.salary_min / 1000000).toFixed(0)}jt – ${(job.salary_max / 1000000).toFixed(0)}jt`
-                        : 'Dirahasikan'}
+                        ? `${formatRupiah(job.salary_min)} – ${formatRupiah(job.salary_max)}`
+                        : "Dirahasikan"}
                     </TableCell>
                     <TableCell>
                       <div className="text-sm">
@@ -180,7 +220,7 @@ export function AdminApprovalTable() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => openRejectDialog(job.id)}
+                          onClick={() => openRejectDialog(job.id, job)}
                           disabled={processing === job.id}
                         >
                           {processing === job.id ? (
@@ -191,7 +231,7 @@ export function AdminApprovalTable() {
                         </Button>
                         <Button
                           size="sm"
-                          onClick={() => handleApprove(job.id)}
+                          onClick={() => openApproveDialog(job.id, job)}
                           disabled={processing === job.id}
                         >
                           {processing === job.id ? (
@@ -211,26 +251,85 @@ export function AdminApprovalTable() {
       </Card>
 
       {/* Reject Dialog */}
-      <Dialog open={rejectDialog.open} onOpenChange={(open) => setRejectDialog({ open, jobId: '' })}>
-        <DialogContent>
+      <Dialog
+        open={rejectDialog.open}
+        onOpenChange={(open) =>
+          setRejectDialog({ open, jobId: "", job: undefined })
+        }
+      >
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Tolak Lowongan</DialogTitle>
             <DialogDescription>
-              Berikan alasan penolakan yang akan dikirim ke pemberi kerja
+              Tinjau detail lowongan dan berikan alasan penolakan
             </DialogDescription>
           </DialogHeader>
+
+          {/* Job Details */}
+          {rejectDialog.job && (
+            <div className="bg-muted/50 rounded-lg p-4 mb-4 space-y-3">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Judul Lowongan
+                </p>
+                <p className="font-semibold">{rejectDialog.job.title}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Perusahaan
+                  </p>
+                  <p>{rejectDialog.job.company}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Tipe
+                  </p>
+                  <JobTypeBadge type={rejectDialog.job.job_type as JobType} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Lokasi
+                  </p>
+                  <p>{rejectDialog.job.location}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Gaji
+                  </p>
+                  <p>
+                    {rejectDialog.job.salary_min && rejectDialog.job.salary_max
+                      ? `${formatRupiah(rejectDialog.job.salary_min)} – ${formatRupiah(rejectDialog.job.salary_max)}`
+                      : "Dirahasikan"}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div className="py-4">
+            <label className="text-sm font-medium mb-2 block">
+              Alasan Penolakan <span className="text-destructive">*</span>
+            </label>
             <Textarea
-              placeholder="Contoh: Deskripsi pekerjaan tidak lengkap, informasi gaji tidak valid, dll..."
+              placeholder="Contoh: Deskripsi pekerjaan tidak lengkap, informasi gaji tidak valid, persyaratan tidak jelas, dll..."
               value={rejectionReason}
               onChange={(e) => setRejectionReason(e.target.value)}
               rows={4}
+              className={!rejectionReason.trim() ? "border-destructive" : ""}
             />
+            {!rejectionReason.trim() && (
+              <p className="text-sm text-destructive mt-1">
+                Silakan isi alasan penolakan
+              </p>
+            )}
           </div>
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setRejectDialog({ open: false, jobId: '' })}
+              onClick={() =>
+                setRejectDialog({ open: false, jobId: "", job: undefined })
+              }
               disabled={processing === rejectDialog.jobId}
             >
               Batal
@@ -238,7 +337,9 @@ export function AdminApprovalTable() {
             <Button
               variant="destructive"
               onClick={handleReject}
-              disabled={processing === rejectDialog.jobId}
+              disabled={
+                processing === rejectDialog.jobId || !rejectionReason.trim()
+              }
             >
               {processing === rejectDialog.jobId ? (
                 <>
@@ -246,7 +347,108 @@ export function AdminApprovalTable() {
                   Memproses...
                 </>
               ) : (
-                'Tolak Lowongan'
+                <>
+                  <X className="mr-2 h-4 w-4" />
+                  Tolak Lowongan
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Approve Dialog */}
+      <Dialog
+        open={approveDialog.open}
+        onOpenChange={(open) =>
+          setApproveDialog({ open, jobId: "", job: undefined })
+        }
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Setujui Lowongan</DialogTitle>
+            <DialogDescription>
+              Tinjau detail lowongan sebelum menyetujuinya untuk publikasi
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Job Details */}
+          {approveDialog.job && (
+            <div className="bg-muted/50 rounded-lg p-4 mb-4 space-y-3">
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Judul Lowongan
+                </p>
+                <p className="font-semibold">{approveDialog.job.title}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Perusahaan
+                  </p>
+                  <p>{approveDialog.job.company}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Tipe
+                  </p>
+                  <JobTypeBadge type={approveDialog.job.job_type as any} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Lokasi
+                  </p>
+                  <p>{approveDialog.job.location}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-muted-foreground">
+                    Gaji
+                  </p>
+                  <p>
+                    {approveDialog.job.salary_min &&
+                    approveDialog.job.salary_max
+                      ? `${formatRupiah(approveDialog.job.salary_min)} – ${formatRupiah(approveDialog.job.salary_max)}`
+                      : "Dirahasikan"}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">
+                  Tanggal Pengajuan
+                </p>
+                <p className="text-sm">
+                  {formatDate(approveDialog.job.created_at)}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-3">
+            <Button
+              variant="outline"
+              onClick={() =>
+                setApproveDialog({ open: false, jobId: "", job: undefined })
+              }
+              className="p-5 text-md"
+              disabled={processing === approveDialog.jobId}
+            >
+              Batal
+            </Button>
+            <Button
+              onClick={handleApprove}
+              disabled={processing === approveDialog.jobId}
+              className="p-5 text-md"
+            >
+              {processing === approveDialog.jobId ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Memproses...
+                </>
+              ) : (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Setujui dan Terbitkan
+                </>
               )}
             </Button>
           </DialogFooter>

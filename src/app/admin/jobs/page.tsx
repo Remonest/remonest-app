@@ -44,15 +44,11 @@ function LoadingState() {
 
 async function JobsByStatusContent({ status }: { status?: string }) {
   const allJobs = await getAllJobs();
-  console.log("📊 JobsByStatusContent called with status:", status);
-  console.log("📊 Total jobs loaded:", allJobs?.length || 0);
 
   // Filter jobs by status if provided
   const jobs = status
     ? allJobs.filter((job: any) => job.status === status)
     : allJobs;
-
-  console.log("📊 Jobs filtered by status:", jobs?.length || 0);
 
   // Calculate stats (only show on "all" tab)
   const showStats = !status;
@@ -63,7 +59,7 @@ async function JobsByStatusContent({ status }: { status?: string }) {
       pending: allJobs.filter((j: any) => j.status === "pending").length,
       published: allJobs.filter((j: any) => j.status === "published").length,
       rejected: allJobs.filter((j: any) => j.status === "rejected").length,
-      // expired: allJobs.filter((j: any) => j.status === "expired").length,
+      expired: allJobs.filter((j: any) => j.status === "expired").length,
     };
 
     // Transform jobs to match the mock data structure for DataTable
@@ -118,7 +114,7 @@ async function JobsByStatusContent({ status }: { status?: string }) {
               <div className="text-2xl font-bold">{stats.rejected}</div>
             </CardContent>
           </Card>
-          {/*<Card>
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Kedaluwarsa</CardTitle>
               <AlertCircle className="h-4 w-4 text-muted-foreground" />
@@ -126,7 +122,7 @@ async function JobsByStatusContent({ status }: { status?: string }) {
             <CardContent>
               <div className="text-2xl font-bold">{stats.expired}</div>
             </CardContent>
-          </Card>*/}
+          </Card>
         </div>
 
         {/* Data Table */}

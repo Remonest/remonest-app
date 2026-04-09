@@ -40,7 +40,7 @@ export const columns: ColumnDef<Job>[] = [
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
-      const status = row.getValue("status") as "pending" | "approved" | "rejected";
+      const status = row.getValue("status") as "pending" | "draft" | "approved" | "rejected";
       return <StatusBadge status={status} />;
     },
   },
