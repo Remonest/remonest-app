@@ -24,7 +24,10 @@
       "Bash(move *)",
       "Bash(rd *)",
       "Bash(select-object *)",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(git diff *)",
+      "Bash(main)",
+      "Bash(/dashboard/ *)"
     ]
   },
   "$version": 3

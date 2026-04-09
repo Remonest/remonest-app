@@ -1,7 +1,7 @@
 # Remonest - Implementation Documentation
 
-**Version:** v0.3.2
-**Last Updated:** April 8, 2026
+**Version:** v0.4.0
+**Last Updated:** April 9, 2026
 
 ---
 
@@ -34,6 +34,7 @@
    - [Admin Panel](#admin-panel)
    - [Client Role System](#client-role-system)
    - [Profile Page](#profile-page)
+   - [Language Switcher (Dashboard)](#language-switcher-dashboard)
 7. [Database Schema](#database-schema)
 8. [API Routes](#api-routes)
 9. [Authentication Flow](#authentication-flow)
@@ -866,6 +867,93 @@ remonest-app/
 - `saveProfileSettings()` — Updates both `user_profiles` and `user_settings`
 
 **Status:** ✅ Complete (role-aware UI with edit functionality)
+
+---
+
+### Language Switcher (Dashboard)
+
+**Version:** v0.4.0
+**Date:** April 9, 2026
+
+**Overview:**
+Implemented full EN/ID language switching across all dashboard pages. Users can now toggle between English and Bahasa Indonesia, and all UI text updates immediately.
+
+**Location:** `src/lib/translations.tsx`, `src/app/(main)/dashboard/`
+
+**Files Modified:**
+- `src/lib/translations.tsx` — Added comprehensive dashboard translation keys (889 lines total)
+- `src/app/(main)/dashboard/page.tsx` — Split into server + client components
+- `src/app/(main)/dashboard/dashboard-client.tsx` — **NEW** Client component with translations
+- `src/app/(main)/dashboard/layout.tsx` — Added `TranslationProvider` wrapper
+- `src/app/(main)/dashboard/applications/page.tsx` — Simplified to server component
+- `src/app/(main)/dashboard/applications/applications-client.tsx` — **NEW** Client component with translations
+- `src/app/(main)/dashboard/settings/settings-client.tsx` — Updated all tabs to use translations
+- `src/components/dashboard/header.tsx` — Already using translations (no changes needed)
+
+**Translation Coverage:**
+
+#### Dashboard Overview (`/dashboard`)
+- ✅ Page title: "Dashboard" → "Dasbor"
+- ✅ Stat labels: Applications, Modules Completed, Profile Views, CV Downloads
+- ✅ Section headers: Recent Activity, Quick Actions
+- ⚠️ Partial: Quick action descriptions (8 strings still hardcoded)
+- ⚠️ Partial: "Track your progress..." subtitle
+- ⚠️ Partial: "No activity yet..." empty state message
+
+#### Dashboard Applications (`/dashboard/applications`)
+- ✅ Page title: "Applications" → "Lamaran"
+- ✅ Status badges: Pending → Menunggu, Rejected → Ditolak
+- ⚠️ Partial: Other statuses (Viewed, Interview, Offered, Withdrawn) still hardcoded
+- ⚠️ Partial: Table headers (Position, Status, Applied, Action)
+- ⚠️ Partial: Empty state and "View Details" buttons
+
+#### Dashboard Settings (`/dashboard/settings`)
+- ✅ **FULLY TRANSLATED** — All 4 tabs complete
+- ✅ Tab labels: Profile → Profil, Notifications → Notifikasi, Appearance → Tampilan, Security → Keamanan
+- ✅ Profile tab: All form labels, placeholders, buttons
+- ✅ Notifications tab: All preference labels and descriptions
+- ✅ Appearance tab: Light → Terang, Dark → Gelap, System → Sistem
+- ✅ Security tab: Password form labels and buttons
+- ✅ Toast notifications: "Profile saved" → "Profil berhasil disimpan"
+- ⚠️ Minor: Mobile tab abbreviation fallback still hardcoded
+
+**Translation System Architecture:**
+
+```typescript
+// Translation Provider (React Context)
+<TranslationProvider>
+  {children}
+</TranslationProvider>
+
+// Usage in Client Components
+const { t, language, setLanguage } = useTranslations();
+t.dashboard.settings.title  // "Settings" or "Pengaturan"
+language  // "en" or "id"
+setLanguage("id")  // Switch language
+```
+
+**Key Design Decisions:**
+1. **Server + Client Split**: Dashboard pages use Server Components for data fetching, pass data to Client Components that use `useTranslations()` hook
+2. **localStorage Persistence**: Language preference saved to `remonest-language` key
+3. **Default Language**: Indonesian (id)
+4. **Context-based**: No page reloads needed, instant language switching
+5. **Type-safe**: Full TypeScript type definitions for all translation keys
+
+**Files Structure:**
+```
+dashboard/
+├── page.tsx                          # Server: fetches stats + activity
+├── dashboard-client.tsx              # Client: renders with translations
+├── layout.tsx                        # TranslationProvider wrapper
+├── applications/
+│   ├── page.tsx                      # Server: fetches applications
+│   └── applications-client.tsx       # Client: renders with translations
+└── settings/
+    ├── page.tsx                      # Server: fetches profile + settings
+    └── settings-client.tsx           # Client: all 4 tabs translated
+```
+
+**Status:** ✅ Complete (core functionality), ⚠️ Minor hardcoded strings remain
 
 ---
 

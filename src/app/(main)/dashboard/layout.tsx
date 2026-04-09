@@ -3,17 +3,10 @@ import dynamic from "next/dynamic";
 import { getSupabaseServerClient, getUserRole } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { TranslationProvider } from "@/lib/translations";
-import {
-  LayoutDashboard,
-  Briefcase,
-  Settings,
-  LogOut,
-  Shield,
-  FileText,
-} from "lucide-react";
 import { getUserRoleInfo } from "@/lib/roles";
+import { DashboardHeader } from "@/components/dashboard/header";
+import { DashboardRoleBadge } from "@/components/dashboard/role-badge";
 
 const MobileMenu = dynamic(() => import("@/components/mobile-menu"));
 
@@ -121,72 +114,8 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-4">
-            <Link
-              href="/dashboard"
-              className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <LayoutDashboard className="size-4" />
-              Overview
-            </Link>
-
-            {/* Client-specific: Job Postings */}
-            {role === "client" && (
-              <Link
-                href="/dashboard/jobs"
-                className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-              >
-                <FileText className="size-4" />
-                Job Postings
-              </Link>
-            )}
-
-            <Link
-              href="/dashboard/applications"
-              className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <Briefcase className="size-4" />
-              Applications
-            </Link>
-            <Link
-              href="/dashboard/settings"
-              className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <Settings className="size-4" />
-              Settings
-            </Link>
-
-            {/* Admin Link - Only visible to admins */}
-            {role === "admin" && (
-              <Link
-                href="/admin/jobs"
-                className="h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium text-red-600 dark:text-red-400 transition-colors hover:bg-red-50 dark:hover:bg-red-950"
-              >
-                <Shield className="size-4" />
-                Admin
-              </Link>
-            )}
-
-            {/* Role Badge */}
-            {roleInfo && (
-              <span
-                className={`px-2.5 py-1 rounded-full text-xs font-semibold ${roleInfo.color}`}
-              >
-                {roleInfo.label}
-              </span>
-            )}
-
-            <form
-              action={async () => {
-                "use server";
-                const { logoutAction } = await import("@/lib/auth/actions");
-                await logoutAction();
-              }}
-            >
-              <Button type="submit" variant="outline" size="sm">
-                <LogOut className="size-4" />
-                <span className="ml-1.5">Sign Out</span>
-              </Button>
-            </form>
+            <DashboardHeader role={role} />
+            <DashboardRoleBadge role={roleInfo} />
           </nav>
 
           {/* Mobile menu button */}

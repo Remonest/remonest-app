@@ -9,14 +9,8 @@ import {
   saveNotificationPreferences,
   updatePassword,
 } from "@/lib/dashboard/actions";
+import { useTranslations } from "@/lib/translations";
 import type { UserSettings as UserSettingsType } from "@/lib/dashboard/actions";
-
-const tabs = [
-  { id: "profile", label: "Profile", icon: User },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "appearance", label: "Appearance", icon: Palette },
-  { id: "security", label: "Security", icon: Shield },
-];
 
 interface SettingsData {
   profile: {
@@ -34,7 +28,15 @@ export default function SettingsClient({
 }: {
   data: SettingsData;
 }) {
+  const { t } = useTranslations();
   const [activeTab, setActiveTab] = useState("profile");
+
+  const tabs = [
+    { id: "profile", label: t.dashboard.settings.profile, icon: User },
+    { id: "notifications", label: t.dashboard.settings.notifications, icon: Bell },
+    { id: "appearance", label: t.dashboard.settings.appearance, icon: Palette },
+    { id: "security", label: t.dashboard.settings.security, icon: Shield },
+  ];
 
   const profileData = data.profile ?? {
     fullName: "",
@@ -56,10 +58,10 @@ export default function SettingsClient({
       <div className="mx-auto w-full max-w-[900px]">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold tracking-tight text-foreground">
-            Settings
+            {t.dashboard.settings.title}
           </h1>
           <p className="mt-1.5 sm:mt-2 text-sm sm:text-base text-muted-foreground">
-            Manage your profile, preferences, and account settings.
+            {t.dashboard.settings.subtitle}
           </p>
         </div>
 
@@ -117,6 +119,7 @@ function ProfileTab({
     bio: string;
   };
 }) {
+  const { t } = useTranslations();
   const router = useRouter();
   const [state, formAction, pending] = useActionState(
     async (_prev: { success: boolean; error?: string } | null, formData: FormData) => {
@@ -127,22 +130,22 @@ function ProfileTab({
 
   useEffect(() => {
     if (state?.success) {
-      toast.success("Profile saved successfully");
+      toast.success(t.dashboard.settings.saved);
       router.refresh();
     } else if (state?.error) {
       toast.error(state.error);
     }
-  }, [state, router]);
+  }, [state, router, t]);
 
   return (
     <form action={formAction} className="p-4 sm:p-5 border border-border rounded-xl bg-card space-y-4">
       <h2 className="text-base sm:text-lg font-semibold text-foreground">
-        Profile Information
+        {t.dashboard.settings.profileInfo}
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
           <label htmlFor="fullName" className="text-sm font-medium">
-            Full Name
+            {t.dashboard.settings.fullName}
           </label>
           <input
             id="fullName"
@@ -154,7 +157,7 @@ function ProfileTab({
         </div>
         <div className="flex flex-col gap-2">
           <label htmlFor="email" className="text-sm font-medium">
-            Email
+            {t.dashboard.settings.email}
           </label>
           <input
             id="email"
@@ -166,41 +169,41 @@ function ProfileTab({
         </div>
         <div className="flex flex-col gap-2">
           <label htmlFor="location" className="text-sm font-medium">
-            Location
+            {t.dashboard.settings.location}
           </label>
           <input
             id="location"
             name="location"
             type="text"
             defaultValue={initialData.location}
-            placeholder="Jakarta, Indonesia"
+            placeholder={t.dashboard.settings.locationPlaceholder}
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </div>
         <div className="flex flex-col gap-2">
           <label htmlFor="role" className="text-sm font-medium">
-            Role
+            {t.dashboard.settings.role}
           </label>
           <input
             id="role"
             name="role"
             type="text"
             defaultValue={initialData.role}
-            placeholder="Frontend Developer"
+            placeholder={t.dashboard.settings.rolePlaceholder}
             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         </div>
       </div>
       <div className="flex flex-col gap-2">
         <label htmlFor="bio" className="text-sm font-medium">
-          Bio
+          {t.dashboard.settings.bio}
         </label>
         <textarea
           id="bio"
           name="bio"
           rows={3}
           defaultValue={initialData.bio}
-          placeholder="Tell us about yourself..."
+          placeholder={t.dashboard.settings.bioPlaceholder}
           className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
         />
       </div>
@@ -213,10 +216,10 @@ function ProfileTab({
           {pending ? (
             <>
               <Loader2 className="mr-2 size-4 animate-spin" />
-              Saving...
+              {t.dashboard.settings.saving}
             </>
           ) : (
-            "Save Changes"
+            t.dashboard.settings.saveChanges
           )}
         </button>
       </div>
@@ -238,6 +241,7 @@ function NotificationsTab({
     marketingEmails: boolean;
   };
 }) {
+  const { t } = useTranslations();
   const router = useRouter();
   const [state, formAction, pending] = useActionState(
     async (_prev: { success: boolean; error?: string } | null, formData: FormData) => {
@@ -250,40 +254,40 @@ function NotificationsTab({
 
   useEffect(() => {
     if (state?.success) {
-      toast.success("Notification preferences saved");
+      toast.success(t.dashboard.settings.savePreferences);
       router.refresh();
     } else if (state?.error) {
       toast.error(state.error);
     }
-  }, [state, router]);
+  }, [state, router, t]);
 
   const preferences = [
     {
       key: "emailNotifications" as const,
-      label: "Email notifications",
-      desc: "Receive updates about your applications via email",
+      label: t.dashboard.settings.emailNotifications,
+      desc: t.dashboard.settings.emailNotificationsDesc,
     },
     {
       key: "jobAlerts" as const,
-      label: "Job alerts",
-      desc: "Get notified when new jobs match your profile",
+      label: t.dashboard.settings.jobAlerts,
+      desc: t.dashboard.settings.jobAlertsDesc,
     },
     {
       key: "learningReminders" as const,
-      label: "Learning reminders",
-      desc: "Reminders to continue your learning modules",
+      label: t.dashboard.settings.learningReminders,
+      desc: t.dashboard.settings.learningRemindersDesc,
     },
     {
       key: "marketingEmails" as const,
-      label: "Marketing emails",
-      desc: "Receive tips, news, and product updates",
+      label: t.dashboard.settings.marketingEmails,
+      desc: t.dashboard.settings.marketingEmailsDesc,
     },
   ];
 
   return (
     <form action={formAction} className="p-4 sm:p-5 border border-border rounded-xl bg-card space-y-4">
       <h2 className="text-base sm:text-lg font-semibold text-foreground">
-        Notification Preferences
+        {t.dashboard.settings.notificationPrefs}
       </h2>
       {preferences.map((pref) => (
         <div
@@ -324,10 +328,10 @@ function NotificationsTab({
           {pending ? (
             <>
               <Loader2 className="mr-2 size-4 animate-spin" />
-              Saving...
+              {t.dashboard.settings.saving}
             </>
           ) : (
-            "Save Preferences"
+            t.dashboard.settings.savePreferences
           )}
         </button>
       </div>
@@ -340,6 +344,7 @@ function NotificationsTab({
 // ============================================================
 
 function AppearanceTab() {
+  const { t } = useTranslations();
   const [theme, setTheme] = useState(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem("remonest-theme") ?? "light";
@@ -358,38 +363,44 @@ function AppearanceTab() {
     localStorage.setItem("remonest-theme", mode);
   };
 
+  const themeOptions = [
+    { key: "light", label: t.dashboard.settings.light },
+    { key: "dark", label: t.dashboard.settings.dark },
+    { key: "system", label: t.dashboard.settings.system },
+  ];
+
   return (
     <div className="p-4 sm:p-5 border border-border rounded-xl bg-card space-y-4">
       <h2 className="text-base sm:text-lg font-semibold text-foreground">
-        Appearance
+        {t.dashboard.settings.appearance}
       </h2>
       <p className="text-sm text-muted-foreground">
-        Customize how Remonest looks on your device.
+        {t.dashboard.settings.customizeTheme}
       </p>
       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-        {["Light", "Dark", "System"].map((mode) => (
+        {themeOptions.map((mode) => (
           <button
-            key={mode}
-            onClick={() => applyTheme(mode.toLowerCase())}
+            key={mode.key}
+            onClick={() => applyTheme(mode.key)}
             className={`flex-1 p-3 sm:p-4 border rounded-lg text-center transition-colors ${
-              theme === mode.toLowerCase()
+              theme === mode.key
                 ? "border-primary ring-2 ring-primary/20"
                 : "border-border hover:border-primary/50"
             }`}
           >
             <div
               className={`w-full h-14 sm:h-16 rounded-md mb-2 ${
-                mode === "Light"
+                mode.key === "light"
                   ? "bg-white border border-border"
-                  : mode === "Dark"
+                  : mode.key === "dark"
                     ? "bg-zinc-900"
                     : "bg-gradient-to-br from-white to-zinc-900"
               }`}
             />
             <span className="text-sm font-medium text-foreground">
-              {mode}
+              {mode.label}
             </span>
-            {theme === mode.toLowerCase() && (
+            {theme === mode.key && (
               <Check className="size-4 mx-auto mt-1 text-primary" />
             )}
           </button>
@@ -404,6 +415,7 @@ function AppearanceTab() {
 // ============================================================
 
 function SecurityTab() {
+  const { t } = useTranslations();
   const router = useRouter();
   const [state, formAction, pending] = useActionState(
     async (_prev: { success: boolean; error?: string } | null, formData: FormData) => {
@@ -414,22 +426,22 @@ function SecurityTab() {
 
   useEffect(() => {
     if (state?.success) {
-      toast.success("Password updated successfully");
+      toast.success(t.dashboard.settings.updated);
       router.refresh();
     } else if (state?.error) {
       toast.error(state.error);
     }
-  }, [state, router]);
+  }, [state, router, t]);
 
   return (
     <form action={formAction} className="p-4 sm:p-5 border border-border rounded-xl bg-card space-y-4">
       <h2 className="text-base sm:text-lg font-semibold text-foreground">
-        Security
+        {t.dashboard.settings.security}
       </h2>
       <div className="space-y-4">
         <div className="flex flex-col gap-2">
           <label htmlFor="currentPassword" className="text-sm font-medium">
-            Current Password
+            {t.dashboard.settings.currentPassword}
           </label>
           <input
             id="currentPassword"
@@ -441,7 +453,7 @@ function SecurityTab() {
         </div>
         <div className="flex flex-col gap-2">
           <label htmlFor="newPassword" className="text-sm font-medium">
-            New Password
+            {t.dashboard.settings.newPassword}
           </label>
           <input
             id="newPassword"
@@ -453,7 +465,7 @@ function SecurityTab() {
         </div>
         <div className="flex flex-col gap-2">
           <label htmlFor="confirmNewPassword" className="text-sm font-medium">
-            Confirm New Password
+            {t.dashboard.settings.confirmNewPassword}
           </label>
           <input
             id="confirmNewPassword"
@@ -472,10 +484,10 @@ function SecurityTab() {
             {pending ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                Updating...
+                {t.dashboard.settings.updating}
               </>
             ) : (
-              "Update Password"
+              t.dashboard.settings.updatePassword
             )}
           </button>
         </div>

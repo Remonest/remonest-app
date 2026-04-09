@@ -196,6 +196,86 @@ interface Translations {
       instagram: string;
     };
   };
+  dashboard: {
+    title: string;
+    nav: {
+      overview: string;
+      jobPostings: string;
+      applications: string;
+      settings: string;
+      admin: string;
+    };
+    signOut: string;
+    overview: {
+      title: string;
+      stats: {
+        applications: string;
+        modulesCompleted: string;
+        profileViews: string;
+        cvDownloads: string;
+      };
+      recentActivity: string;
+      quickActions: string;
+    };
+    applications: {
+      title: string;
+      status: {
+        all: string;
+        pending: string;
+        accepted: string;
+        rejected: string;
+      };
+    };
+    jobs: {
+      title: string;
+      postNew: string;
+      viewDetails: string;
+      edit: string;
+      delete: string;
+      noJobs: string;
+      noJobsDesc: string;
+    };
+    settings: {
+      title: string;
+      subtitle: string;
+      profile: string;
+      notifications: string;
+      appearance: string;
+      security: string;
+      profileInfo: string;
+      fullName: string;
+      email: string;
+      location: string;
+      locationPlaceholder: string;
+      role: string;
+      rolePlaceholder: string;
+      bio: string;
+      bioPlaceholder: string;
+      saveChanges: string;
+      saving: string;
+      saved: string;
+      notificationPrefs: string;
+      emailNotifications: string;
+      emailNotificationsDesc: string;
+      jobAlerts: string;
+      jobAlertsDesc: string;
+      learningReminders: string;
+      learningRemindersDesc: string;
+      marketingEmails: string;
+      marketingEmailsDesc: string;
+      savePreferences: string;
+      light: string;
+      dark: string;
+      system: string;
+      customizeTheme: string;
+      currentPassword: string;
+      newPassword: string;
+      confirmNewPassword: string;
+      updatePassword: string;
+      updating: string;
+      updated: string;
+    };
+  };
 }
 
 const translations: Record<Language, Translations> = {
@@ -397,6 +477,86 @@ const translations: Record<Language, Translations> = {
         instagram: "Instagram",
       },
     },
+    dashboard: {
+      title: "Dashboard",
+      nav: {
+        overview: "Overview",
+        jobPostings: "Job Postings",
+        applications: "Applications",
+        settings: "Settings",
+        admin: "Admin",
+      },
+      signOut: "Sign Out",
+      overview: {
+        title: "Overview",
+        stats: {
+          applications: "Applications",
+          modulesCompleted: "Modules Completed",
+          profileViews: "Profile Views",
+          cvDownloads: "CV Downloads",
+        },
+        recentActivity: "Recent Activity",
+        quickActions: "Quick Actions",
+      },
+      applications: {
+        title: "Applications",
+        status: {
+          all: "All",
+          pending: "Pending",
+          accepted: "Accepted",
+          rejected: "Rejected",
+        },
+      },
+      jobs: {
+        title: "Job Postings",
+        postNew: "Post New Job",
+        viewDetails: "View Details",
+        edit: "Edit",
+        delete: "Delete",
+        noJobs: "No job postings yet",
+        noJobsDesc: "Start by posting your first job opening. Attract qualified candidates from across Indonesia.",
+      },
+      settings: {
+        title: "Settings",
+        subtitle: "Manage your profile, preferences, and account settings.",
+        profile: "Profile",
+        notifications: "Notifications",
+        appearance: "Appearance",
+        security: "Security",
+        profileInfo: "Profile Information",
+        fullName: "Full Name",
+        email: "Email",
+        location: "Location",
+        locationPlaceholder: "Jakarta, Indonesia",
+        role: "Role",
+        rolePlaceholder: "Frontend Developer",
+        bio: "Bio",
+        bioPlaceholder: "Tell us about yourself...",
+        saveChanges: "Save Changes",
+        saving: "Saving...",
+        saved: "Profile saved successfully",
+        notificationPrefs: "Notification Preferences",
+        emailNotifications: "Email notifications",
+        emailNotificationsDesc: "Receive updates about your applications via email",
+        jobAlerts: "Job alerts",
+        jobAlertsDesc: "Get notified when new jobs match your profile",
+        learningReminders: "Learning reminders",
+        learningRemindersDesc: "Reminders to continue your learning modules",
+        marketingEmails: "Marketing emails",
+        marketingEmailsDesc: "Receive tips, news, and product updates",
+        savePreferences: "Save Preferences",
+        light: "Light",
+        dark: "Dark",
+        system: "System",
+        customizeTheme: "Customize how Remonest looks on your device.",
+        currentPassword: "Current Password",
+        newPassword: "New Password",
+        confirmNewPassword: "Confirm New Password",
+        updatePassword: "Update Password",
+        updating: "Updating...",
+        updated: "Password updated successfully",
+      },
+    },
   },
   id: {
     header: {
@@ -594,6 +754,86 @@ const translations: Record<Language, Translations> = {
         twitter: "X (Twitter)",
         linkedin: "LinkedIn",
         instagram: "Instagram",
+      },
+    },
+    dashboard: {
+      title: "Dasbor",
+      nav: {
+        overview: "Ringkasan",
+        jobPostings: "Lowongan Kerja",
+        applications: "Lamaran",
+        settings: "Pengaturan",
+        admin: "Admin",
+      },
+      signOut: "Keluar",
+      overview: {
+        title: "Ringkasan",
+        stats: {
+          applications: "Lamaran",
+          modulesCompleted: "Modul Selesai",
+          profileViews: "Profil Dilihat",
+          cvDownloads: "CV Diunduh",
+        },
+        recentActivity: "Aktivitas Terbaru",
+        quickActions: "Aksi Cepat",
+      },
+      applications: {
+        title: "Lamaran",
+        status: {
+          all: "Semua",
+          pending: "Menunggu",
+          accepted: "Diterima",
+          rejected: "Ditolak",
+        },
+      },
+      jobs: {
+        title: "Lowongan Kerja",
+        postNew: "Pasang Lowongan Baru",
+        viewDetails: "Lihat Detail",
+        edit: "Edit",
+        delete: "Hapus",
+        noJobs: "Belum ada lowongan kerja",
+        noJobsDesc: "Mulai dengan memasang lowongan kerja pertama Anda. Tarik kandidat berkualitas dari seluruh Indonesia.",
+      },
+      settings: {
+        title: "Pengaturan",
+        subtitle: "Kelola profil, preferensi, dan pengaturan akun Anda.",
+        profile: "Profil",
+        notifications: "Notifikasi",
+        appearance: "Tampilan",
+        security: "Keamanan",
+        profileInfo: "Informasi Profil",
+        fullName: "Nama Lengkap",
+        email: "Email",
+        location: "Lokasi",
+        locationPlaceholder: "Jakarta, Indonesia",
+        role: "Jabatan",
+        rolePlaceholder: "Pengembang Frontend",
+        bio: "Bio",
+        bioPlaceholder: "Ceritakan tentang diri Anda...",
+        saveChanges: "Simpan Perubahan",
+        saving: "Menyimpan...",
+        saved: "Profil berhasil disimpan",
+        notificationPrefs: "Preferensi Notifikasi",
+        emailNotifications: "Notifikasi email",
+        emailNotificationsDesc: "Terima pembaruan tentang lamaran Anda melalui email",
+        jobAlerts: "Pencarian kerja",
+        jobAlertsDesc: "Dapatkan pemberitahuan saat pekerjaan baru sesuai dengan profil Anda",
+        learningReminders: "Pengingat pembelajaran",
+        learningRemindersDesc: "Pengingat untuk melanjutkan modul pembelajaran Anda",
+        marketingEmails: "Email pemasaran",
+        marketingEmailsDesc: "Terima tips, berita, dan pembaruan produk",
+        savePreferences: "Simpan Preferensi",
+        light: "Terang",
+        dark: "Gelap",
+        system: "Sistem",
+        customizeTheme: "Sesuaikan tampilan Remonest di perangkat Anda.",
+        currentPassword: "Kata Sandi Saat Ini",
+        newPassword: "Kata Sandi Baru",
+        confirmNewPassword: "Konfirmasi Kata Sandi Baru",
+        updatePassword: "Perbarui Kata Sandi",
+        updating: "Memperbarui...",
+        updated: "Kata sandi berhasil diperbarui",
       },
     },
   },

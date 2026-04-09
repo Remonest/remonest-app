@@ -2,10 +2,11 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
-import { Menu, X, LayoutDashboard, Briefcase, Settings, LogOut, Shield, FileText } from "lucide-react"
+import { Menu, X, LayoutDashboard, Briefcase, Settings, LogOut, Shield, FileText, Languages } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { logoutAction } from "@/lib/auth/actions"
 import { getUserRoleInfo } from "@/lib/roles"
+import { useTranslations } from "@/lib/translations"
 
 interface MobileMenuProps {
   roleInfo: Awaited<ReturnType<typeof getUserRoleInfo>>;
@@ -16,6 +17,7 @@ export default function MobileMenu({ roleInfo, role }: MobileMenuProps) {
   const [open, setOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const { language, setLanguage, t } = useTranslations()
 
   // Handle visibility for animation
   useEffect(() => {
@@ -85,7 +87,7 @@ export default function MobileMenu({ roleInfo, role }: MobileMenuProps) {
               className="h-10 px-3 flex items-center gap-2 rounded-md text-muted-foreground text-sm font-medium no-underline transition-colors hover:text-foreground hover:bg-muted"
               onClick={() => setOpen(false)}
             >
-              <LayoutDashboard className="size-4" /> Overview
+              <LayoutDashboard className="size-4" /> {t.dashboard.nav.overview}
             </Link>
 
             {/* Client-specific: Job Postings */}
@@ -95,7 +97,7 @@ export default function MobileMenu({ roleInfo, role }: MobileMenuProps) {
                 className="h-10 px-3 flex items-center gap-2 rounded-md text-muted-foreground text-sm font-medium no-underline transition-colors hover:text-foreground hover:bg-muted"
                 onClick={() => setOpen(false)}
               >
-                <FileText className="size-4" /> Job Postings
+                <FileText className="size-4" /> {t.dashboard.nav.jobPostings}
               </Link>
             )}
 
@@ -104,16 +106,16 @@ export default function MobileMenu({ roleInfo, role }: MobileMenuProps) {
               className="h-10 px-3 flex items-center gap-2 rounded-md text-muted-foreground text-sm font-medium no-underline transition-colors hover:text-foreground hover:bg-muted"
               onClick={() => setOpen(false)}
             >
-              <Briefcase className="size-4" /> Applications
+              <Briefcase className="size-4" /> {t.dashboard.nav.applications}
             </Link>
             <Link
               href="/dashboard/settings"
               className="h-10 px-3 flex items-center gap-2 rounded-md text-muted-foreground text-sm font-medium no-underline transition-colors hover:text-foreground hover:bg-muted"
               onClick={() => setOpen(false)}
             >
-              <Settings className="size-4" /> Settings
+              <Settings className="size-4" /> {t.dashboard.nav.settings}
             </Link>
-            
+
             {/* Admin Link - Only visible to admins */}
             {role === "admin" && (
               <Link
@@ -121,17 +123,40 @@ export default function MobileMenu({ roleInfo, role }: MobileMenuProps) {
                 className="h-10 px-3 flex items-center gap-2 rounded-md text-red-600 dark:text-red-400 text-sm font-medium no-underline transition-colors hover:bg-red-50 dark:hover:bg-red-950"
                 onClick={() => setOpen(false)}
               >
-                <Shield className="size-4" /> Admin Panel
+                <Shield className="size-4" /> {t.dashboard.nav.admin}
               </Link>
             )}
-            
+
+            {/* Language Switcher */}
+            <div className="pt-2 border-t border-border">
+              <div className="px-3 py-2">
+                <div className="flex items-center gap-2 mb-2">
+                  <Languages className="size-4 text-muted-foreground" />
+                  <span className="text-xs font-medium text-muted-foreground">Language</span>
+                </div>
+                <div className="flex gap-1.5">
+                  {(["en", "id"] as const).map((lang) => (
+                    <Button
+                      key={lang}
+                      variant={language === lang ? "default" : "outline"}
+                      size="sm"
+                      className="h-8 px-3 text-xs font-medium flex-1"
+                      onClick={() => setLanguage(lang)}
+                    >
+                      {lang.toUpperCase()}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
             <div className="pt-2 border-t border-border">
               <form action={logoutAction}>
                 <button
                   type="submit"
                   className="w-full h-10 px-3 flex items-center gap-2 rounded-md text-muted-foreground text-sm font-medium no-underline transition-colors hover:text-foreground hover:bg-muted"
                 >
-                  <LogOut className="size-4" /> Sign Out
+                  <LogOut className="size-4" /> {t.dashboard.signOut}
                 </button>
               </form>
             </div>
