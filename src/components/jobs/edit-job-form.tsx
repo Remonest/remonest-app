@@ -1,26 +1,16 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { redirect, useRouter } from "next/navigation";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
-  ArrowLeft,
-  Save,
-  Send,
-  Rocket,
-  Trash2,
   FileText,
   Briefcase,
-  MapPin,
-  Banknote,
   Calendar,
   Tag,
-  Settings,
-  LogOut,
-  LayoutDashboard,
-  Users,
-  Building2,
-  ChevronDown,
+  Trash2,
+  Clock,
+  Rocket,
+  Save,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,8 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
 import { RichTextToolbar } from "@/components/jobs/rich-text-toolbar";
 import { TagInput } from "@/components/jobs/tag-input";
 import { updateJob, deleteJob } from "@/lib/jobs/actions";
@@ -58,6 +46,8 @@ interface JobData {
   apply_email: string | null;
   status: "draft" | "pending" | "published" | "rejected";
   skills: string[];
+  created_at?: string;
+  rejection_reason?: string;
 }
 
 interface EditJobPageProps {
@@ -75,20 +65,6 @@ const workModelLabels: Record<string, string> = {
   remote: "WFH (Remote)",
   hybrid: "Hybrid",
   onsite: "WFO (On-site)",
-};
-
-const statusStyles: Record<string, string> = {
-  draft: "bg-amber-100 text-amber-700 border-amber-200",
-  pending: "bg-blue-100 text-blue-700 border-blue-200",
-  published: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  rejected: "bg-red-100 text-red-700 border-red-200",
-};
-
-const statusLabels: Record<string, string> = {
-  draft: "Draft",
-  pending: "In Review",
-  published: "Published",
-  rejected: "Rejected",
 };
 
 export function EditJobForm({ job }: EditJobPageProps) {
@@ -211,58 +187,19 @@ export function EditJobForm({ job }: EditJobPageProps) {
   };
 
   return (
-    <div className="py-4 sm:py-6">
-      {/* Breadcrumb */}
-      <Link
-        href="/dashboard/jobs"
-        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-6"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Jobs
-      </Link>
-
-      {/* Page Header */}
-      <div className="flex items-start justify-between mb-6">
-        <div>
-          <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
-              Edit Job Listing
-            </h1>
-            <Badge
-              variant="outline"
-              className={`${statusStyles[job.status]} text-sm font-medium`}
-            >
-              {statusLabels[job.status]}
-            </Badge>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Update your job posting and manage settings
-          </p>
-        </div>
-        <Button
-          onClick={() => handleSave("draft")}
-          disabled={isPending}
-          className="h-10 gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
-        >
-          <Save className="h-4 w-4" />
-          Save Changes
-        </Button>
-      </div>
-
-        {/* Two Column Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6">
-          {/* Main Form */}
+    <div>
+      {/* Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6">
+          {/* Left Column: Main Form */}
           <div className="space-y-6">
             {/* Basic Information */}
-            <Card className="border border-border rounded-xl bg-card shadow-sm">
-              <CardContent className="p-6 space-y-6">
-                <div className="flex items-center gap-2 pb-4 border-b border-border">
-                  <FileText className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-lg font-semibold text-foreground">
-                    Basic Information
-                  </h2>
-                </div>
+            <div className="panel p-6 sm:p-8 border border-border rounded-2xl bg-card">
+              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 pb-4 border-b border-border mb-6">
+                <FileText className="h-5 w-5 text-muted-foreground" />
+                Basic Information
+              </h2>
 
+              <div className="space-y-6">
                 {/* Job Title */}
                 <div className="space-y-2">
                   <Label
@@ -306,93 +243,81 @@ export function EditJobForm({ job }: EditJobPageProps) {
                     <p className="text-sm text-destructive">{errors.company}</p>
                   )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
 
             {/* Job Description */}
-            <Card className="border border-border rounded-xl bg-card shadow-sm">
-              <CardContent className="p-6 space-y-6">
-                <div className="flex items-center gap-2 pb-4 border-b border-border">
-                  <Briefcase className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-lg font-semibold text-foreground">
-                    Job Description
-                  </h2>
-                </div>
+            <div className="panel p-6 sm:p-8 border border-border rounded-2xl bg-card">
+              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 pb-4 border-b border-border mb-6">
+                <Briefcase className="h-5 w-5 text-muted-foreground" />
+                Job Description
+              </h2>
 
-                {/* Role Overview */}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="description"
-                    className="text-sm font-medium text-foreground"
-                  >
-                    Role Overview *
-                  </Label>
-                  <RichTextToolbar onInsert={insertHtml} />
-                  <Textarea
-                    id="description"
-                    value={formData.description_html}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        description_html: e.target.value,
-                      })
-                    }
-                    placeholder="Describe the role, responsibilities, and requirements..."
-                    rows={10}
-                    className={`min-h-[200px] rounded-t-none ${
-                      errors.description_html ? "border-destructive" : ""
-                    }`}
-                  />
-                  {errors.description_html && (
-                    <p className="text-sm text-destructive">
-                      {errors.description_html}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="description"
+                  className="text-sm font-medium text-foreground"
+                >
+                  Role Overview *
+                </Label>
+                <RichTextToolbar onInsert={insertHtml} />
+                <Textarea
+                  id="description"
+                  value={formData.description_html}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      description_html: e.target.value,
+                    })
+                  }
+                  placeholder="Describe the role, responsibilities, and requirements..."
+                  rows={10}
+                  className={`min-h-[200px] rounded-t-none ${
+                    errors.description_html ? "border-destructive" : ""
+                  }`}
+                />
+                {errors.description_html && (
+                  <p className="text-sm text-destructive">
+                    {errors.description_html}
+                  </p>
+                )}
+              </div>
+            </div>
 
             {/* Skills & Requirements */}
-            <Card className="border border-border rounded-xl bg-card shadow-sm">
-              <CardContent className="p-6 space-y-6">
-                <div className="flex items-center gap-2 pb-4 border-b border-border">
-                  <Tag className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-lg font-semibold text-foreground">
-                    Skills & Requirements
-                  </h2>
-                </div>
+            <div className="panel p-6 sm:p-8 border border-border rounded-2xl bg-card">
+              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 pb-4 border-b border-border mb-6">
+                <Tag className="h-5 w-5 text-muted-foreground" />
+                Skills & Requirements
+              </h2>
 
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium text-foreground">
-                    Required Skills{" "}
-                    <span className="text-muted-foreground font-normal">
-                      (Press Enter to add)
-                    </span>
-                  </Label>
-                  <TagInput
-                    tags={formData.skills}
-                    onChange={(tags) =>
-                      setFormData({ ...formData, skills: tags })
-                    }
-                    placeholder="Add a skill..."
-                  />
-                </div>
-              </CardContent>
-            </Card>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-foreground">
+                  Required Skills{" "}
+                  <span className="text-muted-foreground font-normal">
+                    (Press Enter to add)
+                  </span>
+                </Label>
+                <TagInput
+                  tags={formData.skills}
+                  onChange={(tags) =>
+                    setFormData({ ...formData, skills: tags })
+                  }
+                  placeholder="Add a skill..."
+                />
+              </div>
+            </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Job Details */}
-            <Card className="border border-border rounded-xl bg-card shadow-sm sticky top-24">
-              <CardContent className="p-6 space-y-6">
-                <div className="flex items-center gap-2 pb-4 border-b border-border">
-                  <Settings className="h-5 w-5 text-muted-foreground" />
-                  <h2 className="text-lg font-semibold text-foreground">
-                    Job Details
-                  </h2>
-                </div>
+          {/* Right Column: Sidebar */}
+          <div className="flex flex-col gap-6">
+            {/* Job Details Panel */}
+            <div className="panel p-6 border border-border rounded-2xl bg-card">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4">
+                Job Settings
+              </h3>
 
+              <div className="space-y-6">
                 {/* Employment Type */}
                 <div className="space-y-2">
                   <Label className="text-sm font-medium text-foreground">
@@ -423,7 +348,7 @@ export function EditJobForm({ job }: EditJobPageProps) {
                     Work Model
                   </Label>
                   <Select
-                    value="remote"
+                    value={formData.location || "remote"}
                     onValueChange={(value) =>
                       setFormData({ ...formData, location: value })
                     }
@@ -495,38 +420,112 @@ export function EditJobForm({ job }: EditJobPageProps) {
                     <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                   </div>
                 </div>
+              </div>
+            </div>
 
-                {/* Action Buttons */}
-                <div className="pt-4 border-t border-border space-y-3">
-                  <Button
-                    onClick={() => handleSave("publish")}
-                    disabled={isPending}
-                    className="w-full h-11 gap-2 bg-primary hover:bg-primary/90"
-                  >
-                    <Rocket className="h-4 w-4" />
-                    Publish Now
-                  </Button>
-                  <Button
-                    onClick={() => handleSave("draft")}
-                    disabled={isPending}
-                    variant="outline"
-                    className="w-full h-11 gap-2"
-                  >
-                    <Save className="h-4 w-4" />
-                    Save as Draft
-                  </Button>
-                  <Button
-                    onClick={handleDelete}
-                    disabled={isPending}
-                    variant="ghost"
-                    className="w-full h-11 gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                    Delete Listing
-                  </Button>
+            {/* Posting Details */}
+            <div className="panel p-6 border border-border rounded-2xl bg-card">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-4">
+                Posting Details
+              </h3>
+
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Date Posted
+                  </p>
+                  <p className="text-sm font-medium text-foreground">
+                    {new Date(job.created_at || job.id).toLocaleDateString("id-ID", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
+
+                {job.deadline && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">
+                      Application Deadline
+                    </p>
+                    <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                      {new Date(job.deadline).toLocaleDateString("id-ID", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+                )}
+
+                {job.duration_estimate && (
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">
+                      Duration Estimate
+                    </p>
+                    <p className="text-sm font-medium text-foreground flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-muted-foreground" />
+                      {job.duration_estimate}
+                    </p>
+                  </div>
+                )}
+
+                <div>
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Visibility
+                  </p>
+                  <p className="text-sm font-medium text-foreground">
+                    {job.status === "published"
+                      ? "Public Job Board"
+                      : job.status === "draft"
+                        ? "Private Draft"
+                        : "Pending Review"}
+                  </p>
+                </div>
+
+                {job.status === "rejected" && job.rejection_reason && (
+                  <div className="p-3 bg-red-50 dark:bg-red-900/20 rounded-lg border border-red-200 dark:border-red-800">
+                    <p className="text-xs text-red-600 dark:text-red-400 font-medium mb-1">
+                      Rejection Reason
+                    </p>
+                    <p className="text-sm text-red-700 dark:text-red-300">
+                      {job.rejection_reason}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="panel p-6 border border-border rounded-2xl bg-card space-y-3">
+              <Button
+                onClick={() => handleSave("publish")}
+                disabled={isPending}
+                className="w-full h-11 gap-2"
+              >
+                <Rocket className="h-4 w-4" />
+                Publish Now
+              </Button>
+              <Button
+                onClick={() => handleSave("draft")}
+                disabled={isPending}
+                variant="outline"
+                className="w-full h-11 gap-2"
+              >
+                <Save className="h-4 w-4" />
+                Save as Draft
+              </Button>
+              <Button
+                onClick={handleDelete}
+                disabled={isPending}
+                variant="ghost"
+                className="w-full h-11 gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete Listing
+              </Button>
+            </div>
           </div>
         </div>
       </div>

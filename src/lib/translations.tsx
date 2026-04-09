@@ -25,6 +25,51 @@ interface Translations {
     getStartedFree: string;
     menu: string;
   };
+  auth: {
+    login: {
+      title: string;
+      description: string;
+      email: string;
+      emailPlaceholder: string;
+      password: string;
+      forgotPassword: string;
+      signIn: string;
+      signingIn: string;
+      continueWithGoogle: string;
+      noAccount: string;
+      signUp: string;
+      emailNotConfirmed: string;
+      emailNotConfirmedDesc: string;
+      resendConfirmation: string;
+      sending: string;
+    };
+    register: {
+      title: string;
+      description: string;
+      fullName: string;
+      namePlaceholder: string;
+      email: string;
+      emailPlaceholder: string;
+      workTypeLabel: string;
+      workTypePlaceholder: string;
+      client: string;
+      freelancer: string;
+      password: string;
+      confirmPassword: string;
+      createAccount: string;
+      creatingAccount: string;
+      continueWithGoogle: string;
+      hasAccount: string;
+      signIn: string;
+      passwordStrength: Record<number, string>;
+      requirements: {
+        length: string;
+        lower: string;
+        upper: string;
+        number: string;
+      };
+    };
+  };
   hero: {
     badge: string;
     title: string;
@@ -162,6 +207,57 @@ const translations: Record<Language, Translations> = {
       logIn: "Log In",
       getStartedFree: "Get Started Free",
       menu: "Menu",
+    },
+    auth: {
+      login: {
+        title: "Welcome back",
+        description: "Enter your email to sign in to your account",
+        email: "Email",
+        emailPlaceholder: "name@example.com",
+        password: "Password",
+        forgotPassword: "Forgot password?",
+        signIn: "Sign In",
+        signingIn: "Signing in…",
+        continueWithGoogle: "Continue with Google",
+        noAccount: "Don't have an account?",
+        signUp: "Sign up",
+        emailNotConfirmed: "Email not confirmed",
+        emailNotConfirmedDesc: "A confirmation email was sent to {email}. Please check your inbox and spam folder.",
+        resendConfirmation: "Resend confirmation email",
+        sending: "Sending...",
+      },
+      register: {
+        title: "Create an account",
+        description: "Enter your details to get started",
+        fullName: "Full Name",
+        namePlaceholder: "John Doe",
+        email: "Email",
+        emailPlaceholder: "name@example.com",
+        workTypeLabel: "I want to work as",
+        workTypePlaceholder: "Select your work type",
+        client: "Company / Client — Post jobs and hire",
+        freelancer: "Freelancer — Find remote work",
+        password: "Password",
+        confirmPassword: "Confirm Password",
+        createAccount: "Create Account",
+        creatingAccount: "Creating account…",
+        continueWithGoogle: "Continue with Google",
+        hasAccount: "Already have an account?",
+        signIn: "Sign in",
+        passwordStrength: {
+          0: "Very weak",
+          1: "Weak",
+          2: "Fair",
+          3: "Good",
+          4: "Strong",
+        },
+        requirements: {
+          length: "8+ characters",
+          lower: "Lowercase",
+          upper: "Uppercase",
+          number: "Number",
+        },
+      },
     },
     hero: {
       badge: "Built for Indonesian professionals",
@@ -310,6 +406,57 @@ const translations: Record<Language, Translations> = {
       logIn: "Masuk",
       getStartedFree: "Mulai Gratis",
       menu: "Menu",
+    },
+    auth: {
+      login: {
+        title: "Selamat datang kembali",
+        description: "Masukkan email Anda untuk masuk ke akun",
+        email: "Email",
+        emailPlaceholder: "nama@contoh.com",
+        password: "Kata Sandi",
+        forgotPassword: "Lupa kata sandi?",
+        signIn: "Masuk",
+        signingIn: "Memasuki akun…",
+        continueWithGoogle: "Lanjutkan dengan Google",
+        noAccount: "Belum punya akun?",
+        signUp: "Daftar",
+        emailNotConfirmed: "Email belum dikonfirmasi",
+        emailNotConfirmedDesc: "Email konfirmasi telah dikirim ke {email}. Silakan periksa kotak masuk dan folder spam Anda.",
+        resendConfirmation: "Kirim ulang email konfirmasi",
+        sending: "Mengirim...",
+      },
+      register: {
+        title: "Buat akun",
+        description: "Masukkan detail Anda untuk memulai",
+        fullName: "Nama Lengkap",
+        namePlaceholder: "John Doe",
+        email: "Email",
+        emailPlaceholder: "nama@contoh.com",
+        workTypeLabel: "Saya ingin bekerja sebagai",
+        workTypePlaceholder: "Pilih jenis pekerjaan",
+        client: "Perusahaan / Klien — Posting lowongan dan rekrut",
+        freelancer: "Freelancer — Cari pekerjaan remote",
+        password: "Kata Sandi",
+        confirmPassword: "Konfirmasi Kata Sandi",
+        createAccount: "Buat Akun",
+        creatingAccount: "Membuat akun…",
+        continueWithGoogle: "Lanjutkan dengan Google",
+        hasAccount: "Sudah punya akun?",
+        signIn: "Masuk",
+        passwordStrength: {
+          0: "Sangat lemah",
+          1: "Lemah",
+          2: "Cukup",
+          3: "Bagus",
+          4: "Kuat",
+        },
+        requirements: {
+          length: "8+ karakter",
+          lower: "Huruf kecil",
+          upper: "Huruf besar",
+          number: "Angka",
+        },
+      },
     },
     hero: {
       badge: "Dibuat untuk profesional Indonesia",

@@ -33,9 +33,13 @@ export const registerSchema = z.object({
       "Password must contain at least one number"
     ),
   confirmPassword: z.string(),
+  workType: z.enum(["client", "user"]),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
+}).refine((data) => data.workType !== undefined, {
+  message: "Please select a work type",
+  path: ["workType"],
 });
 
 // --- Type Inference ---

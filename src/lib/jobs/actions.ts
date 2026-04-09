@@ -543,7 +543,7 @@ export async function updateJob(jobId: string, formData: FormData) {
     job_type: formData.get("job_type") as JobType,
     salary_min: formData.get("salary_min") as string,
     salary_max: formData.get("salary_max") as string,
-    salary_currency: formData.get("salary_currency") as string,
+    salary_currency: (formData.get("salary_currency") as string) || "IDR",
     location: formData.get("location") as string,
     apply_method: formData.get("apply_method") as ApplyMethod,
     apply_url: formData.get("apply_url") as string,

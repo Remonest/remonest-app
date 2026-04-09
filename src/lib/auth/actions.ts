@@ -72,6 +72,7 @@ export async function registerAction(formData: FormData): Promise<AuthResult> {
     email: formData.get("email"),
     password: formData.get("password"),
     confirmPassword: formData.get("confirmPassword"),
+    workType: formData.get("workType"),
   });
 
   if (!parsed.success) {
@@ -85,7 +86,7 @@ export async function registerAction(formData: FormData): Promise<AuthResult> {
     return { success: false, error: firstError };
   }
 
-  const { name, email, password } = parsed.data;
+  const { name, email, password, workType } = parsed.data;
   const supabase = getSupabaseServerClient();
 
   const { data, error } = await supabase.auth.signUp({
@@ -94,6 +95,7 @@ export async function registerAction(formData: FormData): Promise<AuthResult> {
     options: {
       data: {
         full_name: name,
+        role: workType,
       },
     },
   });

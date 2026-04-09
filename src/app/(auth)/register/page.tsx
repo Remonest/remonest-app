@@ -5,10 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Globe2, Loader2, Check, X, Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import {
-  registerAction,
-  googleSignInAction,
-} from "@/lib/auth/actions";
+import { registerAction, googleSignInAction } from "@/lib/auth/actions";
 import type { AuthResult } from "@/lib/auth/schemas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +16,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+import { useTranslations } from "@/lib/translations";
 
 // --- Password strength logic ---
 
@@ -52,6 +58,7 @@ const STRENGTH_LABELS: Record<number, { text: string; color: string }> = {
 };
 
 function PasswordStrength({ password }: { password: string }) {
+  const { t } = useTranslations();
   if (!password) return null;
 
   const { score, checks } = evaluatePassword(password);
@@ -75,15 +82,17 @@ function PasswordStrength({ password }: { password: string }) {
       {/* Requirement checklist */}
       <ul className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs">
         {[
-          { key: "length" as const, label: "8+ characters" },
-          { key: "lower" as const, label: "Lowercase" },
-          { key: "upper" as const, label: "Uppercase" },
-          { key: "number" as const, label: "Number" },
+          { key: "length" as const, label: t.auth.register.requirements.length },
+          { key: "lower" as const, label: t.auth.register.requirements.lower },
+          { key: "upper" as const, label: t.auth.register.requirements.upper },
+          { key: "number" as const, label: t.auth.register.requirements.number },
         ].map(({ key, label }) => (
           <li
             key={key}
             className={`flex items-center gap-1 ${
-              checks[key] ? "text-green-600 dark:text-green-400" : "text-muted-foreground"
+              checks[key]
+                ? "text-green-600 dark:text-green-400"
+                : "text-muted-foreground"
             }`}
           >
             {checks[key] ? (
@@ -104,16 +113,18 @@ function PasswordStrength({ password }: { password: string }) {
 const initialState: AuthResult = { success: false };
 
 function RegisterForm() {
+  const { t } = useTranslations();
   const router = useRouter();
   const [state, formAction, pending] = useActionState(
     async (_state: AuthResult, formData: FormData) => {
       return registerAction(formData);
     },
-    initialState
+    initialState,
   );
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [workType, setWorkType] = useState("");
 
   useEffect(() => {
     if (state?.error) {
@@ -133,20 +144,20 @@ function RegisterForm() {
         <div className="mb-2 flex size-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
           <Globe2 className="size-5" />
         </div>
-        <CardTitle>Create an account</CardTitle>
-        <CardDescription>Enter your details to get started</CardDescription>
+        <CardTitle>{t.auth.register.title}</CardTitle>
+        <CardDescription>{t.auth.register.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <label htmlFor="name" className="text-sm font-medium">
-              Full Name
+              {t.auth.register.fullName}
             </label>
             <Input
               id="name"
               name="name"
               type="text"
-              placeholder="John Doe"
+              placeholder={t.auth.register.namePlaceholder}
               autoComplete="name"
               required
             />
@@ -154,21 +165,39 @@ function RegisterForm() {
 
           <div className="flex flex-col gap-2">
             <label htmlFor="email" className="text-sm font-medium">
-              Email
+              {t.auth.register.email}
             </label>
             <Input
               id="email"
               name="email"
               type="email"
-              placeholder="name@example.com"
+              placeholder={t.auth.register.emailPlaceholder}
               autoComplete="email"
               required
             />
           </div>
 
           <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium">{t.auth.register.workTypeLabel}</label>
+            <input type="hidden" name="workType" value={workType} />
+            <Select value={workType} onValueChange={setWorkType}>
+              <SelectTrigger>
+                <SelectValue placeholder={t.auth.register.workTypePlaceholder} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="client">
+                  {t.auth.register.client}
+                </SelectItem>
+                <SelectItem value="user">
+                  {t.auth.register.freelancer}
+                </SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-2">
             <label htmlFor="password" className="text-sm font-medium">
-              Password
+              {t.auth.register.password}
             </label>
             <div className="relative">
               <Input
@@ -200,7 +229,7 @@ function RegisterForm() {
 
           <div className="flex flex-col gap-2">
             <label htmlFor="confirmPassword" className="text-sm font-medium">
-              Confirm Password
+              {t.auth.register.confirmPassword}
             </label>
             <div className="relative">
               <Input
@@ -216,7 +245,9 @@ function RegisterForm() {
                 tabIndex={-1}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                 onClick={() => setShowConfirmPassword((v) => !v)}
-                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                aria-label={
+                  showConfirmPassword ? "Hide password" : "Show password"
+                }
               >
                 {showConfirmPassword ? (
                   <EyeOff className="size-4" />
@@ -231,10 +262,10 @@ function RegisterForm() {
             {pending ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                Creating account…
+                {t.auth.register.creatingAccount}
               </>
             ) : (
-              "Create Account"
+              t.auth.register.createAccount
             )}
           </Button>
         </form>
@@ -265,17 +296,17 @@ function RegisterForm() {
                 fill="#EA4335"
               />
             </svg>
-            Continue with Google
+            {t.auth.register.continueWithGoogle}
           </Button>
         </form>
 
         <p className="mt-4 text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
+          {t.auth.register.hasAccount}{" "}
           <Link
             href="/login"
             className="font-medium text-primary underline-offset-4 hover:underline"
           >
-            Sign in
+            {t.auth.register.signIn}
           </Link>
         </p>
       </CardContent>

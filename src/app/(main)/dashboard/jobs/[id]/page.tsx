@@ -187,7 +187,7 @@ export default async function JobDetailPage({
                 <span className="hidden sm:inline">Duplicate</span>
               </Button>
               {(job.status === "draft" || job.status === "pending") && (
-                <Link href={`/dashboard/jobs/${job.id}/edit`}>
+                <Link href={`/jobs/${job.id}/edit`}>
                   <Button variant="outline" className="h-10 gap-2">
                     <PencilLine className="h-4 w-4" />
                     <span className="hidden sm:inline">Edit Job</span>

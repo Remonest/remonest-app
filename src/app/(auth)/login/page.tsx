@@ -16,10 +16,12 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useTranslations } from "@/lib/translations";
 
 const initialState: AuthResult = { success: false };
 
 function LoginFormInner() {
+  const { t } = useTranslations();
   const [state, formAction, pending] = useActionState(
     async (_state: AuthResult, formData: FormData) => {
       return loginAction(formData);
@@ -77,22 +79,20 @@ function LoginFormInner() {
         <div className="mb-2 flex size-10 items-center justify-center rounded-md bg-primary text-primary-foreground">
           <Globe2 className="size-5" />
         </div>
-        <CardTitle>Welcome back</CardTitle>
-        <CardDescription>
-          Enter your email to sign in to your account
-        </CardDescription>
+        <CardTitle>{t.auth.login.title}</CardTitle>
+        <CardDescription>{t.auth.login.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <label htmlFor="email" className="text-sm font-medium">
-              Email
+              {t.auth.login.email}
             </label>
             <Input
               id="email"
               name="email"
               type="email"
-              placeholder="name@example.com"
+              placeholder={t.auth.login.emailPlaceholder}
               autoComplete="email"
               required
               defaultValue={unconfirmedEmail ?? ""}
@@ -103,13 +103,13 @@ function LoginFormInner() {
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <label htmlFor="password" className="text-sm font-medium">
-                Password
+                {t.auth.login.password}
               </label>
               <Link
                 href="/forgot-password"
                 className="text-sm text-muted-foreground underline-offset-4 hover:underline"
               >
-                Forgot password?
+                {t.auth.login.forgotPassword}
               </Link>
             </div>
             <div className="relative">
@@ -140,10 +140,10 @@ function LoginFormInner() {
             {pending ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                Signing in…
+                {t.auth.login.signingIn}
               </>
             ) : (
-              "Sign In"
+              t.auth.login.signIn
             )}
           </Button>
         </form>
@@ -154,10 +154,10 @@ function LoginFormInner() {
               <Mail className="mt-0.5 size-5 shrink-0 text-yellow-600 dark:text-yellow-400" />
               <div className="flex-1">
                 <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                  Email not confirmed
+                  {t.auth.login.emailNotConfirmed}
                 </p>
                 <p className="mt-1 text-xs text-yellow-700 dark:text-yellow-300">
-                  A confirmation email was sent to <strong>{unconfirmedEmail}</strong>. Please check your inbox and spam folder.
+                  {t.auth.login.emailNotConfirmedDesc.replace("{email}", unconfirmedEmail)}
                 </p>
                 <button
                   type="button"
@@ -165,7 +165,7 @@ function LoginFormInner() {
                   disabled={resending}
                   className="mt-2 text-xs font-medium text-yellow-800 underline-offset-4 hover:underline disabled:opacity-50 dark:text-yellow-200"
                 >
-                  {resending ? "Sending..." : "Resend confirmation email"}
+                  {resending ? t.auth.login.sending : t.auth.login.resendConfirmation}
                 </button>
               </div>
             </div>
@@ -199,17 +199,17 @@ function LoginFormInner() {
                 fill="#EA4335"
               />
             </svg>
-            Continue with Google
+            {t.auth.login.continueWithGoogle}
           </Button>
         </form>
 
         <p className="mt-4 text-center text-sm text-muted-foreground cursor-pointer">
-          Don&apos;t have an account?{" "}
+          {t.auth.login.noAccount}{" "}
           <Link
             href="/register"
             className="font-medium text-primary underline-offset-4 hover:underline"
           >
-            Sign up
+            {t.auth.login.signUp}
           </Link>
         </p>
       </CardContent>

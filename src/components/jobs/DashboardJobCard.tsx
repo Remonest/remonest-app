@@ -167,7 +167,7 @@ export function DashboardJobCard({
           </Link>
           {status === "draft" && (
             <>
-              <Link href={`/dashboard/jobs/${id}/edit`}>
+              <Link href={`/jobs/${id}/edit`}>
                 <Button
                   variant="outline"
                   size="sm"
@@ -192,7 +192,7 @@ export function DashboardJobCard({
           )}
           {status === "published" && (
             <>
-              <Link href={`/dashboard/jobs/${id}/edit`}>
+              <Link href={`/jobs/${id}/edit`}>
                 <Button
                   variant="outline"
                   size="sm"
