@@ -4,6 +4,7 @@ import { getSupabaseServerClient, getUserRole } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { TranslationProvider } from "@/lib/translations";
 import {
   LayoutDashboard,
   Briefcase,
@@ -66,11 +67,13 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
   if (!supabaseUrl || !supabaseAnonKey) {
     // During build/SSG, render skeleton — middleware protects at runtime
     return (
-      <div className="flex min-h-screen flex-col bg-background">
-        <main className="flex-1">
-          <div className="mx-auto max-w-7xl px-4 py-8 md:px-8">{children}</div>
-        </main>
-      </div>
+      <TranslationProvider>
+        <div className="flex min-h-screen flex-col bg-background">
+          <main className="flex-1">
+            <div className="mx-auto max-w-7xl px-4 py-8 md:px-8">{children}</div>
+          </main>
+        </div>
+      </TranslationProvider>
     );
   }
 
@@ -87,9 +90,10 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
   const role = await getUserRole();
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      {/* Authenticated header variant */}
-      <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-sm">
+    <TranslationProvider>
+      <div className="flex min-h-screen flex-col bg-background">
+        {/* Authenticated header variant */}
+        <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-8">
           <Link
             href="/dashboard"
@@ -196,6 +200,7 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
         </div>
       </main>
     </div>
+    </TranslationProvider>
   );
 }
 

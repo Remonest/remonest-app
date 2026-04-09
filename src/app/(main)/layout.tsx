@@ -1,4 +1,5 @@
 import { Header, Footer } from "@/components/landing";
+import { TranslationProvider } from "@/lib/translations";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export default async function MainLayout({
@@ -11,7 +12,11 @@ export default async function MainLayout({
 
   // If Supabase is not configured (e.g. during build), render without header/footer
   if (!supabaseUrl || !supabaseAnonKey) {
-    return <div className="flex flex-col flex-1 bg-background">{children}</div>;
+    return (
+      <TranslationProvider>
+        <div className="flex flex-col flex-1 bg-background">{children}</div>
+      </TranslationProvider>
+    );
   }
 
   const supabase = getSupabaseServerClient();
@@ -19,9 +24,16 @@ export default async function MainLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Authenticated user — don't show landing header/footer (dashboard has its own)
+  // Authenticated user — show content with footer
   if (user) {
-    return <div className="flex flex-col flex-1 bg-background">{children}</div>;
+    return (
+      <TranslationProvider>
+        <div className="flex flex-col flex-1 bg-background">
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </div>
+      </TranslationProvider>
+    );
   }
 
   // Unauthenticated — show landing layout
