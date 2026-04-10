@@ -250,16 +250,19 @@ Current limitations or bugs.
 ## 📊 Implementation Status
 
 ### ✅ Complete (Connected to Supabase)
-- Authentication (login, register, OAuth, email confirmation, password reset)
-- Dashboard (stats, activity, settings, applications)
+- **Authentication System** (login, register, OAuth, email confirmation, password reset)
+- **Dashboard** (stats, activity, settings, applications)
 - **Dashboard Language Switcher** (EN/ID support for all dashboard pages)
-- Job board (public listing, job posting, admin approval, client job management)
-- Admin panel (job management, learning module creation)
-- Profile page (role-aware)
+- **Job Board** (public listing, job posting, admin approval, client job management)
+- **Admin Panel** (job management with tabs, approval workflow, draft management)
+- **Job Detail Modal** (v1.1.0 - view/publish/delete draft jobs with auto-refresh)
+- **Profile Page** (role-aware UI for user, client, admin)
+- **Client Role System** (employer job posting, management dashboard)
+- **Database Architecture** (7 tables with RLS, enums, triggers, indexes)
 
 ### ⚠️ In Progress (Hardcoded/Mock Data)
 - Public job detail page `/jobs/[id]` (1 hardcoded job)
-- Learning modules (6 hardcoded modules)
+- Learning modules (6 hardcoded modules, DB tables exist)
 - Public portfolio (1 hardcoded portfolio)
 - CV builder (static UI, no persistence)
 - Portfolio builder (static UI, no persistence)
@@ -270,6 +273,62 @@ Current limitations or bugs.
 - Job sync (`/api/jobs/sync`) — returns hardcoded 1 job
 - File upload (`/api/upload`) — validates but doesn't store
 - Stripe webhooks (`/api/webhooks/stripe`) — receives but doesn't process
+
+---
+
+## 📁 Documentation Files
+
+### Core Documentation
+
+| File | Description | Lines |
+|------|-------------|-------|
+| **[PROJECT.md](./PROJECT.md)** | Tech stack, directory structure, conventions, known issues | 514 |
+| **[IMPLEMENTATION.md](./IMPLEMENTATION.md)** | Exhaustive feature implementation details | 1843 |
+| **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** | ✨ NEW — Complete feature status & next steps | ~450 |
+| **[ROLE_SYSTEM.md](./ROLE_SYSTEM.md)** | RBAC system: admin/user/client roles, colors, guards | ~300 |
+| **[DATABASE_ARCHITECTURE.md](./DATABASE_ARCHITECTURE.md)** | Complete database schema, RLS, indexes, migrations | ~600 |
+
+### Feature Documentation
+
+| File | Description | Version |
+|------|-------------|---------|
+| **[CLIENT_ROLE_IMPLEMENTATION.md](./CLIENT_ROLE_IMPLEMENTATION.md)** | Client role (employer/job poster) system | v0.3.0 |
+| **[JOB_BOARD_IMPLEMENTATION.md](./JOB_BOARD_IMPLEMENTATION.md)** | Job board v1.0.0: schema, actions, UI, posting workflow | v1.0.0 |
+| **[JOB_POSTING_WORKFLOW.md](./JOB_POSTING_WORKFLOW.md)** | Role-based posting with admin approval queue | v0.3.2 |
+| **[AUTO_VERIFIED_JOB_POSTING.md](./AUTO_VERIFIED_JOB_POSTING.md)** | Reverted auto-verify approach (historical) | v0.3.1 |
+| **[JOB_DETAIL_MODAL.md](./JOB_DETAIL_MODAL.md)** | Dialog for viewing/managing job drafts with auto-refresh | v1.1.0 |
+| **[LANGUAGE_SWITCHER.md](./LANGUAGE_SWITCHER.md)** | EN/ID language system: TranslationProvider, useTranslations | v1.0.0 |
+| **[LEARNING_MODULE.md](./LEARNING_MODULE.md)** | Learning module system: admin CRUD, progress tracking | v1.0.0 |
+
+### Admin Documentation
+
+| File | Description | Purpose |
+|------|-------------|---------|
+| **[ADMIN_ACCESS.md](./ADMIN_ACCESS.md)** | Detailed guide for accessing admin panel | Setup guide |
+| **[QUICK_ADMIN_ACCESS.md](./QUICK_ADMIN_ACCESS.md)** | Step-by-step admin access instructions | Quick reference |
+
+---
+
+## 🗂️ Complete File List
+
+```
+docs/
+├── README.md                          # This file - Documentation index
+├── PROJECT.md                         # Project overview & tech stack
+├── IMPLEMENTATION.md                  # Comprehensive implementation guide
+├── IMPLEMENTATION_SUMMARY.md          # ✨ NEW - Feature status & next steps
+├── ROLE_SYSTEM.md                     # User role system (RBAC)
+├── DATABASE_ARCHITECTURE.md           # Database schema & design
+├── CLIENT_ROLE_IMPLEMENTATION.md      # Client role feature (v0.3.0)
+├── JOB_BOARD_IMPLEMENTATION.md        # Job board feature (v1.0.0)
+├── JOB_POSTING_WORKFLOW.md            # Job posting workflow (v0.3.2)
+├── AUTO_VERIFIED_JOB_POSTING.md       # Reverted auto-verify (v0.3.1)
+├── JOB_DETAIL_MODAL.md                # Draft job modal (v1.1.0) ✨ NEW
+├── LANGUAGE_SWITCHER.md               # i18n system (EN/ID)
+├── LEARNING_MODULE.md                 # Learning module system
+├── ADMIN_ACCESS.md                    # Admin panel access guide
+└── QUICK_ADMIN_ACCESS.md              # Quick admin reference
+```
 
 ---
 
