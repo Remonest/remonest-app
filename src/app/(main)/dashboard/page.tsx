@@ -1,5 +1,6 @@
 import { Suspense } from "react";
-import { getDashboardStats, getRecentActivity } from "@/lib/dashboard/actions";
+import { getDashboardStats } from "@/features/dashboard/actions/stats";
+import { getRecentActivity } from "@/features/dashboard/actions/activity";
 import { DashboardContentInner } from "./dashboard-client";
 
 function LoadingSkeleton() {

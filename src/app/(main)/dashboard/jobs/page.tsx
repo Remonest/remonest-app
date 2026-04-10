@@ -1,12 +1,12 @@
 import { getUserRole } from "@/lib/supabase/server";
-import { requireAuth } from "@/lib/auth/server";
-import { getUserJobs } from "@/lib/jobs/actions";
+import { requireAuth } from "@/features/auth/actions/guards";
+import { getUserJobs } from "@/features/jobs/actions/fetch-jobs";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { DashboardJobCard } from "@/components/jobs/DashboardJobCard";
-import { JobsHero } from "@/components/jobs/jobs-hero";
-import { JobsEmptyState } from "@/components/jobs/jobs-empty-state";
+import { DashboardJobCard } from "@/features/jobs/components/DashboardJobCard";
+import { JobsHero } from "@/features/jobs/components/JobsHero";
+import { JobsEmptyState } from "@/features/jobs/components/JobsEmptyState";
 
 export default async function DashboardJobsPage() {
   await requireAuth();
@@ -26,7 +26,7 @@ export default async function DashboardJobsPage() {
 
   return (
     <div className="py-4 sm:py-6 lg:py-10">
-      <div className="mx-auto w-full max-w-[1200px] px-4 sm:px-6">
+      <div className="mx-auto w-full max-w-[1200px] px-3 sm:px-6">
         {/* Hero Section with Stats */}
         <JobsHero
           totalJobs={totalJobs}
@@ -36,7 +36,7 @@ export default async function DashboardJobsPage() {
 
         {/* Jobs List */}
         {jobs.length === 0 ? (
-          <div className="text-center py-8 sm:py-12 px-4">
+          <div className="text-center py-8 sm:py-12 px-3 sm:px-4">
             <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-muted mb-3 sm:mb-4">
               <Plus className="w-5 h-5 sm:w-6 sm:h-6 text-muted-foreground" />
             </div>

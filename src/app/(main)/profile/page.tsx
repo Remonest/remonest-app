@@ -1,4 +1,6 @@
-import { getUserProfile, getUserSettings, getDashboardStats, getRecentActivity } from "@/lib/dashboard/actions";
+import { getUserProfile, getUserSettings } from "@/features/dashboard/actions/settings";
+import { getDashboardStats } from "@/features/dashboard/actions/stats";
+import { getRecentActivity } from "@/features/dashboard/actions/activity";
 import { getUserRole } from "@/lib/supabase/server";
 import ProfileClient from "./profile-client";
 
@@ -14,7 +16,7 @@ export default async function ProfilePage() {
   const profileData = {
     fullName: profile?.fullName ?? "User",
     email: profile?.email ?? "",
-    avatarUrl: profile?.avatarUrl,
+    avatarUrl: profile?.avatarUrl ?? null,
     location: settings?.location ?? "",
     role: settings?.role ?? "",
     bio: settings?.bio ?? "",

@@ -61,7 +61,7 @@ async function AdminShell({ children }: { children: React.ReactNode }) {
           <form
             action={async () => {
               "use server";
-              const { logoutAction } = await import("@/lib/auth/actions");
+              const { logoutAction } = await import("@/features/auth/actions/session");
               await logoutAction();
             }}
           >

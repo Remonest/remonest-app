@@ -1,5 +1,5 @@
 "use server";
 
-import { logoutAction } from "@/lib/auth/actions";
+import { logoutAction } from "@/features/auth/actions/session";
 
 export { logoutAction };

@@ -1,6 +1,6 @@
-import { requireAuth } from "@/lib/auth/server";
+import { requireAuth } from "@/features/auth/actions/guards";
 import { getUserRole } from "@/lib/supabase/server";
-import { PostJobForm } from "@/components/jobs";
+import { PostJobForm } from "@/features/jobs/components/PostJobForm";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CircleCheck, Clock } from "lucide-react";

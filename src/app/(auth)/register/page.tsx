@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState, useCallback } from "react";
+import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -17,8 +17,9 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
-import { registerAction, googleSignInAction } from "@/lib/auth/actions";
-import type { AuthResult } from "@/lib/auth/schemas";
+import { registerAction } from "@/features/auth/actions/register";
+import { googleSignInAction } from "@/features/auth/actions/login";
+import type { AuthResult } from "@/features/auth/types/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {

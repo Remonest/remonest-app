@@ -15,7 +15,7 @@ import {
   AlertCircle,
 } from "lucide-react"
 import { toast } from "sonner"
-import { updatePasswordAction } from "@/lib/auth/actions"
+import { updatePasswordAction } from "@/features/auth/actions/password"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTranslations } from "@/lib/translations"

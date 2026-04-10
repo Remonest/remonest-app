@@ -5,7 +5,7 @@ import { LogOut, LayoutDashboard, Briefcase, Settings, Shield, FileText } from "
 import { Button } from "@/components/ui/button"
 import { useTranslations } from "@/lib/translations"
 import { LanguageSwitcher } from "@/components/landing/language-switcher"
-import { logoutAction } from "@/lib/auth/actions"
+import { logoutAction } from "@/features/auth/actions/session"
 
 interface DashboardHeaderProps {
   role: "admin" | "user" | "client" | null

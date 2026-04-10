@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { updateJob } from "@/lib/jobs/actions";
-import { requireAuth } from "@/lib/auth/server";
+import { updateJobAction } from "@/features/jobs/actions/manage-job";
+import { requireAuth } from "@/features/auth/actions/guards";
 
 export async function POST(
   request: NextRequest,
@@ -13,7 +13,7 @@ export async function POST(
     const formData = new FormData();
     formData.append("action", "publish");
 
-    const result = await updateJob(id, formData);
+    const result = await updateJobAction(id, formData);
 
     if (result.success) {
       return NextResponse.redirect(new URL("/dashboard/jobs", request.url));

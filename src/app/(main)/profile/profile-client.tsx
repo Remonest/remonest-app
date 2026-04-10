@@ -25,7 +25,7 @@ import {
   CheckSquare,
 } from "lucide-react";
 import { toast } from "sonner";
-import { saveProfileSettings } from "@/lib/dashboard/actions";
+import { saveProfileSettings } from "@/features/dashboard/actions/settings";
 
 interface ProfileData {
   fullName: string;

@@ -23,7 +23,7 @@ remonest-app/
 ├── docs/                           # Project documentation
 │   ├── README.md                   # Documentation index and guidelines
 │   ├── PROJECT.md                  # This file — project overview
-│   ├── IMPLEMENTATION.md           # Exhaustive implementation guide (1755 lines)
+│   ├── IMPLEMENTATION.md           # Exhaustive implementation guide
 │   ├── ROLE_SYSTEM.md              # RBAC: admin/user/client roles
 │   ├── CLIENT_ROLE_IMPLEMENTATION.md   # Client role system
 │   ├── JOB_BOARD_IMPLEMENTATION.md     # Job board v1.0.0
@@ -40,7 +40,7 @@ remonest-app/
 ├── src/
 │   ├── middleware.ts               # Supabase session + route protection
 │   │
-│   ├── app/                        # Next.js App Router
+│   ├── app/                        # Next.js App Router (thin route layer)
 │   │   ├── layout.tsx              # Root layout: fonts, metadata, analytics, Sonner
 │   │   ├── page.tsx                # Re-exports (main)/page
 │   │   ├── globals.css             # Tailwind, oklch tokens, dark mode
@@ -107,8 +107,56 @@ remonest-app/
 │   │       ├── upload/route.ts           # POST: File upload validation (mock)
 │   │       └── webhooks/stripe/route.ts  # POST: Stripe webhook (mock)
 │   │
+│   ├── features/                   # ✨ Feature-driven architecture
+│   │   │
+│   │   ├── jobs/                   # ✨ Jobs module (21 files)
+│   │   │   ├── types/job.ts        # JobType, JobStatus, ApplyMethod, Job interface
+│   │   │   ├── schemas/
+│   │   │   │   ├── job-submission.ts  # Zod: submission, draft, approval schemas
+│   │   │   │   └── job-params.ts      # Search params validation schema
+│   │   │   ├── actions/
+│   │   │   │   ├── fetch-jobs.ts      # getJobs, getJobById, getUserJobs, getPendingJobs, getAllJobs
+│   │   │   │   ├── submit-job.ts      # submitJobAction, saveJobDraftAction
+│   │   │   │   ├── manage-job.ts      # updateJobAction, deleteJobAction, republishJobAction
+│   │   │   │   └── approve-job.ts     # approveJobAction, rejectJobAction, publishDraftJobAction
+│   │   │   ├── utils/
+│   │   │   │   ├── formatters.ts      # formatSalary, formatDeadline, label helpers
+│   │   │   │   └── queries.ts         # Cached Supabase query builders (React.cache)
+│   │   │   └── components/ (12 files) # JobCard, DashboardJobCard, PostJobForm,
+│   │   │                              # EditJobForm, AdminApprovalTable, JobsHero,
+│   │   │                              # JobsEmptyState, RichTextToolbar, TagInput,
+│   │   │                              # JobTypeBadge, VerificationBadge, StatusBadge
+│   │   │
+│   │   ├── auth/                   # ✨ Auth module (10 files)
+│   │   │   ├── types/auth.ts       # AuthResult, StrengthResult
+│   │   │   ├── schemas/
+│   │   │   │   ├── login.ts           # loginSchema
+│   │   │   │   ├── register.ts        # registerSchema
+│   │   │   │   └── password.ts        # forgotPasswordSchema, updatePasswordSchema, resendConfirmationSchema
+│   │   │   ├── actions/
+│   │   │   │   ├── login.ts           # loginAction, googleSignInAction
+│   │   │   │   ├── register.ts        # registerAction
+│   │   │   │   ├── session.ts         # logoutAction
+│   │   │   │   ├── password.ts        # resendConfirmationAction, forgotPasswordAction, updatePasswordAction
+│   │   │   │   └── guards.ts          # requireAuth, getCurrentUser
+│   │   │   └── utils/
+│   │   │       └── password.ts        # evaluatePassword, STRENGTH_LABELS
+│   │   │
+│   │   └── dashboard/              # ✨ Dashboard module (9 files)
+│   │       ├── types/dashboard.ts  # DashboardStats, ActivityEntry, ApplicationEntry, UserSettings, UserProfile
+│   │       ├── schemas/
+│   │       │   ├── profile.ts         # profileSchema
+│   │       │   ├── password.ts        # passwordSchema
+│   │       │   └── notifications.ts   # notificationPrefsSchema
+│   │       └── actions/
+│   │           ├── stats.ts           # getDashboardStats (replaced hardcoded metrics)
+│   │           ├── activity.ts        # getRecentActivity, timeAgo, mapActionToStatus
+│   │           ├── applications.ts    # getApplications, applyToJob
+│   │           ├── settings.ts        # getUserSettings, getUserProfile, saveProfileSettings, saveNotificationPreferences
+│   │           └── security.ts        # updatePassword
+│   │
 │   ├── components/
-│   │   ├── ui/                     # shadcn/ui primitives (15 components)
+│   │   ├── ui/                     # shadcn/ui primitives (17 components)
 │   │   │   ├── avatar.tsx
 │   │   │   ├── badge.tsx
 │   │   │   ├── button.tsx
@@ -135,23 +183,11 @@ remonest-app/
 │   │   │   ├── sidebar-old.tsx     # Deprecated sidebar
 │   │   │   └── sign-out-button.tsx
 │   │   │
-│   │   ├── jobs/                   # Job-related components
-│   │   │   ├── index.ts            # Barrel exports
-│   │   │   ├── JobCard.tsx         # Full job card with verification badge
-│   │   │   ├── DashboardJobCard.tsx # Dashboard job card
-│   │   │   ├── JobTypeBadge.tsx    # Color-coded job type badges
-│   │   │   ├── VerificationBadge.tsx
-│   │   │   ├── StatusBadge.tsx     # Status badges with icons
-│   │   │   ├── PostJobForm.tsx     # Unified job posting form (role-aware)
-│   │   │   ├── AdminApprovalTable.tsx
-│   │   │   ├── edit-job-form.tsx
-│   │   │   ├── rich-text-toolbar.tsx
-│   │   │   ├── tag-input.tsx
-│   │   │   ├── jobs-hero.tsx
-│   │   │   └── jobs-empty-state.tsx
+│   │   ├── dashboard/              # Dashboard header + role badge
+│   │   │   ├── header.tsx
+│   │   │   └── role-badge.tsx
 │   │   │
 │   │   ├── landing/                # Landing page sections
-│   │   │   ├── index.ts            # Barrel exports
 │   │   │   ├── header.tsx          # Responsive header + mobile menu
 │   │   │   ├── hero-section.tsx    # Hero with CSS carousel
 │   │   │   ├── features-section.tsx
@@ -164,37 +200,15 @@ remonest-app/
 │   │   │   ├── language-handler.tsx
 │   │   │   └── language-switcher.tsx
 │   │   │
-│   │   ├── layout/
-│   │   │   └── dashboard-footer.tsx
-│   │   │
 │   │   ├── mobile-menu.tsx         # Mobile hamburger menu (role-aware)
 │   │   └── role-badge.tsx          # Reusable server component for roles
 │   │
-│   └── lib/
+│   └── lib/                        # Shared infrastructure (no feature logic)
 │       ├── utils.ts                # cn() utility (clsx + twMerge)
 │       ├── roles.ts                # Role labels, colors, getUserRoleInfo()
 │       ├── translations.tsx        # EN/ID TranslationProvider, useTranslations
-│       │
-│       ├── auth/
-│       │   ├── actions.ts          # Server actions: login, register, logout, OAuth, etc.
-│       │   ├── schemas.ts          # Zod schemas: loginSchema, registerSchema
-│       │   └── server.ts           # getCurrentUser(), requireAuth()
-│       │
 │       ├── admin/
-│       │   ├── require-admin.ts    # Admin authorization guard
-│       │   └── mock-data.ts        # Legacy mock job data
-│       │
-│       ├── dashboard/
-│       │   └── actions.ts          # Dashboard stats, activity, applications, settings
-│       │
-│       ├── jobs/
-│       │   ├── actions.ts          # Job CRUD: getJobs, submitJob, approveJob, etc.
-│       │   └── utils.ts            # Types, Zod schemas, formatters, label helpers
-│       │
-│       ├── learning/
-│       │   ├── actions.ts          # saveLearningModule, deleteLearningModule
-│       │   └── schemas.ts          # Learning module Zod schemas, constants
-│       │
+│       │   └── require-admin.ts    # Admin authorization guard
 │       └── supabase/
 │           ├── client.ts           # Browser Supabase client (singleton)
 │           ├── server.ts           # Server client + service role + getUserRole()
@@ -459,6 +473,11 @@ Full details in `docs/JOB_BOARD_IMPLEMENTATION.md`
 13. **Database migrations**: Sequential numbered files (`001_`, `002_`) with rollback comments at bottom
 14. **Role-based UI**: Client components receive role as prop from server (never call `getUserRole()` in client components)
 15. **Client role features**: Employers see job posting stats and actions, job seekers see application stats
+16. **Feature modules**: All business logic lives in `features/<name>/` — types, schemas, actions, components co-located
+17. **No barrel files**: Direct imports only (e.g., `@/features/jobs/components/JobCard`, not `@/features/jobs`)
+18. **Zod validation**: All mutations validated with Zod schemas in `features/<name>/schemas/`
+19. **Supabase caching**: Use `React.cache()` for query deduplication within a request
+20. **Responsive design**: Mobile-first with Tailwind breakpoints (`sm:`, `md:`, `lg:`)
 
 ---
 
@@ -480,11 +499,26 @@ pnpm lint         # Run ESLint
 - `/admin/learning` and `/admin/settings` sidebar links exist but pages not created
 - Social icons in footer use `X`, `Link`, `Camera` instead of Twitter/LinkedIn/Instagram (not in lucide-react v1.7.0)
 - Profile views and CV downloads on dashboard are placeholder metrics (not yet tracked in DB)
-- Client profile stats use placeholder values (not yet connected to real database queries)
 - Some dashboard pages still have minor hardcoded English text (quick actions descriptions, mobile tab labels)
 - Language switcher only implemented on dashboard pages, not on feature pages (/jobs, /learning, /cv-builder, /portfolio)
+- `/jobs/[id]/edit` page has TypeScript type mismatches between Job interface and component props (pre-existing, needs prop type alignment)
 
-## Recent Updates (April 8-9, 2026)
+## Recent Updates
+
+### April 10, 2026 — Feature-Driven Architecture Migration
+
+✅ **Feature-Driven Restructure:**
+- Migrated `lib/jobs/` → `features/jobs/` (21 files: types, schemas, actions, utils, 12 components)
+- Migrated `lib/auth/` → `features/auth/` (10 files: types, schemas, actions, utils)
+- Migrated `lib/dashboard/` → `features/dashboard/` (9 files: types, schemas, actions)
+- Deleted barrel files (`components/jobs/index.ts`, `components/landing/index.ts`)
+- All imports updated to use `@/features/<name>/` paths
+- Zod validation added for all password actions (previously manual checks)
+- Hardcoded `profileViews: 47` and `cvDownloads: 3` replaced with real Supabase queries
+- Installed `framer-motion` dependency (was missing, causing build errors)
+- Mobile responsive fixes for `/dashboard/jobs` (stat cards, action buttons, hero layout)
+
+### April 8-9, 2026
 
 ✅ **Language Switcher Implementation (Dashboard):**
 - `/dashboard` - Now fully supports EN/ID language switching

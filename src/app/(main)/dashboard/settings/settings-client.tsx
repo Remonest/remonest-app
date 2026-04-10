@@ -7,10 +7,10 @@ import { toast } from "sonner";
 import {
   saveProfileSettings,
   saveNotificationPreferences,
-  updatePassword,
-} from "@/lib/dashboard/actions";
+} from "@/features/dashboard/actions/settings";
+import { updatePassword } from "@/features/dashboard/actions/security";
 import { useTranslations } from "@/lib/translations";
-import type { UserSettings as UserSettingsType } from "@/lib/dashboard/actions";
+import type { UserSettings as UserSettingsType } from "@/features/dashboard/types/dashboard";
 
 interface SettingsData {
   profile: {

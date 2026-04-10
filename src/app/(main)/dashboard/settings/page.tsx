@@ -1,4 +1,4 @@
-import { getUserSettings, getUserProfile } from "@/lib/dashboard/actions";
+import { getUserSettings, getUserProfile } from "@/features/dashboard/actions/settings";
 import SettingsClient from "./settings-client";
 
 export default async function SettingsPage() {

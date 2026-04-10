@@ -1,4 +1,4 @@
-import { requireAuth } from "@/lib/auth/server";
+import { requireAuth } from "@/features/auth/actions/guards";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { createClient } from "@supabase/supabase-js";

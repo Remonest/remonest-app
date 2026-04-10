@@ -22,7 +22,9 @@ import {
   FileText,
   CheckCircle,
 } from "lucide-react";
-import { publishDraftJob, deleteJob } from "@/lib/jobs/actions";
+import { publishDraftJobAction } from "@/features/jobs/actions/approve-job";
+import { deleteJobAction } from "@/features/jobs/actions/manage-job";
+import { updateJobAction } from "@/features/jobs/actions/manage-job";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 
@@ -49,7 +51,7 @@ export function JobDetailModal({
     }
     setIsPublishing(true);
     try {
-      const result = await publishDraftJob(job.id);
+      const result = await publishDraftJobAction(job.id);
 
       if (result.success) {
         toast.success("Draft berhasil diterbitkan", {
@@ -85,7 +87,7 @@ export function JobDetailModal({
 
     setIsDeleting(true);
     try {
-      const result = await deleteJob(job.id);
+      const result = await deleteJobAction(job.id);
 
       if (result.success) {
         toast.success("Draft berhasil dihapus", {

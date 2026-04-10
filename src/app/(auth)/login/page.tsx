@@ -19,9 +19,9 @@ import { toast } from "sonner";
 import {
   loginAction,
   googleSignInAction,
-  resendConfirmationAction,
-} from "@/lib/auth/actions";
-import type { AuthResult } from "@/lib/auth/schemas";
+} from "@/features/auth/actions/login";
+import { resendConfirmationAction } from "@/features/auth/actions/password";
+import type { AuthResult } from "@/features/auth/types/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useTranslations } from "@/lib/translations";

@@ -2,9 +2,9 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Briefcase, MapPin, Banknote } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getJobById } from "@/lib/jobs/actions";
-import { EditJobForm } from "@/components/jobs/edit-job-form";
-import type { JobType } from "@/lib/jobs/utils";
+import { getJobById } from "@/features/jobs/actions/fetch-jobs";
+import { EditJobForm } from "@/features/jobs/components/EditJobForm";
+import type { JobType } from "@/features/jobs/types/job";
 
 const statusStyles: Record<string, string> = {
   draft:

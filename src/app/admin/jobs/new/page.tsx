@@ -1,4 +1,4 @@
-import { PostJobForm } from '@/components/jobs';
+import { PostJobForm } from '@/features/jobs/components/PostJobForm';
 
 export default function AdminNewJobPage() {
   return (

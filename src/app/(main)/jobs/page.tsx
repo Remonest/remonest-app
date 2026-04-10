@@ -1,7 +1,7 @@
 import { Search, SearchIcon } from "lucide-react";
-import { JobCard } from "@/components/jobs/JobCard";
-import { getJobs } from "@/lib/jobs/actions";
-import type { JobType } from "@/lib/jobs/utils";
+import { JobCard } from "@/features/jobs/components/JobCard";
+import { getJobs } from "@/features/jobs/actions/fetch-jobs";
+import type { JobType } from "@/features/jobs/types/job";
 
 export default async function JobsPage({
   searchParams,

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Menu, X, LayoutDashboard, Briefcase, Settings, LogOut, Shield, FileText, Languages } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { logoutAction } from "@/lib/auth/actions"
+import { logoutAction } from "@/features/auth/actions/session"
 import { getUserRoleInfo } from "@/lib/roles"
 import { useTranslations } from "@/lib/translations"
 

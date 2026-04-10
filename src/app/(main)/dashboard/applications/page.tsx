@@ -1,4 +1,4 @@
-import { getApplications } from "@/lib/dashboard/actions";
+import { getApplications } from "@/features/dashboard/actions/applications";
 import { ApplicationsClient } from "./applications-client";
 
 export default async function ApplicationsPage() {

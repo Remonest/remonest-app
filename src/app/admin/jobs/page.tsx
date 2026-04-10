@@ -1,11 +1,11 @@
 import { Suspense } from "react";
-import { AdminApprovalTable } from "@/components/jobs";
+import { AdminApprovalTable } from "@/features/jobs/components/AdminApprovalTable";
 import { DataTable } from "@/components/admin/data-table";
 import { columns } from "@/components/admin/job-columns";
 import { DraftJobsContentClient } from "@/components/admin/draft-jobs-content";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getAllJobs } from "@/lib/jobs/actions";
+import { getAllJobs } from "@/features/jobs/actions/fetch-jobs";
 import {
   Loader2,
   Plus,

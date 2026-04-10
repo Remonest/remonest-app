@@ -14,8 +14,8 @@ import {
   Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getJobById } from "@/lib/jobs/actions";
-import { requireAuth, getCurrentUser } from "@/lib/auth/server";
+import { getJobById } from "@/features/jobs/actions/fetch-jobs";
+import { requireAuth, getCurrentUser } from "@/features/auth/actions/guards";
 import { getUserRole } from "@/lib/supabase/server";
 
 const statusStyles: Record<string, string> = {

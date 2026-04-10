@@ -13,7 +13,7 @@ import {
   CheckCircle2,
 } from "lucide-react"
 import { toast } from "sonner"
-import { forgotPasswordAction } from "@/lib/auth/actions"
+import { forgotPasswordAction } from "@/features/auth/actions/password"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useTranslations } from "@/lib/translations"

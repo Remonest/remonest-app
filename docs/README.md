@@ -7,7 +7,8 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
 ### Core Documentation
 
 - **[Project Overview](./PROJECT.md)** — Tech stack, directory structure, conventions, known issues
-- **[Implementation Guide](./IMPLEMENTATION.md)** — Exhaustive feature implementation details (1755 lines)
+- **[Implementation Guide](./IMPLEMENTATION.md)** — Exhaustive feature implementation details
+- **[Implementation Summary](./IMPLEMENTATION_SUMMARY.md)** — Feature status & next steps
 - **[Role System](./ROLE_SYSTEM.md)** — RBAC system: admin/user/client roles, colors, guards, usage examples
 
 ### Feature Documentation
@@ -41,6 +42,8 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
 | **Backend** | Supabase (SSR-ready) |
 | **Tables** | TanStack Table (admin data tables) |
 | **Toasts** | Sonner |
+| **Animations** | framer-motion |
+| **Validation** | Zod v4 |
 | **Package Manager** | pnpm |
 
 ### Directory Structure
@@ -52,7 +55,7 @@ remonest-app/
 ├── src/
 │   ├── middleware.ts               # Supabase session management + route protection
 │   │
-│   ├── app/                        # Next.js App Router
+│   ├── app/                        # Next.js App Router (thin route layer)
 │   │   ├── layout.tsx              # Root layout (fonts, metadata, analytics, toaster)
 │   │   ├── page.tsx                # Re-exports (main)/page
 │   │   ├── globals.css             # Tailwind, oklch tokens, dark mode
@@ -60,48 +63,91 @@ remonest-app/
 │   │   │
 │   │   ├── (auth)/                 # Route group: centered auth layout
 │   │   │   ├── layout.tsx          # Centered layout with language switcher
-│   │   │   ├── login/page.tsx      # Email/password + Google OAuth
-│   │   │   ├── register/page.tsx   # Registration with password strength meter
+│   │   │   ├── login/page.tsx      # Delegates to features/auth/
+│   │   │   ├── register/page.tsx   # Delegates to features/auth/
 │   │   │   ├── forgot-password/page.tsx
 │   │   │   └── reset-password/page.tsx
 │   │   │
 │   │   ├── (main)/                 # Route group: app pages with Header + Footer
 │   │   │   ├── layout.tsx          # Auth-aware layout
 │   │   │   ├── page.tsx            # Landing page
-│   │   │   ├── dashboard/          # Protected dashboard
-│   │   │   ├── jobs/               # Public job board
+│   │   │   ├── dashboard/          # Protected dashboard → delegates to features/dashboard/
+│   │   │   ├── jobs/               # Public job board → delegates to features/jobs/
 │   │   │   ├── learning/           # Learning modules
 │   │   │   ├── cv-builder/         # CV editor (placeholder)
 │   │   │   ├── portfolio/          # Portfolio builder
-│   │   │   └── profile/            # User profile
+│   │   │   └── profile/            # User profile → delegates to features/dashboard/
 │   │   │
 │   │   ├── admin/                  # Admin-only routes
 │   │   │   ├── layout.tsx          # Admin sidebar + requireAdmin()
-│   │   │   ├── jobs/               # Job management
+│   │   │   ├── jobs/               # Job management → delegates to features/jobs/
 │   │   │   └── learning/           # Learning module creation
 │   │   │
 │   │   ├── auth/callback/route.ts  # Supabase OAuth code exchange
 │   │   └── api/                    # API routes (placeholders)
 │   │
+│   ├── features/                   # ✨ Feature-driven architecture
+│   │   ├── jobs/                   # ✨ Jobs module (21 files)
+│   │   │   ├── types/job.ts        # JobType, JobStatus, ApplyMethod, Job interface
+│   │   │   ├── schemas/
+│   │   │   │   ├── job-submission.ts  # Zod: submission, draft, approval
+│   │   │   │   └── job-params.ts      # Search params validation
+│   │   │   ├── actions/
+│   │   │   │   ├── fetch-jobs.ts      # getJobs, getJobById, getUserJobs, getPendingJobs, getAllJobs
+│   │   │   │   ├── submit-job.ts      # submitJobAction, saveJobDraftAction
+│   │   │   │   ├── manage-job.ts      # updateJobAction, deleteJobAction, republishJobAction
+│   │   │   │   └── approve-job.ts     # approveJobAction, rejectJobAction, publishDraftJobAction
+│   │   │   ├── utils/
+│   │   │   │   ├── formatters.ts      # formatSalary, formatDeadline, label helpers
+│   │   │   │   └── queries.ts         # Cached Supabase query builders (React cache)
+│   │   │   └── components/ (12 files) # JobCard, DashboardJobCard, PostJobForm,
+│   │   │                              # EditJobForm, AdminApprovalTable, JobsHero,
+│   │   │                              # JobsEmptyState, RichTextToolbar, TagInput,
+│   │   │                              # JobTypeBadge, VerificationBadge, StatusBadge
+│   │   │
+│   │   ├── auth/                   # ✨ Auth module (10 files)
+│   │   │   ├── types/auth.ts       # AuthResult, StrengthResult
+│   │   │   ├── schemas/
+│   │   │   │   ├── login.ts           # loginSchema
+│   │   │   │   ├── register.ts        # registerSchema
+│   │   │   │   └── password.ts        # forgotPasswordSchema, updatePasswordSchema, resendConfirmationSchema
+│   │   │   ├── actions/
+│   │   │   │   ├── login.ts           # loginAction, googleSignInAction
+│   │   │   │   ├── register.ts        # registerAction
+│   │   │   │   ├── session.ts         # logoutAction
+│   │   │   │   ├── password.ts        # resendConfirmationAction, forgotPasswordAction, updatePasswordAction
+│   │   │   │   └── guards.ts          # requireAuth, getCurrentUser
+│   │   │   └── utils/
+│   │   │       └── password.ts        # evaluatePassword, STRENGTH_LABELS
+│   │   │
+│   │   └── dashboard/              # ✨ Dashboard module (9 files)
+│   │       ├── types/dashboard.ts  # DashboardStats, ActivityEntry, ApplicationEntry, UserSettings, UserProfile
+│   │       ├── schemas/
+│   │       │   ├── profile.ts         # profileSchema
+│   │       │   ├── password.ts        # passwordSchema
+│   │       │   └── notifications.ts   # notificationPrefsSchema
+│   │       └── actions/
+│   │           ├── stats.ts           # getDashboardStats
+│   │           ├── activity.ts        # getRecentActivity, timeAgo, mapActionToStatus
+│   │           ├── applications.ts    # getApplications, applyToJob
+│   │           ├── settings.ts        # getUserSettings, getUserProfile, saveProfileSettings, saveNotificationPreferences
+│   │           └── security.ts        # updatePassword
+│   │
 │   ├── components/
-│   │   ├── ui/                     # shadcn/ui primitives (15 components)
-│   │   ├── admin/                  # Admin-specific components
-│   │   ├── jobs/                   # Job-related components
+│   │   ├── ui/                     # shadcn/ui primitives (17 components)
+│   │   ├── admin/                  # Admin-specific components (data tables, sidebar, modals)
+│   │   ├── dashboard/              # Dashboard header + role badge
 │   │   ├── landing/                # Landing page sections
-│   │   ├── layout/                 # Shared layout components
 │   │   ├── mobile-menu.tsx         # Mobile hamburger menu
 │   │   └── role-badge.tsx          # Reusable role badge
 │   │
 │   └── lib/
 │       ├── utils.ts                # cn() utility
 │       ├── roles.ts                # Role labels and helpers
-│       ├── translations.tsx        # EN/ID translation context
-│       ├── auth/                   # Auth server actions
-│       ├── admin/                  # Admin guards
-│       ├── dashboard/              # Dashboard server actions
-│       ├── jobs/                   # Job server actions + utils
-│       ├── learning/               # Learning server actions
-│       └── supabase/               # Supabase clients
+│       ├── translations.tsx        # EN/ID TranslationProvider, useTranslations
+│       ├── admin/
+│       │   └── require-admin.ts    # Admin authorization guard
+│       └── supabase/               # Supabase clients (browser, server, middleware)
 │
 ├── supabase/                       # Supabase migrations and config
 ├── components.json                 # shadcn/ui configuration
@@ -112,17 +158,19 @@ remonest-app/
 
 ### Organization Pattern
 
-**Hybrid approach:**
-- **Route-based** at the `app/` level (Next.js conventions)
-- **Domain/feature-based** at `lib/` and `components/` level
-- **Type-based** for UI primitives (`components/ui/`)
+**Feature-driven architecture** (migrated April 2026):
+- **Route-based** at the `app/` level — thin pages that delegate to features
+- **Feature-based** at `features/` level — each feature owns its types, schemas, actions, components
+- **Shared infrastructure** in `lib/` — Supabase clients, i18n, role helpers, utils
+- **UI primitives** in `components/ui/` — shadcn components used across all features
 
 **Key patterns:**
-1. Server Components fetch data from `lib/*/actions.ts`
+1. Server Components in `app/` fetch data from `features/<name>/actions/*`
 2. Interactive pages split Server (data) + Client (UI state)
-3. Mutations use `useActionState` with server actions
+3. Mutations use Server Actions with Zod validation
 4. Role-based rendering: Server fetches role → passes to Client as prop
-5. Barrel exports in `components/landing/index.ts` and `components/jobs/index.ts`
+5. Supabase queries cached with `React.cache()` for deduplication within a request
+6. All imports use `@/*` path aliases — no barrel files
 
 ---
 
@@ -144,40 +192,57 @@ pnpm lint         # Run ESLint
    - Identify all user-facing text for translations
    - Plan Server vs Client component split
 
-2. **Create server actions** (if needed)
+2. **Create feature module** under `src/features/<name>/`
+   ```
+   features/<name>/
+   ├── types/          # Shared type definitions
+   ├── schemas/        # Zod validation schemas
+   ├── actions/        # Server Actions (mutations + queries)
+   ├── components/     # Feature-specific UI components
+   ├── utils/          # Formatters, helpers, cached queries
+   └── hooks/          # Client-side hooks (if needed)
+   ```
+
+3. **Create server actions**
    ```typescript
-   // src/lib/your-feature/actions.ts
-   export async function getData(): Promise<Data[]> {
+   // src/features/your-feature/actions/data.ts
+   "use server"
+   import { requireAuth } from "@/features/auth/actions/guards"
+   import { getSupabaseServerClient } from "@/lib/supabase/server"
+
+   export async function getData() {
+     await requireAuth()
+     const supabase = getSupabaseServerClient()
      const { data } = await supabase.from('your-table').select('*')
      return data || []
    }
    ```
 
-3. **Create components** (feature-based folder)
+4. **Create components**
    ```tsx
-   // src/components/your-feature/your-component.tsx
+   // src/features/your-feature/components/YourComponent.tsx
    "use client"
    import { useTranslations } from "@/lib/translations"
-   
+
    export function YourComponent() {
      const { t } = useTranslations()
      return <div>{t.yourFeature.title}</div>
    }
    ```
 
-4. **Create route** (App Router convention)
+5. **Create route** (thin wrapper in `app/`)
    ```tsx
    // src/app/(main)/your-feature/page.tsx
-   import { getData } from "@/lib/your-feature/actions"
-   import { YourFeatureClient } from "./your-feature-client"
-   
+   import { getData } from "@/features/your-feature/actions/data"
+   import { YourFeatureClient } from "@/features/your-feature/components/YourFeatureClient"
+
    export default async function YourFeaturePage() {
      const data = await getData()
      return <YourFeatureClient data={data} />
    }
    ```
 
-5. **Add translations**
+6. **Add translations**
    ```typescript
    // src/lib/translations.tsx — add to both en and id objects
    yourFeature: {
@@ -186,7 +251,7 @@ pnpm lint         # Run ESLint
    }
    ```
 
-6. **Update documentation**
+7. **Update documentation**
    - Create feature documentation in `docs/`
    - Update this README with new doc links
 
@@ -214,9 +279,10 @@ pnpm lint         # Run ESLint
 Brief description of what this feature does.
 
 ## Architecture
-- Server actions: `src/lib/feature/actions.ts`
-- Components: `src/components/feature/`
-- Routes: `src/app/(main)/feature/`
+- Server actions: `src/features/<name>/actions/`
+- Components: `src/features/<name>/components/`
+- Types: `src/features/<name>/types/`
+- Routes: `src/app/(main)/<name>/`
 
 ## Implementation Details
 Code examples, API contracts, database schema.
@@ -232,7 +298,7 @@ Current limitations or bugs.
 
 ## 🔑 Key Conventions
 
-1. **Imports**: Use `@/*` path alias (e.g., `@/components/ui/button`)
+1. **Imports**: Use `@/*` path alias (e.g., `@/features/jobs/actions/fetch-jobs`)
 2. **Styling**: Tailwind utility classes only, no inline styles
 3. **Components**: Server components by default, `"use client"` only when needed
 4. **Icons**: Always from `lucide-react`
@@ -244,6 +310,9 @@ Current limitations or bugs.
 10. **Role-based UI**: Server fetches role → passes to Client as prop (never call `getUserRole()` in client components)
 11. **Dashboard**: Async Server Components for read-only pages; Server + Client split for interactive forms
 12. **Database migrations**: Sequential numbered files (`001_`, `002_`) with rollback comments
+13. **No barrel files**: Direct imports only (`@/features/jobs/components/JobCard`, not `@/features/jobs`)
+14. **Zod validation**: All mutations validated with Zod schemas in `features/<name>/schemas/`
+15. **Supabase caching**: Use `React.cache()` for query deduplication within a request
 
 ---
 
@@ -284,7 +353,7 @@ Current limitations or bugs.
 |------|-------------|-------|
 | **[PROJECT.md](./PROJECT.md)** | Tech stack, directory structure, conventions, known issues | 514 |
 | **[IMPLEMENTATION.md](./IMPLEMENTATION.md)** | Exhaustive feature implementation details | 1843 |
-| **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** | ✨ NEW — Complete feature status & next steps | ~450 |
+| **[IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md)** | Complete feature status & next steps | ~450 |
 | **[ROLE_SYSTEM.md](./ROLE_SYSTEM.md)** | RBAC system: admin/user/client roles, colors, guards | ~300 |
 | **[DATABASE_ARCHITECTURE.md](./DATABASE_ARCHITECTURE.md)** | Complete database schema, RLS, indexes, migrations | ~600 |
 
@@ -316,14 +385,14 @@ docs/
 ├── README.md                          # This file - Documentation index
 ├── PROJECT.md                         # Project overview & tech stack
 ├── IMPLEMENTATION.md                  # Comprehensive implementation guide
-├── IMPLEMENTATION_SUMMARY.md          # ✨ NEW - Feature status & next steps
+├── IMPLEMENTATION_SUMMARY.md          # Feature status & next steps
 ├── ROLE_SYSTEM.md                     # User role system (RBAC)
 ├── DATABASE_ARCHITECTURE.md           # Database schema & design
 ├── CLIENT_ROLE_IMPLEMENTATION.md      # Client role feature (v0.3.0)
 ├── JOB_BOARD_IMPLEMENTATION.md        # Job board feature (v1.0.0)
 ├── JOB_POSTING_WORKFLOW.md            # Job posting workflow (v0.3.2)
 ├── AUTO_VERIFIED_JOB_POSTING.md       # Reverted auto-verify (v0.3.1)
-├── JOB_DETAIL_MODAL.md                # Draft job modal (v1.1.0) ✨ NEW
+├── JOB_DETAIL_MODAL.md                # Draft job modal (v1.1.0)
 ├── LANGUAGE_SWITCHER.md               # i18n system (EN/ID)
 ├── LEARNING_MODULE.md                 # Learning module system
 ├── ADMIN_ACCESS.md                    # Admin panel access guide
