@@ -97,9 +97,14 @@ export const getPendingJobsQuery = cache(async (): Promise<Job[]> => {
 
 export const getAllJobsQuery = cache(async (): Promise<Job[]> => {
   const supabase = getSupabaseServerClient();
+  
+  // Fetch jobs with author info using join
   const { data, error } = await supabase
     .from("jobs")
-    .select("*")
+    .select(`
+      *,
+      author:user_profiles!jobs_posted_by_user_id_fkey(full_name)
+    `)
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -107,5 +112,11 @@ export const getAllJobsQuery = cache(async (): Promise<Job[]> => {
     return [];
   }
 
-  return (data || []) as Job[];
+  // Add author_name to each job
+  const jobsWithAuthor = (data || []).map((job: any) => ({
+    ...job,
+    author_name: job.author?.full_name || "Unknown",
+  }));
+
+  return jobsWithAuthor as Job[];
 });

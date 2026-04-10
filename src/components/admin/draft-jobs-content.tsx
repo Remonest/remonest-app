@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DraftJobsTable } from "@/components/admin/draft-jobs-table";
-import { columns } from "@/components/admin/job-columns";
+import { createColumns } from "@/components/admin/job-columns";
+import { JobDetailModal } from "@/components/admin/job-detail-modal";
 
 interface DraftJobsContentClientProps {
   initialData: any[];
@@ -13,6 +14,8 @@ export function DraftJobsContentClient({ initialData }: DraftJobsContentClientPr
   const router = useRouter();
   const [jobs, setJobs] = useState(initialData);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -20,6 +23,13 @@ export function DraftJobsContentClient({ initialData }: DraftJobsContentClientPr
     router.refresh();
     setIsRefreshing(false);
   };
+
+  const handleViewDetails = (job: any) => {
+    setSelectedJob(job);
+    setIsModalOpen(true);
+  };
+
+  const dynamicColumns = createColumns({ onViewDetails: handleViewDetails });
 
   return (
     <div className="relative">
@@ -31,10 +41,21 @@ export function DraftJobsContentClient({ initialData }: DraftJobsContentClientPr
           </div>
         </div>
       )}
-      <DraftJobsTable 
-        data={jobs} 
-        columns={columns} 
+      <DraftJobsTable
+        data={jobs}
+        columns={dynamicColumns}
         onRefresh={handleRefresh}
+      />
+
+      {/* Job Detail Modal */}
+      <JobDetailModal
+        job={selectedJob}
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onRefresh={() => {
+          handleRefresh();
+          setIsModalOpen(false);
+        }}
       />
     </div>
   );

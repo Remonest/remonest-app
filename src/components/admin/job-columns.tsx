@@ -9,7 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
-export const columns: ColumnDef<Job>[] = [
+interface JobColumnsOptions {
+  onViewDetails?: (job: Job & { author_name?: string }) => void;
+}
+
+export const createColumns = (options?: JobColumnsOptions): ColumnDef<Job & { author_name?: string }>[] => [
   {
     accessorKey: "title",
     header: "Job Title",
@@ -29,6 +33,16 @@ export const columns: ColumnDef<Job>[] = [
     cell: ({ row }) => (
       <span className="font-medium">{row.getValue("company")}</span>
     ),
+  },
+  {
+    id: "author",
+    header: "Author",
+    cell: ({ row }) => {
+      const authorName = (row.original as any).author_name || "Unknown";
+      return (
+        <span className="text-sm text-muted-foreground">{authorName}</span>
+      );
+    },
   },
   {
     accessorKey: "type",
@@ -53,31 +67,47 @@ export const columns: ColumnDef<Job>[] = [
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }: { row: Row<Job> }) => {
+    cell: ({ row }: { row: Row<Job & { author_name?: string }> }) => {
       const job = row.original;
 
-      // For draft jobs, show view details button instead of JobActions
+      // For all jobs, show view details button
+      // For draft jobs, also show publish/delete actions
       if (job.status === "draft") {
         return (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => (job as any).viewDetails?.(job)}
-            className="h-8 gap-1.5"
-          >
-            <Eye className="h-3.5 w-3.5" />
-            Lihat Detail
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => options?.onViewDetails?.(job as Job & { author_name?: string })}
+              className="h-8 gap-1.5"
+            >
+              <Eye className="h-3.5 w-3.5" />
+              Lihat
+            </Button>
+            <JobActions
+              jobId={job.id}
+              jobTitle={job.title}
+              currentStatus={job.status}
+            />
+          </div>
         );
       }
 
+      // For non-draft jobs, only show view button
       return (
-        <JobActions
-          jobId={job.id}
-          jobTitle={job.title}
-          currentStatus={job.status}
-        />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => options?.onViewDetails?.(job as Job & { author_name?: string })}
+          className="h-8 gap-1.5"
+        >
+          <Eye className="h-3.5 w-3.5" />
+          Lihat Detail
+        </Button>
       );
     },
   },
 ];
+
+// Keep backward compatibility
+export const columns = createColumns();
