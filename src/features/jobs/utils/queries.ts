@@ -98,25 +98,56 @@ export const getPendingJobsQuery = cache(async (): Promise<Job[]> => {
 export const getAllJobsQuery = cache(async (): Promise<Job[]> => {
   const supabase = getSupabaseServerClient();
   
-  // Fetch jobs with author info using join
-  const { data, error } = await supabase
+  // Fetch all jobs first
+  const { data: jobs, error: jobsError } = await supabase
     .from("jobs")
-    .select(`
-      *,
-      author:user_profiles!jobs_posted_by_user_id_fkey(full_name)
-    `)
+    .select("*")
     .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error("Error fetching all jobs:", error);
+  if (jobsError) {
+    console.error("Error fetching all jobs:", jobsError);
     return [];
   }
 
-  // Add author_name to each job
-  const jobsWithAuthor = (data || []).map((job: any) => ({
-    ...job,
-    author_name: job.author?.full_name || "Unknown",
-  }));
+  if (!jobs || jobs.length === 0) {
+    return [];
+  }
 
-  return jobsWithAuthor as Job[];
+  // Get unique user IDs from jobs
+  const userIds = [...new Set(jobs.map(job => job.posted_by_user_id).filter(Boolean))];
+
+  if (userIds.length === 0) {
+    // No user IDs, just return jobs with Unknown author
+    return jobs.map(job => ({
+      ...job,
+      author_name: "Unknown",
+    })) as Job[];
+  }
+
+  // Fetch user profiles for these IDs
+  const { data: profiles, error: profilesError } = await supabase
+    .from("user_profiles")
+    .select("id, full_name")
+    .in("id", userIds);
+
+  if (profilesError) {
+    console.error("Error fetching user profiles:", profilesError);
+    // Return jobs without author names
+    return jobs.map(job => ({
+      ...job,
+      author_name: "Unknown",
+    })) as Job[];
+  }
+
+  // Create a map of user ID to full name
+  const profileMap = new Map();
+  profiles?.forEach(profile => {
+    profileMap.set(profile.id, profile.full_name);
+  });
+
+  // Add author_name to each job
+  return jobs.map(job => ({
+    ...job,
+    author_name: profileMap.get(job.posted_by_user_id) || "Unknown",
+  })) as Job[];
 });
