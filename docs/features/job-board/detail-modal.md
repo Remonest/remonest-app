@@ -119,10 +119,10 @@ src/
 
 **Type Safety (v1.1.0):**
 ```tsx
-import type { Job } from "@/lib/admin/mock-data";
+import type { AdminJob } from "@/components/admin/types/job";
 
 // Properly typed columns
-columns: ColumnDef<Job>[]
+columns: ColumnDef<AdminJob>[]
 ```
 
 **How It Works:**
