@@ -39,6 +39,7 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
 - **[Design Guidelines](./guides/design-guidelines.md)** — Complete design system, colors, components, patterns
 - **[Social Media Icons](./guides/social-media-icons.md)** — Custom SVG icons for footer (Twitter, LinkedIn, Instagram)
 - **[Git Workflow](./guides/git-workflow.md)** — 🆕 Commit messages, branching, PR guidelines
+- **[Database Migrations](./guides/database-migrations.md)** — 🆕 Complete guide to all 12 migrations
 - **[Admin Access Guide](./guides/admin-access.md)** — Step-by-step admin panel access instructions
 - **[Quick Admin Reference](./guides/quick-admin-access.md)** — Quick admin access steps
 - **[Adding New Features](./guides/new-feature.md)** — How to add features step-by-step
@@ -75,6 +76,7 @@ docs/
     ├── design-guidelines.md          # 🎨 Design system & component patterns
     ├── social-media-icons.md         # 🐦 Custom SVG icons (Twitter, LinkedIn, Instagram)
     ├── git-workflow.md               # 🔄 Commit messages, branching, PR guidelines
+    ├── database-migrations.md        # 🗄️ Complete guide to all 12 migrations
     ├── rls-policies.md               # 🔒 Complete RLS policy reference
     ├── rls-recursion-fix.md          # 🛠️ Fix for infinite recursion error
     ├── admin-action-logging.md       # 📊 Admin audit trail system
