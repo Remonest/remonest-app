@@ -27,7 +27,9 @@
       "Bash(npm run *)",
       "Bash(git diff *)",
       "Bash(main)",
-      "Bash(/dashboard/ *)"
+      "Bash(/dashboard/ *)",
+      "Bash(git pull *)",
+      "Bash(git stash)"
     ]
   },
   "$version": 3

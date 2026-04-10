@@ -22,6 +22,7 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
 
 - **[Admin Access](./ADMIN_ACCESS.md)** — Detailed guide for accessing admin panel
 - **[Quick Admin Access](./QUICK_ADMIN_ACCESS.md)** — Step-by-step admin access instructions
+- **[Job Detail Modal](./JOB_DETAIL_MODAL.md)** — Dialog component for viewing/managing job drafts (v1.1.0 with auto-refresh)
 
 ---
 

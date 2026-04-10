@@ -2,9 +2,10 @@ import { Suspense } from "react";
 import { AdminApprovalTable } from "@/components/jobs";
 import { DataTable } from "@/components/admin/data-table";
 import { columns } from "@/components/admin/job-columns";
+import { DraftJobsContentClient } from "@/components/admin/draft-jobs-content";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getAllJobs, testJobsQuery } from "@/lib/jobs/actions";
+import { getAllJobs } from "@/lib/jobs/actions";
 import {
   Loader2,
   Plus,
@@ -16,6 +17,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 function LoadingState() {
   return (
@@ -146,6 +149,17 @@ async function JobsByStatusContent({ status }: { status?: string }) {
   return <DataTable data={transformedJobs} columns={columns} />;
 }
 
+async function DraftJobsContent({ status }: { status?: string }) {
+  const allJobs = await getAllJobs();
+
+  // Filter jobs by status if provided
+  const jobs = status
+    ? allJobs.filter((job: any) => job.status === status)
+    : allJobs;
+
+  return <DraftJobsContentClient initialData={jobs} />;
+}
+
 export default function AdminJobsPage() {
   return (
     <div className="space-y-6">
@@ -189,7 +203,7 @@ export default function AdminJobsPage() {
 
         <TabsContent value="draft" className="space-y-4">
           <Suspense fallback={<LoadingState />}>
-            <JobsByStatusContent status="draft" />
+            <DraftJobsContent status="draft" />
           </Suspense>
         </TabsContent>
 

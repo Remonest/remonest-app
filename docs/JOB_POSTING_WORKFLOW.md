@@ -234,6 +234,49 @@ WHERE title = 'Your Test Job';
 -- published_at: <timestamp>
 ```
 
+### 4. Test Admin Rejection
+
+1. Login as admin
+2. Navigate to `/admin/jobs`
+3. Switch to "Menunggu Persetujuan" tab
+4. Find the pending job
+5. Click reject button
+6. Enter rejection reason (optional)
+7. Submit rejection
+
+**Database Verification:**
+```sql
+SELECT id, title, status, is_verified_by_admin, rejection_reason, published_at
+FROM jobs
+WHERE title = 'Your Test Job';
+
+-- Expected after rejection:
+-- status: 'rejected'
+-- is_verified_by_admin: false
+-- rejection_reason: 'your rejection reason' (if provided)
+-- published_at: null
+```
+
+**Rejection Flow Details:**
+
+The rejection process uses:
+- **Service role client** (`getSupabaseServiceClient()`) to bypass RLS policies
+- **Atomic update** with `.eq("status", "pending")` to ensure only pending jobs can be rejected
+- **Explicit verification flag**: `is_verified_by_admin: false` when rejected
+- **Optional rejection reason**: Stored in `rejection_reason` field
+
+**Why Service Role Client?**
+- Admin users need to update jobs they don't own
+- Regular server client respects RLS policies and blocks cross-user updates
+- Service role client uses admin credentials to bypass RLS restrictions
+- Ensures admins can approve/reject any job regardless of ownership
+
+**Security Measures:**
+1. Role validation via `isAdmin(user.id)` before any action
+2. Atomic query prevents rejecting non-pending jobs
+3. Explicit verification state management (`null` → pending, `true` → approved, `false` → rejected)
+4. Optional rejection reason for audit trail
+
 ---
 
 ## Security Notes

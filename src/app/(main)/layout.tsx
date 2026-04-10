@@ -38,10 +38,12 @@ export default async function MainLayout({
 
   // Unauthenticated — show landing layout
   return (
-    <div className="flex flex-col flex-1 bg-background">
-      <Header />
-      <main className="flex-1">{children}</main>
-      <Footer />
-    </div>
+    <TranslationProvider>
+      <div className="flex flex-col flex-1 bg-background">
+        <Header />
+        <main className="flex-1">{children}</main>
+        <Footer />
+      </div>
+    </TranslationProvider>
   );
 }

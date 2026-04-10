@@ -1,10 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { JobTypeBadge, StatusBadge } from "./index";
+import { JobTypeBadge } from "./index";
 import { approveJob, rejectJob, getPendingJobs } from "@/lib/jobs/actions";
 import { toast } from "sonner";
 import {
@@ -64,17 +63,22 @@ export function AdminApprovalTable() {
   });
   const [rejectionReason, setRejectionReason] = useState("");
 
+  const loadPendingJobs = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getPendingJobs();
+      setJobs(data);
+    } catch (error) {
+      console.error("Failed to load pending jobs:", error);
+      toast.error("Gagal memuat data pekerjaan");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     loadPendingJobs();
   }, []);
-
-  const loadPendingJobs = async () => {
-    setLoading(true);
-    const data = await getPendingJobs();
-    console.log("📊 Pending jobs loaded:", data);
-    setJobs(data);
-    setLoading(false);
-  };
 
   const handleApprove = async () => {
     if (!approveDialog.jobId) return;
@@ -88,7 +92,10 @@ export function AdminApprovalTable() {
     } else {
       toast.error(result.error);
       // If job was already processed or not found, close the dialog and refresh
-      if (result.error?.includes("sudah diproses") || result.error?.includes("tidak ditemukan")) {
+      if (
+        result.error?.includes("sudah diproses") ||
+        result.error?.includes("tidak ditemukan")
+      ) {
         setApproveDialog({ open: false, jobId: "" });
         await loadPendingJobs();
       }
@@ -116,7 +123,10 @@ export function AdminApprovalTable() {
     } else {
       toast.error(result.error);
       // If job was already processed or not found, close the dialog and refresh
-      if (result.error?.includes("sudah diproses") || result.error?.includes("tidak ditemukan")) {
+      if (
+        result.error?.includes("sudah diproses") ||
+        result.error?.includes("tidak ditemukan")
+      ) {
         setRejectDialog({ open: false, jobId: "" });
         setRejectionReason("");
         await loadPendingJobs();

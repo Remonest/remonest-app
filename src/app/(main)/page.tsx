@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Header,
   HeroSection,
@@ -9,6 +11,7 @@ import {
   LanguageHandler,
 } from "@/components/landing";
 import { TranslationProvider } from "@/lib/translations";
+import { useEffect } from "react";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -34,6 +37,26 @@ const jsonLd = {
 };
 
 export default function LandingPage() {
+  // Handle hash-based scrolling when navigating from other pages
+  useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      // Wait for content to render
+      requestAnimationFrame(() => {
+        const element = document.getElementById(hash.slice(1));
+        if (element) {
+          const headerOffset = 100;
+          const elementPosition = element.getBoundingClientRect().top + window.scrollY;
+          const offsetPosition = elementPosition - headerOffset;
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: "smooth",
+          });
+        }
+      });
+    }
+  }, []);
+
   return (
     <div className="flex flex-col flex-1 bg-background">
       <script

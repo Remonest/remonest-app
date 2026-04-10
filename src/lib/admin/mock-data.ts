@@ -1,5 +1,10 @@
-export type JobStatus = "pending" | "approved" | "rejected";
-export type JobType = "full-time" | "part-time" | "contract" | "freelance" | "internship";
+export type JobStatus = "pending" | "approved" | "rejected" | "draft";
+export type JobType =
+  | "full-time"
+  | "part-time"
+  | "contract"
+  | "freelance"
+  | "internship";
 
 export interface Job {
   id: string;
@@ -12,6 +17,7 @@ export interface Job {
   posted_at: string;
   description?: string;
   apply_url?: string;
+  viewDetails?: (job: Job) => void;
 }
 
 export const jobTypeLabels: Record<JobType, string> = {
@@ -24,6 +30,7 @@ export const jobTypeLabels: Record<JobType, string> = {
 
 export const statusLabels: Record<JobStatus, string> = {
   pending: "Pending",
+  draft: "Draft",
   approved: "Approved",
   rejected: "Rejected",
 };
@@ -39,7 +46,8 @@ export const mockJobs: Job[] = [
     status: "pending",
     salary_range: "£65,000 - £85,000",
     posted_at: "2026-04-05T10:00:00Z",
-    description: "We're looking for an experienced React developer to join our team...",
+    description:
+      "We're looking for an experienced React developer to join our team...",
   },
   {
     id: "2",

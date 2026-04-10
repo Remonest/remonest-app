@@ -382,7 +382,8 @@ export async function approveJob(jobId: string) {
     };
   }
 
-  const supabase = getSupabaseServerClient();
+  // Use service role client to bypass RLS policies for admin operations
+  const supabase = getSupabaseServiceClient();
   const { data, error } = await supabase
     .from("jobs")
     .update({
@@ -424,6 +425,58 @@ export async function approveJob(jobId: string) {
   };
 }
 
+// Publish a draft job (admin operation)
+export async function publishDraftJob(jobId: string) {
+  const user = await getCurrentUser();
+  if (!user) {
+    return { success: false, error: "Anda harus login" };
+  }
+
+  if (!(await isAdmin(user.id))) {
+    return { success: false, error: "Hanya admin yang bisa menerbitkan lowongan" };
+  }
+
+  // Use service role client to bypass RLS policies for admin operations
+  const supabase = getSupabaseServiceClient();
+
+  // Single atomic query - will only update if status is 'draft'
+  const { data, error } = await supabase
+    .from("jobs")
+    .update({
+      status: "published",
+      is_verified_by_admin: true,
+      published_at: new Date().toISOString(),
+    })
+    .eq("id", jobId)
+    .eq("status", "draft")
+    .select()
+    .maybeSingle();
+
+  // Handle specific Supabase error for no rows found
+  if (error) {
+    console.error("Error publishing draft job:", error);
+    if (error.code === "PGRST116") {
+      return {
+        success: false,
+        error: "Draft tidak ditemukan atau sudah diterbitkan",
+      };
+    }
+    return { success: false, error: "Gagal menerbitkan draft" };
+  }
+
+  if (!data) {
+    return {
+      success: false,
+      error: "Draft tidak ditemukan atau sudah diterbitkan",
+    };
+  }
+
+  revalidatePath("/jobs");
+  revalidatePath("/admin/jobs");
+
+  return { success: true, data, message: "Draft berhasil diterbitkan" };
+}
+
 // Reject a pending job
 export async function rejectJob(jobId: string, reason?: string) {
   const user = await getCurrentUser();
@@ -435,13 +488,15 @@ export async function rejectJob(jobId: string, reason?: string) {
     return { success: false, error: "Hanya admin yang bisa menolak lowongan" };
   }
 
-  const supabase = getSupabaseServerClient();
+  // Use service role client to bypass RLS policies for admin operations
+  const supabase = getSupabaseServiceClient();
 
   // Single atomic query - will only update if status is 'pending'
   const { data, error } = await supabase
     .from("jobs")
     .update({
       status: "rejected",
+      is_verified_by_admin: false, // Explicitly set to false when rejected
       rejection_reason: reason || null,
     })
     .eq("id", jobId)

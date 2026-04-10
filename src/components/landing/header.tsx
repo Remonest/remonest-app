@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Globe2, Menu, X, Sun, Moon, LogIn, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,11 @@ export function Header() {
   const [isDark, setIsDark] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { language, setLanguage, t } = useTranslations();
+  const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Check if we're on the landing page
+  const isLandingPage = pathname === "/";
 
   // Navigation items
   const navItems: NavItem[] = [
@@ -39,6 +44,15 @@ export function Header() {
       id: "testimonials-section",
       label: t.header.successStories,
       href: "#testimonials-section",
+    },
+  ];
+
+  // External navigation items (no scroll ID)
+  const extNavItems: NavItem[] = [
+    {
+      id: "jobs",
+      label: t.header.jobs,
+      href: "/jobs",
     },
   ];
 
@@ -173,24 +187,61 @@ export function Header() {
 
           {/* Navigation Links (Center) - Desktop */}
           <nav className="hidden md:flex items-center gap-1 flex-1 justify-center" aria-label="Main navigation">
-            {navItems.map((item) => (
-              <a
-                key={item.id}
-                href={item.href}
-                onClick={(e) => handleSmoothScroll(e, item.id)}
-                className={`relative h-10 px-4 inline-flex items-center rounded-md text-sm font-medium whitespace-nowrap no-underline transition-all duration-300 ${
-                  activeSection === item.id
-                    ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                }`}
-                aria-current={activeSection === item.id ? "page" : undefined}
-              >
-                {item.label}
-                {activeSection === item.id && (
-                  <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-blue-600 dark:bg-blue-400 rounded-full" />
-                )}
-              </a>
-            ))}
+            {navItems.map((item) => {
+              const isActive = isLandingPage && activeSection === item.id;
+              const className = `relative h-10 px-4 inline-flex items-center rounded-md text-sm font-medium whitespace-nowrap no-underline transition-all duration-300 ${
+                isActive
+                  ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              }`;
+
+              if (!isLandingPage) {
+                return (
+                  <a
+                    key={item.id}
+                    href={`/#${item.id}`}
+                    className={className}
+                  >
+                    {item.label}
+                  </a>
+                );
+              }
+
+              return (
+                <a
+                  key={item.id}
+                  href={item.href}
+                  onClick={(e) => handleSmoothScroll(e, item.id)}
+                  className={className}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  {item.label}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-blue-600 dark:bg-blue-400 rounded-full" />
+                  )}
+                </a>
+              );
+            })}
+            {extNavItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  className={`relative h-10 px-4 inline-flex items-center rounded-md text-sm font-medium whitespace-nowrap no-underline transition-all duration-300 ${
+                    isActive
+                      ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50"
+                      : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  }`}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  {item.label}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-6 h-0.5 bg-blue-600 dark:bg-blue-400 rounded-full" />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
 
           {/* Right Section */}
@@ -333,24 +384,60 @@ export function Header() {
           >
             <nav className="flex flex-col gap-2 p-4 border border-border rounded-xl bg-card shadow-lg backdrop-blur-sm">
               {/* Nav Links */}
-              {navItems.map((item) => (
-                <a
-                  key={item.id}
-                  href={item.href}
-                  onClick={(e) => {
-                    handleSmoothScroll(e, item.id);
-                    setMobileMenuOpen(false);
-                  }}
-                  className={`h-12 px-4 flex items-center rounded-lg text-sm font-medium no-underline transition-all duration-300 ${
-                    activeSection === item.id
-                      ? "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400"
-                      : "text-muted-foreground hover:text-foreground hover:bg-muted"
-                  }`}
-                  aria-current={activeSection === item.id ? "page" : undefined}
-                >
-                  {item.label}
-                </a>
-              ))}
+              {navItems.map((item) => {
+                const isActive = isLandingPage && activeSection === item.id;
+                const className = `h-12 px-4 flex items-center rounded-lg text-sm font-medium no-underline transition-all duration-300 ${
+                  isActive
+                    ? "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                }`;
+
+                if (!isLandingPage) {
+                  return (
+                    <a
+                      key={item.id}
+                      href={`/#${item.id}`}
+                      className={className}
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {item.label}
+                    </a>
+                  );
+                }
+
+                return (
+                  <a
+                    key={item.id}
+                    href={item.href}
+                    onClick={(e) => {
+                      handleSmoothScroll(e, item.id);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={className}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    {item.label}
+                  </a>
+                );
+              })}
+              {extNavItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.id}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`h-12 px-4 flex items-center rounded-lg text-sm font-medium no-underline transition-all duration-300 ${
+                      isActive
+                        ? "bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                    }`}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
 
               {/* Language Switcher */}
               <div className="flex items-center justify-center gap-2 pt-3 border-t border-border">

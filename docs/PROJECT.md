@@ -31,6 +31,7 @@ remonest-app/
 │   ├── AUTO_VERIFIED_JOB_POSTING.md    # Reverted auto-verify approach
 │   ├── ADMIN_ACCESS.md             # Admin panel access guide
 │   ├── QUICK_ADMIN_ACCESS.md       # Quick admin access steps
+│   ├── JOB_DETAIL_MODAL.md         # Dialog component for job drafts
 │   └── LANGUAGE_SWITCHER.md        # EN/ID language system
 │
 ├── public/                         # Static assets (images, icons, etc.)
