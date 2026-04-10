@@ -1,10 +1,18 @@
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, XCircle, Clock, FileText, CheckCircle2, AlertCircle } from "lucide-react";
-import { type JobStatus, statusLabels } from "@/lib/admin/mock-data";
 
 interface StatusBadgeProps {
-  status: JobStatus | string;
+  status: string;
 }
+
+const statusLabels: Record<string, string> = {
+  pending: "Menunggu",
+  approved: "Disetujui",
+  rejected: "Ditolak",
+  published: "Terbit",
+  draft: "Draft",
+  expired: "Kedaluwarsa",
+};
 
 const statusConfig: Record<string, { icon: React.ComponentType<{ className?: string }>; variant: "default" | "destructive" | "secondary" | "outline" }> = {
   pending: {
@@ -43,7 +51,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
   return (
     <Badge variant={config.variant} className="gap-1.5 px-2.5 py-1">
       <Icon className="h-3.5 w-3.5" />
-      {statusLabels[status as JobStatus] || status}
+      {statusLabels[status] || status}
     </Badge>
   );
 }

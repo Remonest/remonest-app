@@ -1,8 +1,7 @@
 import { Suspense } from "react";
 import { AdminApprovalTable } from "@/features/jobs/components/AdminApprovalTable";
-import { DataTable } from "@/components/admin/data-table";
-import { columns } from "@/components/admin/job-columns";
 import { DraftJobsContentClient } from "@/components/admin/draft-jobs-content";
+import { JobsByStatusContentClient } from "@/components/admin/jobs-by-status-content";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAllJobs } from "@/features/jobs/actions/fetch-jobs";
@@ -17,8 +16,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
 
 function LoadingState() {
   return (
@@ -48,116 +45,35 @@ function LoadingState() {
 async function JobsByStatusContent({ status }: { status?: string }) {
   const allJobs = await getAllJobs();
 
-  // Filter jobs by status if provided
   const jobs = status
     ? allJobs.filter((job: any) => job.status === status)
     : allJobs;
 
-  // Calculate stats (only show on "all" tab)
   const showStats = !status;
 
-  if (showStats) {
-    const stats = {
-      draft: allJobs.filter((j: any) => j.status === "draft").length,
-      pending: allJobs.filter((j: any) => j.status === "pending").length,
-      published: allJobs.filter((j: any) => j.status === "published").length,
-      rejected: allJobs.filter((j: any) => j.status === "rejected").length,
-      expired: allJobs.filter((j: any) => j.status === "expired").length,
-    };
+  const stats = showStats
+    ? {
+        draft: allJobs.filter((j: any) => j.status === "draft").length,
+        pending: allJobs.filter((j: any) => j.status === "pending").length,
+        published: allJobs.filter((j: any) => j.status === "published").length,
+        rejected: allJobs.filter((j: any) => j.status === "rejected").length,
+        expired: allJobs.filter((j: any) => j.status === "expired").length,
+      }
+    : undefined;
 
-    // Transform jobs to match the mock data structure for DataTable
-    const transformedJobs = jobs.map((job: any) => ({
-      id: job.id,
-      title: job.title,
-      company: job.company,
-      type: job.job_type,
-      status: job.status,
-      location: job.location,
-      created_at: job.created_at,
-      posted_at: job.created_at,
-    }));
-
-    return (
-      <div className="space-y-6">
-        {/* Stats Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Draft</CardTitle>
-              <FileText className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.draft}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Menunggu</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.pending}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Terbit</CardTitle>
-              <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.published}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Ditolak</CardTitle>
-              <XCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.rejected}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Kedaluwarsa</CardTitle>
-              <AlertCircle className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.expired}</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Data Table */}
-        <DataTable data={transformedJobs} columns={columns} />
-      </div>
-    );
-  }
-
-  // Transform jobs for specific status views (no stats)
-  const transformedJobs = jobs.map((job: any) => ({
-    id: job.id,
-    title: job.title,
-    company: job.company,
-    type: job.job_type,
-    status: job.status,
-    location: job.location,
-    created_at: job.created_at,
-    posted_at: job.created_at,
-  }));
-
-  return <DataTable data={transformedJobs} columns={columns} />;
+  return (
+    <JobsByStatusContentClient
+      initialJobs={jobs}
+      showStats={showStats}
+      stats={stats}
+    />
+  );
 }
 
-async function DraftJobsContent({ status }: { status?: string }) {
+async function DraftJobsContent() {
   const allJobs = await getAllJobs();
-
-  // Filter jobs by status if provided
-  const jobs = status
-    ? allJobs.filter((job: any) => job.status === status)
-    : allJobs;
-
-  return <DraftJobsContentClient initialData={jobs} />;
+  const draftJobs = allJobs.filter((job: any) => job.status === "draft");
+  return <DraftJobsContentClient initialData={draftJobs} />;
 }
 
 export default function AdminJobsPage() {
@@ -203,7 +119,7 @@ export default function AdminJobsPage() {
 
         <TabsContent value="draft" className="space-y-4">
           <Suspense fallback={<LoadingState />}>
-            <DraftJobsContent status="draft" />
+            <DraftJobsContent />
           </Suspense>
         </TabsContent>
 

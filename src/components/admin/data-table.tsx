@@ -29,15 +29,14 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Job } from "@/lib/admin/mock-data";
 
-interface DataTableProps {
-  data: Job[];
-  columns: ColumnDef<Job>[];
+interface DataTableProps<TData> {
+  data: TData[];
+  columns: ColumnDef<TData>[];
   loading?: boolean;
 }
 
-export function DataTable({ data, columns, loading = false }: DataTableProps) {
+export function DataTable<TData>({ data, columns, loading = false }: DataTableProps<TData>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,

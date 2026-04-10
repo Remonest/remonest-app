@@ -11,7 +11,11 @@ export function SignOutButton() {
         await logoutAction();
       }}
     >
-      <Button type="submit" variant="outline" size="sm" className="w-full gap-2">
+      <Button
+        type="submit"
+        variant="outline"
+        className="w-full !h-11 gap-2"
+      >
         <LogOut className="h-4 w-4" />
         Sign Out
       </Button>

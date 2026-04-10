@@ -4,11 +4,11 @@ import { useState } from "react";
 import { JobDetailModal } from "./job-detail-modal";
 import { DataTable } from "./data-table";
 import { type ColumnDef } from "@tanstack/react-table";
-import type { Job } from "@/lib/admin/mock-data";
+import type { AdminJob } from "@/components/admin/types/job";
 
 interface DraftJobsTableProps {
   data: any[];
-  columns: ColumnDef<Job>[];
+  columns: ColumnDef<AdminJob>[];
   onRefresh: () => void;
 }
 
