@@ -29,7 +29,9 @@
       "Bash(main)",
       "Bash(/dashboard/ *)",
       "Bash(git pull *)",
-      "Bash(git stash)"
+      "Bash(git stash)",
+      "Bash(copy *)",
+      "Bash(dir *)"
     ]
   },
   "$version": 3

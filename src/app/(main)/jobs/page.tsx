@@ -101,15 +101,15 @@ export default async function JobsPage({
                 id={job.id}
                 title={job.title}
                 company={job.company}
-                job_type={job.job_type}
-                salary_min={job.salary_min}
-                salary_max={job.salary_max}
-                salary_currency={job.salary_currency}
+                job_type={job.job_type ?? undefined}
+                salary_min={job.salary_min ?? undefined}
+                salary_max={job.salary_max ?? undefined}
+                salary_currency={job.salary_currency ?? undefined}
                 location={job.location}
-                apply_url={job.apply_url}
-                apply_email={job.apply_email}
-                deadline={job.deadline}
-                is_verified_by_admin={job.is_verified_by_admin}
+                apply_url={job.apply_url ?? undefined}
+                apply_email={job.apply_email ?? undefined}
+                deadline={job.deadline ?? undefined}
+                is_verified_by_admin={job.is_verified_by_admin ?? false}
               />
             ))}
           </div>

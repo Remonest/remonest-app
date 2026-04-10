@@ -10,7 +10,7 @@ interface JobCardProps {
   id: string;
   title: string;
   company: string;
-  status: "draft" | "pending" | "published" | "rejected";
+  status: "draft" | "pending" | "approved" | "published" | "rejected" | "expired";
   job_type?: string;
   salary_min?: number;
   salary_max?: number;
@@ -25,16 +25,20 @@ interface JobCardProps {
 const statusStyles = {
   draft: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300",
   pending: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+  approved: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
   published:
     "bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-300",
   rejected: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
+  expired: "bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300",
 };
 
 const statusColors = {
   draft: "bg-amber-500",
   pending: "bg-blue-500",
+  approved: "bg-emerald-500",
   published: "bg-emerald-500",
   rejected: "bg-red-500",
+  expired: "bg-gray-500",
 };
 
 const formatSalary = (amount?: number, currency = "IDR") => {
@@ -112,8 +116,10 @@ export function DashboardJobCard({
   const statusLabel = {
     draft: "Draft",
     pending: "In review",
+    approved: "Approved",
     published: "Published",
     rejected: "Rejected",
+    expired: "Expired",
   }[status];
 
   console.log(statusLabel, "asdas");

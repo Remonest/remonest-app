@@ -233,6 +233,52 @@ CREATE TABLE activity_log (
 - **Type enum**: Standardizes action categories
 - **Timestamp ordering**: `created_at` for chronology
 
+#### 8. `admin_actions`
+**Purpose**: Immutable audit trail of all admin actions
+
+```sql
+CREATE TYPE admin_action_type_enum AS ENUM (
+  'approve_job', 'reject_job', 'delete_job', 'publish_job',
+  'republish_job', 'update_job', 'create_learning_module',
+  'update_learning_module', 'delete_learning_module',
+  'update_user_role', 'delete_user', 'other'
+);
+
+CREATE TABLE admin_actions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  admin_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  target_user_id UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  action_type admin_action_type_enum NOT NULL,
+  table_name TEXT NOT NULL,
+  record_id UUID,
+  old_values JSONB DEFAULT '{}',
+  new_values JSONB DEFAULT '{}',
+  ip_address TEXT,
+  user_agent TEXT,
+  notes TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+**Design Decisions:**
+- **Immutable**: No UPDATE or DELETE policies (security feature)
+- **Automatic logging**: Triggers on jobs and learning_modules tables
+- **Complete context**: Old and new values stored as JSONB
+- **User attribution**: Links actions to specific admins
+- **Target tracking**: Records which users were affected
+- **Helper function**: `log_admin_action()` for manual logging
+- **Convenience views**: `recent_admin_actions`, `admin_action_summary`
+
+**Indexes:**
+- `idx_admin_actions_admin_id` on `admin_id` for admin-specific queries
+- `idx_admin_actions_action_type` on `action_type` for filtering by action
+- `idx_admin_actions_created_at` on `created_at DESC` for recent actions
+- `idx_admin_actions_record_id` on `record_id` for record-specific actions
+
+**Automatic Triggers:**
+- `log_admin_job_actions_trigger` on `jobs` table
+- `log_admin_learning_module_actions_trigger` on `learning_modules` table
+
 ---
 
 ## Row Level Security (RLS) Policies
@@ -650,10 +696,12 @@ ALTER TYPE job_status_enum ADD VALUE 'new_status' AFTER 'existing_status';
 
 ## Related Documentation
 
-- **Job Board Implementation**: See `docs/JOB_BOARD_IMPLEMENTATION.md`
-- **Job Posting Workflow**: See `docs/JOB_POSTING_WORKFLOW.md`
-- **Role System**: See `docs/ROLE_SYSTEM.md`
-- **Client Role Implementation**: See `docs/CLIENT_ROLE_IMPLEMENTATION.md`
+- **[Job Board Implementation](../features/job-board/overview.md)** — Job board feature implementation
+- **[Job Posting Workflow](../features/job-board/posting-workflow.md)** — Job posting workflow
+- **[Role System](./role-system.md)** — User role system (RBAC)
+- **[Client Role Implementation](../features/client-role/implementation.md)** — Client role feature
+- **[RLS Policies Guide](../guides/rls-policies.md)** — 🆕 Complete RLS policy reference and security
+- **[Admin Action Logging](../guides/admin-action-logging.md)** — 🆕 Audit trail system documentation
 
 ---
 

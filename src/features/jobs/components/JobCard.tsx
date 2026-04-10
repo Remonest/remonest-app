@@ -23,14 +23,14 @@ interface JobCardProps {
   id: string;
   title: string;
   company: string;
-  job_type: JobType;
-  salary_min: number | null;
-  salary_max: number | null;
-  salary_currency: string;
+  job_type: JobType | null | undefined;
+  salary_min: number | null | undefined;
+  salary_max: number | null | undefined;
+  salary_currency: string | undefined;
   location: string;
-  apply_url: string | null;
-  apply_email: string | null;
-  deadline: string | null;
+  apply_url: string | null | undefined;
+  apply_email: string | null | undefined;
+  deadline: string | null | undefined;
   is_verified_by_admin: boolean;
   showStatus?: boolean;
   status?: JobStatus;
@@ -60,7 +60,7 @@ export function JobCard({
     }
   };
 
-  const formattedDeadline = formatDeadline(deadline);
+  const formattedDeadline = formatDeadline(deadline ?? null);
 
   return (
     <Card className="group hover:shadow-lg transition-shadow duration-200">
@@ -82,7 +82,7 @@ export function JobCard({
         <div className="flex items-center gap-2 text-sm">
           <span className="font-medium text-muted-foreground">Gaji:</span>
           <span className="text-foreground">
-            {formatSalary(salary_min, salary_max, salary_currency)}
+            {formatSalary(salary_min ?? null, salary_max ?? null, salary_currency ?? "IDR")}
             {job_type === "full-time" && salary_max && (
               <span className="text-muted-foreground text-xs ml-1">
                 / bulan

@@ -3,10 +3,12 @@ import type { JobType } from '@/features/jobs/types/job';
 import { getJobTypeLabel } from '@/features/jobs/utils/formatters';
 
 interface JobTypeBadgeProps {
-  type: JobType;
+  type: JobType | null | undefined;
 }
 
 export function JobTypeBadge({ type }: JobTypeBadgeProps) {
+  if (!type) return null;
+
   const colors: Record<JobType, { bg: string; text: string; hover: string }> = {
     'full-time': {
       bg: 'bg-[#0891b2]/10',

@@ -63,13 +63,13 @@ export default async function DashboardJobsPage() {
                 title={job.title}
                 company={job.company}
                 status={job.status}
-                job_type={job.job_type}
-                salary_min={job.salary_min}
-                salary_max={job.salary_max}
-                salary_period={job.salary_period}
+                job_type={job.job_type ?? undefined}
+                salary_min={job.salary_min ?? undefined}
+                salary_max={job.salary_max ?? undefined}
+                salary_period={job.salary_currency ?? undefined}
                 location={job.location}
                 created_at={job.created_at}
-                deadline={job.deadline}
+                deadline={job.deadline ?? undefined}
               />
             ))}
           </div>

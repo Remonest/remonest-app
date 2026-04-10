@@ -556,10 +556,10 @@ WHERE title = 'Senior React Developer';
 
 ## Related Documentation
 
-- **Role System**: See `docs/ROLE_SYSTEM.md`
-- **Job Board**: See `docs/JOB_BOARD_IMPLEMENTATION.md`
-- **Admin Access**: See `docs/ADMIN_ACCESS.md`
-- **Project Overview**: See `docs/PROJECT.md`
+- **[Role System](../../architecture/role-system.md)** — User role system (RBAC)
+- **[Job Board](../job-board/overview.md)** — Job board feature implementation
+- **[Admin Access](../../guides/admin-access.md)** — Admin panel access guide
+- **[Project Overview](../../getting-started/project-overview.md)** — Project overview and tech stack
 
 ---
 

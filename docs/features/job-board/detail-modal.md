@@ -1046,10 +1046,10 @@ Permanently deletes a job.
 
 ## Related Documentation
 
-- **Job Board Implementation:** See `docs/JOB_BOARD_IMPLEMENTATION.md`
-- **Job Posting Workflow:** See `docs/JOB_POSTING_WORKFLOW.md`
-- **Admin Access Guide:** See `docs/ADMIN_ACCESS.md`
-- **Database Architecture:** See `docs/DATABASE_ARCHITECTURE.md`
+- **[Job Board Implementation](./overview.md)** — Job board feature implementation
+- **[Job Posting Workflow](./posting-workflow.md)** — Job posting workflow
+- **[Admin Access Guide](../../guides/admin-access.md)** — Admin panel access guide
+- **[Database Architecture](../../architecture/database.md)** — Database schema and design
 
 ---
 

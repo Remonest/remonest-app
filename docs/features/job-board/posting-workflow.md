@@ -297,10 +297,10 @@ The rejection process uses:
 
 ## Related Documentation
 
-- **Client Role Implementation**: See `docs/CLIENT_ROLE_IMPLEMENTATION.md`
-- **Job Board Implementation**: See `docs/JOB_BOARD_IMPLEMENTATION.md`
-- **Admin Access**: See `docs/ADMIN_ACCESS.md`
-- **Role System**: See `docs/ROLE_SYSTEM.md`
+- **[Client Role Implementation](../client-role/implementation.md)** — Client role feature
+- **[Job Board Implementation](./overview.md)** — Job board feature implementation
+- **[Admin Access](../../guides/admin-access.md)** — Admin panel access guide
+- **[Role System](../../architecture/role-system.md)** — User role system (RBAC)
 
 ---
 

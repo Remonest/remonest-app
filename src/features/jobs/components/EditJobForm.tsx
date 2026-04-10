@@ -34,17 +34,17 @@ interface JobData {
   title: string;
   company: string;
   description_html: string;
-  job_type: JobType;
+  job_type: JobType | null;
   salary_min: number | null;
   salary_max: number | null;
   salary_currency: string;
   location: string;
   deadline: string | null;
   duration_estimate: string | null;
-  apply_method: "url" | "email";
+  apply_method: "url" | "email" | null;
   apply_url: string | null;
   apply_email: string | null;
-  status: "draft" | "pending" | "published" | "rejected";
+  status: "draft" | "pending" | "approved" | "published" | "rejected" | "expired";
   skills: string[];
   created_at?: string;
   rejection_reason?: string;
@@ -118,15 +118,15 @@ export function EditJobForm({ job }: EditJobPageProps) {
       form.set("title", formData.title);
       form.set("company", formData.company);
       form.set("description_html", formData.description_html);
-      form.set("job_type", formData.job_type);
-      form.set("salary_min", formData.salary_min);
-      form.set("salary_max", formData.salary_max);
+      form.set("job_type", formData.job_type ?? "");
+      form.set("salary_min", formData.salary_min?.toString() ?? "");
+      form.set("salary_max", formData.salary_max?.toString() ?? "");
       form.set("location", formData.location);
-      form.set("deadline", formData.deadline);
-      form.set("duration_estimate", formData.duration_estimate);
-      form.set("apply_method", formData.apply_method);
-      form.set("apply_url", formData.apply_url);
-      form.set("apply_email", formData.apply_email);
+      form.set("deadline", formData.deadline ?? "");
+      form.set("duration_estimate", formData.duration_estimate ?? "");
+      form.set("apply_method", formData.apply_method ?? "");
+      form.set("apply_url", formData.apply_url ?? "");
+      form.set("apply_email", formData.apply_email ?? "");
       form.set("action", action === "publish" ? "publish" : "update");
 
       const result = await updateJobAction(job.id, form);
@@ -324,7 +324,7 @@ export function EditJobForm({ job }: EditJobPageProps) {
                     Employment Type
                   </Label>
                   <Select
-                    value={formData.job_type}
+                    value={formData.job_type ?? undefined}
                     onValueChange={(value) =>
                       setFormData({ ...formData, job_type: value as JobType })
                     }

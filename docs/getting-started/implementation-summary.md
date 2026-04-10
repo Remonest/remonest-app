@@ -2,10 +2,105 @@
 
 ## Overview
 
-This document summarizes all features implemented in the Remonest App as of April 10, 2026, including recent updates to the Job Detail Modal system.
+This document summarizes all features implemented in the Remonest App as of April 10, 2026.
 
-**Version:** v1.1.0 (Latest)  
+**Version:** v1.2.0 (Latest)
 **Last Updated:** April 10, 2026
+
+---
+
+## 🎯 Latest Updates (April 10, 2026 — Afternoon)
+
+### Admin Activity Logging System
+
+**Status:** ✅ Complete
+**Version:** v1.0.0
+
+#### What's New
+
+1. **Admin Activity Log Page** (NEW)
+   - File: `src/app/admin/activity-log/page.tsx`
+   - Beautiful stats cards (Total, Approvals, Rejections, Content Changes)
+   - Activity feed with color-coded badges
+   - Relative timestamps (Indonesian locale)
+   - Loading skeleton states
+   - Empty state design
+
+2. **Server Actions** (NEW)
+   - File: `src/features/admin/actions/activity-log.ts`
+   - 7 functions for fetching and filtering admin actions
+   - Full TypeScript support with interfaces
+   - Protected by `requireAdmin()` guard
+
+3. **Admin Sidebar Update**
+   - Added "Activity Log" navigation item
+   - Activity icon from lucide-react
+   - Positioned between Learning and Settings
+
+#### Features
+
+**Activity Log Capabilities:**
+- View all admin actions in chronological order
+- Filter by action type, admin user, or target user
+- Statistics dashboard with key metrics
+- Complete context (who, what, when, why)
+- Immutable audit trail (cannot be tampered)
+
+**User Flow:**
+```
+Admin performs action (approve/reject/delete)
+  ↓
+Database trigger fires automatically
+  ↓
+Action logged to admin_actions table
+  ↓
+Admin navigates to /admin/activity-log
+  ↓
+Sees complete activity feed with stats
+```
+
+#### Files Created/Modified
+
+| File | Status | Purpose |
+|------|--------|---------|
+| `src/app/admin/activity-log/page.tsx` | ✨ NEW | Main activity log page |
+| `src/features/admin/actions/activity-log.ts` | ✨ NEW | Server actions for data |
+| `src/components/admin/sidebar.tsx` | Modified | Added Activity Log link |
+| `docs/features/admin/activity-logging.md` | ✨ NEW | Complete documentation |
+
+---
+
+### Complete RLS Policies & Admin Logging (Database)
+
+**Status:** ✅ Complete (Migration 011)
+**Version:** v1.0.0
+
+#### What's New
+
+1. **Migration 011** (NEW)
+   - File: `supabase/migrations/011_complete_rls_policies.sql`
+   - Complete RLS policies for all 8 tables
+   - Admin actions table with immutable audit trail
+   - Automatic triggers for logging admin actions
+   - Helper functions and convenience views
+
+2. **Database Schema Updates**
+   - `admin_actions` table for audit trail
+   - `admin_action_type_enum` with 12 action types
+   - Triggers on jobs and learning_modules tables
+   - Views: `recent_admin_actions`, `admin_action_summary`
+
+3. **Documentation**
+   - `docs/guides/rls-policies.md` — Complete RLS reference
+   - `docs/guides/admin-action-logging.md` — Backend logging guide
+   - `docs/features/admin/activity-logging.md` — UI and user flows
+
+#### Bugs Fixed
+
+- ✅ Fixed syntax error in PL/pgSQL functions (`END;` → `END IF;`)
+- ✅ Fixed view definition (email column from auth.users not user_profiles)
+- ✅ All TypeScript errors resolved (15+ type mismatches fixed)
+- ✅ Build now completes successfully with no errors
 
 ---
 
@@ -435,10 +530,12 @@ Table auto-refreshes (job removed from list)
 
 ## 📞 Support
 
-**Documentation:** See `docs/README.md` for complete index  
-**Implementation Guide:** See `docs/IMPLEMENTATION.md` for exhaustive details  
-**Database Guide:** See `docs/DATABASE_ARCHITECTURE.md` for schema and patterns  
-**Job Detail Modal:** See `docs/JOB_DETAIL_MODAL.md` for v1.1.0 details
+**Documentation:** See `../README.md` for complete index  
+**Implementation Guide:** See `./implementation-guide.md` for exhaustive details  
+**Database Guide:** See `../architecture/database.md` for schema and patterns  
+**RLS Policies:** See `../guides/rls-policies.md` for complete RLS reference  
+**Admin Activity Logging:** See `../features/admin/activity-logging.md` for UI flows  
+**Admin Action Logging (Backend):** See `../guides/admin-action-logging.md` for database details
 
 ---
 

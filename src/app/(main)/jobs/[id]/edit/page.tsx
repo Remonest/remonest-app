@@ -53,17 +53,17 @@ interface JobData {
   title: string;
   company: string;
   description_html: string;
-  job_type: JobType;
+  job_type: JobType | null;
   salary_min: number | null;
   salary_max: number | null;
   salary_currency: string;
   location: string;
   deadline: string | null;
   duration_estimate: string | null;
-  apply_method: "url" | "email";
+  apply_method: "url" | "email" | null;
   apply_url: string | null;
   apply_email: string | null;
-  status: "draft" | "pending" | "published" | "rejected";
+  status: "draft" | "pending" | "approved" | "published" | "rejected" | "expired";
   skills: string[];
   created_at?: string;
   rejection_reason?: string;
@@ -116,21 +116,21 @@ export default async function EditJobPage({
     id: job.id,
     title: job.title,
     company: job.company,
-    description_html: job.description_html,
-    job_type: job.job_type,
-    salary_min: job.salary_min,
-    salary_max: job.salary_max,
+    description_html: job.description_html ?? "",
+    job_type: job.job_type ?? null,
+    salary_min: job.salary_min ?? null,
+    salary_max: job.salary_max ?? null,
     salary_currency: job.salary_currency || "IDR",
     location: job.location,
-    deadline: job.deadline,
-    duration_estimate: job.duration_estimate,
-    apply_method: job.apply_method,
-    apply_url: job.apply_url,
-    apply_email: job.apply_email,
+    deadline: job.deadline ?? null,
+    duration_estimate: job.duration_estimate ?? null,
+    apply_method: job.apply_method ?? null,
+    apply_url: job.apply_url ?? null,
+    apply_email: job.apply_email ?? null,
     status: job.status,
-    skills: extractSkills(job.description_html),
+    skills: extractSkills(job.description_html ?? ""),
     created_at: job.created_at,
-    rejection_reason: job.rejection_reason,
+    rejection_reason: job.rejection_reason ?? undefined,
   };
 
   return (
