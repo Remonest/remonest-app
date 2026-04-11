@@ -643,6 +643,42 @@ const translations: Record<Language, Translations> = {
       },
     },
   },
+  notFound: {
+    badge: "Navigation error",
+    kicker: "404 · page unavailable",
+    code: "404",
+    title: "This destination is unavailable, but your dashboard is still within reach",
+    description:
+      "The page may have moved or no longer exist. Continue from your dashboard, jump into a key workspace, or review the most useful routes below.",
+    returnDashboard: "Return to Dashboard",
+    goBack: "Go back",
+    progressSafe: "Your saved progress is unaffected",
+    contactSupport: "support@remonest.com",
+    recommendedTitle: "Continue from a trusted route",
+    recommendedChip: "Premium recovery",
+    links: {
+      dashboard: {
+        title: "Open dashboard",
+        description:
+          "Go back to your main workspace and continue from your latest activity.",
+      },
+      jobs: {
+        title: "View jobs",
+        description:
+          "Browse active roles and return to a stable part of the platform.",
+      },
+      portfolio: {
+        title: "Open portfolio builder",
+        description:
+          "Continue refining your profile and application materials.",
+      },
+      support: {
+        title: "Contact support",
+        description:
+          "Report this broken route if the page should still be available.",
+      },
+    },
+  },
   id: {
     header: {
       features: "Fitur",
@@ -955,6 +991,42 @@ const translations: Record<Language, Translations> = {
         updatePassword: "Perbarui Kata Sandi",
         updating: "Memperbarui...",
         updated: "Kata sandi berhasil diperbarui",
+      },
+    },
+  },
+  notFound: {
+    badge: "Kesalahan navigasi",
+    kicker: "404 · halaman tidak tersedia",
+    code: "404",
+    title: "Halaman ini tidak tersedia, tetapi dasbor Anda masih dapat dijangkau",
+    description:
+      "Halaman mungkin telah berpindah atau tidak ada lagi. Lanjutkan dari dasbor Anda, masuk ke ruang kerja utama, atau tinjau rute paling berguna di bawah ini.",
+    returnDashboard: "Kembali ke Dasbor",
+    goBack: "Kembali",
+    progressSafe: "Progress tersimpan Anda tidak terpengaruh",
+    contactSupport: "support@remonest.com",
+    recommendedTitle: "Lanjutkan dari rute terpercaya",
+    recommendedChip: "Pemulihan premium",
+    links: {
+      dashboard: {
+        title: "Buka dasbor",
+        description:
+          "Kembali ke ruang kerja utama Anda dan lanjutkan dari aktivitas terbaru.",
+      },
+      jobs: {
+        title: "Lihat lowongan",
+        description:
+          "Jelajahi role aktif dan kembali ke bagian platform yang stabil.",
+      },
+      portfolio: {
+        title: "Buka pembuat portofolio",
+        description:
+          "Lanjutkan menyempurnakan profil dan materi lamaran Anda.",
+      },
+      support: {
+        title: "Hubungi dukungan",
+        description:
+          "Laporkan rute yang rusak ini jika halaman seharusnya masih tersedia.",
       },
     },
   },

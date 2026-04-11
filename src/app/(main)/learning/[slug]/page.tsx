@@ -67,7 +67,7 @@ export default async function ModuleDetailPage({ params }: PageProps) {
 
   return (
     <div className="py-8">
-      <div className="w-full max-w-[800px] mx-auto px-6">
+      <div className="w-full max-w-[1200px] mx-auto px-4 md:px-8">
         {/* Back link */}
         <Link
           href="/learning"
