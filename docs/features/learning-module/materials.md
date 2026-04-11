@@ -4,7 +4,7 @@
 
 Learning Materials dan Resources adalah sistem konten yang memungkinkan admin menambahkan materi pembelajaran yang kaya (artikel, video, dokumentasi, tutorial) dan resource tambahan (tools, template, ebook, checklist, cheatsheet, PDF) ke setiap modul pembelajaran.
 
-**Current Version:** v1.0.0 | **Created:** April 11, 2026
+**Current Version:** v1.1.0 | **Created:** April 11, 2026 | **Updated:** April 12, 2026
 
 ### Why Not `lessons` Table?
 
@@ -20,6 +20,41 @@ learning_modules (existing)
   └── quiz_configs (existing)           — quiz per module
       └── questions (existing)
 ```
+
+---
+
+## 🔒 File Security
+
+### Proxy Architecture
+
+Uploaded files are **never exposed** as direct Supabase Storage URLs. Instead, they are served through a proxy route:
+
+```
+User uploads PDF → /api/upload → Supabase Storage → Returns: /api/learning/file/filename.pdf
+                                                             ↓
+User views PDF → iframe src="/api/learning/file/filename.pdf" → Proxy fetches from Supabase → Streams to browser
+```
+
+**Why this matters:**
+- Direct Supabase URLs (`https://xxx.supabase.co/storage/v1/object/public/...`) can be copied from DevTools
+- Proxy URLs (`/api/learning/file/filename.pdf`) don't reveal storage infrastructure
+- `Content-Disposition: inline` header prevents browser download prompts
+- Server-side streaming means the bucket name and credentials stay hidden
+
+### File Size Limits
+
+| Type | Limit | Enforced |
+|------|-------|----------|
+| PDF | 5MB | Client + Server |
+| Images (JPEG/PNG/WebP/GIF) | 10MB | Client + Server |
+| Documents (Word/Excel) | 10MB | Server |
+
+### Allowed File Types
+
+- `application/pdf` — PDF documents
+- `image/jpeg`, `image/png`, `image/webp`, `image/gif` — Images
+- `application/msword`, `application/vnd.openxmlformats-officedocument.wordprocessingml.document` — Word
+- `application/vnd.ms-excel`, `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` — Excel
 
 ---
 
@@ -105,8 +140,11 @@ src/
 ├── app/admin/learning/[id]/materials/
 │   ├── page.tsx                      # Server component (route entry)
 │   ├── material-list-client.tsx       # Client UI: stats, lists, actions
-│   ├── material-form.tsx              # Material create/edit form
+│   ├── material-form.tsx              # Material create/edit form (with file upload)
 │   └── resource-form.tsx             # Resource create form
+├── app/api/
+│   ├── upload/route.ts               # File upload API → Supabase Storage
+│   └── learning/file/[path]/route.ts # 🔒 File proxy (hides Supabase URL)
 ├── features/learning-module/
 │   ├── actions/
 │   │   └── materials.ts              # Server actions for materials CRUD
@@ -114,7 +152,7 @@ src/
 │       └── materials.ts              # TypeScript interfaces
 supabase/
 └── migrations/
-    └── 014_add_learning_materials_and_resources.sql  # Database migration
+    └── 015_add_learning_files_storage.sql  # Storage bucket + file_url column
 ```
 
 ---

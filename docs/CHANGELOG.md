@@ -7,6 +7,31 @@ All notable changes to the Remonest App project.
 
 ---
 
+## [v1.4.1] - April 12, 2026 (Night)
+
+### 🔒 Security
+
+#### PDF File URL Protection
+
+- ✅ **Proxy route** `/api/learning/file/[path]`
+  - Streams files server-side from Supabase Storage
+  - Never exposes Supabase bucket URL to browser
+  - `Content-Disposition: inline` — no download prompt
+  - What users see in DevTools: `/api/learning/file/filename.pdf`
+  - What was exposed before: `https://xxx.supabase.co/storage/v1/object/public/learning-files/filename.pdf`
+
+- ✅ **Upload API updated**
+  - Now returns proxy URL (`/api/learning/file/xxx.pdf`) instead of direct Supabase URL
+  - All existing file references automatically use proxy
+
+### 🐛 Bug Fixes
+
+- ✅ **PDF viewer scrolling** — removed blocking overlay, users can now scroll and read normally
+- ✅ **YouTube URL validation** — blocks form submission when video is not public
+- ✅ **File size limits** — PDF max 5MB, images max 10MB (enforced both client and server)
+
+---
+
 ## [v1.4.0] - April 12, 2026 (Afternoon)
 
 ### 🎉 New Features
