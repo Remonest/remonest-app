@@ -2,11 +2,12 @@
 
 import { useActionState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { saveLearningModule } from "@/lib/learning/actions";
 import type { LearningModuleResult } from "@/lib/learning/schemas";
-import { LEARNING_CATEGORIES, LEARNING_LEVELS } from "@/lib/learning/schemas";
+import { LEARNING_CATEGORIES, CATEGORY_LABELS } from "@/lib/learning/schemas";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,24 +27,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-const CATEGORY_LABELS: Record<string, string> = {
-  "Remote Working Basics": "Remote Working Basics",
-  "Skill Freelance": "Skill Freelance",
-  "Keuangan Freelancer": "Keuangan Freelancer",
-  "Growth & Branding": "Growth & Branding",
-  "Tools & Produktivitas": "Tools & Produktivitas",
-  "CV & Personal Branding": "CV & Personal Branding",
-};
-
-const LEVEL_LABELS: Record<string, string> = {
-  beginner: "Beginner",
-  intermediate: "Intermediate",
-  advanced: "Advanced",
-};
-
 const initialState: LearningModuleResult = { success: false };
 
 function NewLearningModuleForm() {
+  const router = useRouter();
   const [state, formAction, pending] = useActionState(
     saveLearningModule,
     initialState
@@ -53,94 +40,63 @@ function NewLearningModuleForm() {
     if (state?.error) {
       toast.error(state.error);
     }
+    if (state?.success) {
+      toast.success("Modul berhasil dibuat!");
+      router.push("/admin/learning");
+    }
   }, [state]);
 
   return (
     <Card className="border-border bg-card">
       <CardHeader>
-        <CardTitle>New Learning Module</CardTitle>
+        <CardTitle>Buat Modul Baru</CardTitle>
         <CardDescription>
-          Create a new learning module for Remonest users.
+          Buat modul pembelajaran baru untuk pengguna Remonest.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="space-y-6">
           {/* Title */}
           <div className="space-y-2">
-            <Label htmlFor="title">Title</Label>
+            <Label htmlFor="title">Judul</Label>
             <Input
               id="title"
               name="title"
               type="text"
-              placeholder="e.g., Async Communication Basics"
+              placeholder="Contoh: Dasar Komunikasi Async"
               required
             />
           </div>
 
-          {/* Category & Level */}
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <Select name="category" required>
-                <SelectTrigger id="category">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {LEARNING_CATEGORIES.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {CATEGORY_LABELS[cat]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="level">Level</Label>
-              <Select name="level" required>
-                <SelectTrigger id="level">
-                  <SelectValue placeholder="Select level" />
-                </SelectTrigger>
-                <SelectContent>
-                  {LEARNING_LEVELS.map((level) => (
-                    <SelectItem key={level} value={level}>
-                      {LEVEL_LABELS[level]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          {/* Category */}
+          <div className="space-y-2">
+            <Label htmlFor="category">Kategori</Label>
+            <Select name="category" required>
+              <SelectTrigger id="category">
+                <SelectValue placeholder="Pilih kategori" />
+              </SelectTrigger>
+              <SelectContent>
+                {LEARNING_CATEGORIES.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {CATEGORY_LABELS[cat]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Deskripsi</Label>
             <Textarea
               id="description"
               name="description"
-              placeholder="Brief summary of what learners will gain from this module..."
+              placeholder="Ringkasan singkat tentang apa yang akan dipelajari..."
               className="min-h-[100px] resize-y"
               required
             />
             <p className="text-xs text-muted-foreground">
-              A short overview visible to users browsing the catalog.
-            </p>
-          </div>
-
-          {/* Passing Score */}
-          <div className="space-y-2">
-            <Label htmlFor="passingScore">Passing Score (%)</Label>
-            <Input
-              id="passingScore"
-              name="passingScore"
-              type="number"
-              min="0"
-              max="100"
-              defaultValue="70"
-              placeholder="70"
-            />
-            <p className="text-xs text-muted-foreground">
-              Minimum quiz score required to pass. Defaults to 70%.
+              Deskripsi singkat yang terlihat oleh pengguna di katalog.
             </p>
           </div>
 
@@ -150,19 +106,19 @@ function NewLearningModuleForm() {
               {pending ? (
                 <>
                   <Loader2 className="mr-2 size-4 animate-spin" />
-                  Saving…
+                  Menyimpan…
                 </>
               ) : (
                 <>
                   <Save className="mr-2 size-4" />
-                  Save Module
+                  Simpan Modul
                 </>
               )}
             </Button>
             <Button type="button" variant="outline" asChild>
               <Link href="/admin/learning">
                 <ArrowLeft className="mr-2 size-4" />
-                Cancel
+                Batal
               </Link>
             </Button>
           </div>
@@ -179,17 +135,17 @@ export default function NewLearningModulePage() {
         <Button variant="ghost" size="sm" asChild className="gap-1">
           <Link href="/admin/learning">
             <ArrowLeft className="size-4" />
-            Back to Learning
+            Kembali ke Learning
           </Link>
         </Button>
       </div>
 
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight">
-          Create Learning Module
+          Buat Modul Pembelajaran
         </h1>
         <p className="text-sm text-muted-foreground">
-          Add a new module to the Remonest learning catalog.
+          Tambahkan modul baru ke katalog pembelajaran Remonest.
         </p>
       </div>
 
