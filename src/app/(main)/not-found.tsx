@@ -15,7 +15,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "@/lib/translations";
 import { Header, Footer } from "@/components/landing";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
 
 export default function NotFoundPage() {
   const router = useRouter();
@@ -104,16 +103,16 @@ export default function NotFoundPage() {
               {/* Right Detail Panel */}
               <div className="min-w-0 rounded-xl bg-gradient-to-b from-accent to-card p-7">
                 {/* Panel Header */}
-                <div className="flex items-start justify-between gap-4 mb-5.5">
+                <div className="flex items-start justify-between gap-4 mb-6">
                   <div>
                     <p className="text-xs leading-[1.4] text-muted-foreground mb-2">
-                      {t.notFound.recommendedTitle}
+                      Recommended next steps
                     </p>
                     <h3 className="text-2xl leading-[1.2] font-bold text-foreground">
-                      Continue from a trusted route
+                      {t.notFound.recommendedTitle}
                     </h3>
                   </div>
-                  <div className="h-8 px-3 rounded-full bg-card text-accent-foreground inline-flex items-center text-xs font-semibold whitespace-nowrap">
+                  <div className="h-8 px-3 rounded-full bg-card text-accent-foreground inline-flex items-center text-xs font-semibold whitespace-nowrap shrink-0">
                     {t.notFound.recommendedChip}
                   </div>
                 </div>
@@ -122,7 +121,7 @@ export default function NotFoundPage() {
                 <div className="grid grid-cols-1 gap-3">
                   <Link
                     href="/dashboard"
-                    className="min-w-0 p-4.5 rounded-lg bg-card flex items-start gap-3 hover:bg-secondary/50 transition-colors no-underline group"
+                    className="min-w-0 p-4 rounded-lg bg-card flex items-start gap-3 hover:bg-secondary/50 transition-colors no-underline group"
                   >
                     <span className="w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">
                       <LayoutDashboard className="w-4 h-4 text-primary" />
@@ -139,7 +138,7 @@ export default function NotFoundPage() {
 
                   <Link
                     href="/jobs"
-                    className="min-w-0 p-4.5 rounded-lg bg-card flex items-start gap-3 hover:bg-secondary/50 transition-colors no-underline group"
+                    className="min-w-0 p-4 rounded-lg bg-card flex items-start gap-3 hover:bg-secondary/50 transition-colors no-underline group"
                   >
                     <span className="w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">
                       <BriefcaseBusiness className="w-4 h-4 text-primary" />
@@ -156,7 +155,7 @@ export default function NotFoundPage() {
 
                   <Link
                     href="/portfolio"
-                    className="min-w-0 p-4.5 rounded-lg bg-card flex items-start gap-3 hover:bg-secondary/50 transition-colors no-underline group"
+                    className="min-w-0 p-4 rounded-lg bg-card flex items-start gap-3 hover:bg-secondary/50 transition-colors no-underline group"
                   >
                     <span className="w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">
                       <FileUser className="w-4 h-4 text-primary" />
@@ -171,9 +170,9 @@ export default function NotFoundPage() {
                     </div>
                   </Link>
 
-                  <Link
-                    href="/contact"
-                    className="min-w-0 p-4.5 rounded-lg bg-card flex items-start gap-3 hover:bg-secondary/50 transition-colors no-underline group"
+                  <a
+                    href="mailto:support@remonest.com"
+                    className="min-w-0 p-4 rounded-lg bg-card flex items-start gap-3 hover:bg-secondary/50 transition-colors no-underline group"
                   >
                     <span className="w-5 h-5 flex items-center justify-center shrink-0 mt-0.5">
                       <LifeBuoy className="w-4 h-4 text-primary" />
@@ -186,7 +185,7 @@ export default function NotFoundPage() {
                         {t.notFound.links.support.description}
                       </div>
                     </div>
-                  </Link>
+                  </a>
                 </div>
               </div>
             </div>

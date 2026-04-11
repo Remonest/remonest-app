@@ -7,6 +7,10 @@ import {
   FileText,
   ExternalLink,
   Tag,
+  Play,
+  Download,
+  Video,
+  File,
 } from "lucide-react";
 import { getLearningModuleBySlug, getPublishedMaterialsForModule } from "@/features/learning-module/actions/fetch-learning";
 import { LEARNING_CATEGORY_LABELS, LEARNING_CATEGORY_COLORS } from "@/features/learning-module/types/learning";
@@ -134,69 +138,9 @@ export default async function ModuleDetailPage({ params }: PageProps) {
               Materi Pembelajaran
             </h2>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               {materials.map((m) => (
-                <article
-                  key={m.id}
-                  className="rounded-lg border bg-card p-5 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-medium text-foreground truncate">
-                        {m.title}
-                      </h3>
-
-                      {m.summary && (
-                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                          {m.summary}
-                        </p>
-                      )}
-
-                      <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground flex-wrap">
-                        {m.source_type && (
-                          <span className="capitalize">
-                            {m.source_type === "article" ? "Artikel" : m.source_type}
-                          </span>
-                        )}
-                        <span className="capitalize">{m.difficulty}</span>
-                        {m.reading_time_minutes && (
-                          <span>{m.reading_time_minutes} menit</span>
-                        )}
-                        <span>{m.language === "id" ? "🇮🇩" : "🇬🇧"}</span>
-                        {m.tags && m.tags.length > 0 && (
-                          <span className="flex items-center gap-1">
-                            <Tag className="size-3" />
-                            {m.tags.slice(0, 3).join(", ")}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    {m.source_url && (
-                      <a
-                        href={m.source_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 text-xs text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 no-underline shrink-0"
-                      >
-                        Sumber
-                        <ExternalLink className="size-3" />
-                      </a>
-                    )}
-                  </div>
-
-                  {/* Material content */}
-                  {m.content && (
-                    <div className="mt-4 pt-4 border-t border-border/50">
-                      <div
-                        className="text-sm text-muted-foreground space-y-2"
-                        dangerouslySetInnerHTML={{
-                          __html: wrapLists(renderMarkdown(m.content)),
-                        }}
-                      />
-                    </div>
-                  )}
-                </article>
+                <MaterialCard key={m.id} material={m} />
               ))}
             </div>
           </div>
@@ -204,4 +148,171 @@ export default async function ModuleDetailPage({ params }: PageProps) {
       </div>
     </div>
   );
+}
+
+// ─── Material Card with Read / Video / Download ──────────────
+
+function MaterialCard({
+  material,
+}: {
+  material: {
+    id: string;
+    title: string;
+    content: string | null;
+    summary: string | null;
+    source_url: string | null;
+    source_type: string | null;
+    difficulty: string;
+    language: string;
+    reading_time_minutes: number | null;
+    tags: string[] | null;
+  };
+}) {
+  const isVideo = material.source_type === "video";
+  const hasContent = !!material.content;
+
+  // Extract video embed URL if applicable
+  const embedUrl = isVideo
+    ? extractVideoEmbedUrl(material.source_url)
+    : null;
+
+  return (
+    <article className="rounded-lg border bg-card overflow-hidden">
+      {/* Header */}
+      <div className="p-5 pb-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-2">
+              {isVideo ? (
+                <Video className="size-4 text-red-500 shrink-0" />
+              ) : (
+                <File className="size-4 text-blue-500 shrink-0" />
+              )}
+              <h3 className="font-medium text-foreground">{material.title}</h3>
+            </div>
+
+            {material.summary && (
+              <p className="text-sm text-muted-foreground line-clamp-2">
+                {material.summary}
+              </p>
+            )}
+
+            <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground flex-wrap">
+              {material.source_type && (
+                <span className="capitalize">
+                  {material.source_type === "article"
+                    ? "Artikel"
+                    : material.source_type === "video"
+                    ? "Video"
+                    : material.source_type === "documentation"
+                    ? "Dokumentasi"
+                    : material.source_type === "tutorial"
+                    ? "Tutorial"
+                    : material.source_type}
+                </span>
+              )}
+              <span className="capitalize">{material.difficulty}</span>
+              {material.reading_time_minutes && (
+                <span>{material.reading_time_minutes} menit</span>
+              )}
+              <span>{material.language === "id" ? "🇮🇩" : "🇬🇧"}</span>
+              {material.tags && material.tags.length > 0 && (
+                <span className="flex items-center gap-1">
+                  <Tag className="size-3" />
+                  {material.tags.slice(0, 3).join(", ")}
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Action buttons */}
+          <div className="flex items-center gap-2 shrink-0">
+            {material.source_url && (
+              <a
+                href={material.source_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 no-underline"
+              >
+                {isVideo ? (
+                  <>
+                    <Play className="size-3" />
+                    Tonton
+                  </>
+                ) : isDownloadable(material.source_url) ? (
+                  <>
+                    <Download className="size-3" />
+                    Unduh
+                  </>
+                ) : (
+                  <>
+                    <ExternalLink className="size-3" />
+                    Sumber
+                  </>
+                )}
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Video embed */}
+      {isVideo && embedUrl && (
+        <div className="border-t border-border/50">
+          <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
+            <iframe
+              src={embedUrl}
+              className="absolute inset-0 w-full h-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Content (readable article) */}
+      {hasContent && !isVideo && (
+        <div className="border-t border-border/50 p-5 pt-4">
+          <div
+            className="text-sm text-muted-foreground space-y-2"
+            dangerouslySetInnerHTML={{
+              __html: wrapLists(renderMarkdown(material.content!)),
+            }}
+          />
+        </div>
+      )}
+    </article>
+  );
+}
+
+// Extract embeddable video URL from source
+function extractVideoEmbedUrl(url: string | null): string | null {
+  if (!url) return null;
+
+  // YouTube
+  const ytMatch = url.match(
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/
+  );
+  if (ytMatch) {
+    return `https://www.youtube.com/embed/${ytMatch[1]}`;
+  }
+
+  // Vimeo
+  const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
+  if (vimeoMatch) {
+    return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+  }
+
+  // Google Drive
+  const gdriveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
+  if (gdriveMatch) {
+    return `https://drive.google.com/file/d/${gdriveMatch[1]}/preview`;
+  }
+
+  return null;
+}
+
+// Check if URL points to a downloadable file
+function isDownloadable(url: string): boolean {
+  return /\.(pdf|docx?|xlsx?|pptx?|zip|rar|png|jpg|jpeg)$/i.test(url);
 }
