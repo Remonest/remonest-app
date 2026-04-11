@@ -2,7 +2,7 @@
 
 Comprehensive documentation for the Remonest platform — a remote work hub for Indonesian professionals with learning modules, job board, CV/portfolio builder, and admin management.
 
-**Current Version:** v1.3.0 | [View Changelog](./CHANGELOG.md)
+**Current Version:** v1.6.0 | [View Changelog](./CHANGELOG.md)
 
 ---
 
@@ -27,7 +27,7 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
 - **[Admin Action Logging](./guides/admin-action-logging.md)** — 🆕 Audit trail system for admin actions
 
 ### Feature Documentation
-- **[Job Board](./features/job-board/overview.md)** — Job board v1.0.0: schema, actions, UI, posting workflow
+- **[Job Board](./features/job-board/overview.md)** — Job board v1.6.0: schema, actions, UI, posting workflow, public detail page
   - [Posting Workflow](./features/job-board/posting-workflow.md) — Role-based posting with admin approval queue
   - [Detail Modal](./features/job-board/detail-modal.md) — Dialog component for viewing/managing job drafts
 - **[Client Role](./features/client-role/implementation.md)** — Client role (employer/job poster) system
@@ -42,7 +42,7 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
 - **[Design Guidelines](./guides/design-guidelines.md)** — Complete design system, colors, components, patterns
 - **[Social Media Icons](./guides/social-media-icons.md)** — Custom SVG icons for footer (Twitter, LinkedIn, Instagram)
 - **[Git Workflow](./guides/git-workflow.md)** — 🆕 Commit messages, branching, PR guidelines
-- **[Database Migrations](./guides/database-migrations.md)** — 🆕 Complete guide to all 12 migrations
+- **[Database Migrations](./guides/database-migrations.md)** — 🆕 Complete guide to all 17 migrations
 - **[Admin Access Guide](./guides/admin-access.md)** — Step-by-step admin panel access instructions
 - **[Quick Admin Reference](./guides/quick-admin-access.md)** — Quick admin access steps
 - **[Adding New Features](./guides/new-feature.md)** — How to add features step-by-step
@@ -54,6 +54,7 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
 ```
 docs/
 ├── README.md                          # This file - Main documentation index
+├── CHANGELOG.md                       # Version history (v1.0.0 - v1.6.0)
 ├── getting-started/                   # 🚀 Onboarding & overview
 │   ├── project-overview.md           # Tech stack, structure, conventions
 │   ├── implementation-guide.md       # Comprehensive implementation details
@@ -64,7 +65,7 @@ docs/
 │   └── role-system.md                # RBAC implementation
 ├── features/                          # ✨ Feature documentation
 │   ├── job-board/
-│   │   ├── overview.md               # Job board v1.0.0
+│   │   ├── overview.md               # Job board v1.6.0 (DB-connected detail page)
 │   │   ├── posting-workflow.md       # Job posting workflow v0.3.2
 │   │   └── detail-modal.md           # Job detail modal v1.1.0
 │   ├── client-role/
@@ -72,7 +73,7 @@ docs/
 │   ├── learning-module/
 │   │   ├── overview.md               # Learning module system v1.3.0
 │   │   ├── quiz-builder.md           # Quiz creation system v1.0.0
-│   │   └── materials.md              # 🆕 Materials & resources v1.0.0
+│   │   └── materials.md              # Materials & resources v1.1.0
 │   ├── language-switcher/
 │   │   └── implementation.md         # i18n system (EN/ID)
 │   └── admin/
@@ -135,8 +136,8 @@ docs/
 
 #### Job Board System
 - **Job Board** (public listing, job posting, admin approval, client job management)
-- **Job Detail Modal** (v1.1.0 - view/publish/delete draft jobs with auto-refresh)
-- **Client Role System** (employer job posting, management dashboard)
+- **Job Detail Page** (v1.6.0 - database-connected, HTML description, apply action, verified badge)
+- **JobCard Component** (clickable cards with independent apply button)
 - **Job Edit Form** (with rich text editor, tag input, draft/publish workflow)
 
 #### Admin Panel
@@ -169,7 +170,6 @@ docs/
 - **Learning Resources** (🆕 tools, templates, ebooks, PDFs, external links)
 
 ### ⚠️ In Progress (Hardcoded/Mock Data)
-- Public job detail page `/jobs/[id]` (1 hardcoded job)
 - Learning modules (6 hardcoded modules, DB tables exist)
 - Public portfolio (1 hardcoded portfolio)
 - CV builder (static UI, no persistence)
@@ -224,6 +224,9 @@ pnpm lint         # Run ESLint
 - ~~No admin action logging~~ - ✅ Fixed (Activity logging system)
 - ~~RLS infinite recursion error~~ - ✅ Fixed (Migration 012)
 - ~~Social icons in footer (X, Link, Camera)~~ - ✅ Fixed (Custom SVG icons)
+- ~~Public job detail page hardcoded~~ - ✅ Fixed (April 11, 2026 - connected to Supabase)
+- ~~JobCard not clickable~~ - ✅ Fixed (April 11, 2026 - clickable cards)
+- ~~404 page with header/footer~~ - ✅ Fixed (April 11, 2026 - clean centered layout)
 
 ### Remaining Issues
 - `@types/react-pdf` type definition warning (pre-existing, harmless)

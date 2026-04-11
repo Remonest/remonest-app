@@ -1,33 +1,37 @@
 # Job Board Implementation
 
-**Version:** 1.0.0
-**Date:** April 7, 2026
+**Version:** 1.6.0
+**Date:** April 11, 2026
 
 ---
 
 ## Overview
 
-Complete implementation of the Job Board feature with dual posting workflow (Admin vs Client), approval queue, and all required UI components.
+Complete implementation of the Job Board feature with dual posting workflow (Admin vs Client), approval queue, database-connected public detail page, and all required UI components.
 
 ---
 
 ## Implementation Status
 
-**Last Updated:** April 8, 2026
-**Completion:** 80% - CRUD Operations
+**Last Updated:** April 11, 2026
+**Completion:** 90% - Full CRUD Operations
 
 | Operation | Status | Notes |
 |-----------|--------|-------|
 | **CREATE** | ✅ Complete | Dual posting workflow (Admin/User), form validation, draft support, admin immediate publishing |
-| **READ** | ✅ Complete | Multiple query methods, filtering, approval queue |
-| **UPDATE** | ⚠️ Partial | Status changes only (approve/reject/republish). **Missing: Content editing** |
+| **READ** | ✅ Complete | Multiple query methods, filtering, approval queue, public detail page with DB data |
+| **UPDATE** | ✅ Complete | Content editing via `/jobs/[id]/edit` and `/dashboard/jobs/[id]/edit` |
 | **DELETE** | ✅ Complete | Permission-based deletion with restrictions |
 
+**Completed Features:**
+- ✅ Public job detail page (`/jobs/[id]`) — fetches from Supabase, renders HTML description
+- ✅ JobCard clickable — entire card links to detail page, apply button works independently
+- ✅ Proper apply action — opens external URL or mailto based on `apply_method`
+- ✅ Verification badge on detail page
+- ✅ Formatted salary, deadline, dates (Indonesian locale)
+
 **Missing Features:**
-- Edit job content (title, salary, description, etc.)
-- Edit UI interface for users
-- Edit server action for content modifications
-- Edit page/route (`/jobs/[id]/edit` or `/dashboard/jobs/[id]/edit`)
+- None in core CRUD. Remaining: email notifications, job expiry cron, advanced filters
 
 **Admin Posting Flow:**
 - ✅ `/admin/jobs/new` page created with `PostJobForm`
@@ -102,11 +106,16 @@ Complete implementation of the Job Board feature with dual posting workflow (Adm
 ### 3. UI Components (`src/components/jobs/`)
 
 #### JobCard.tsx
+- **Located at:** `src/features/jobs/components/JobCard.tsx`
 - Displays job information in a card format
+- **Entire card is clickable** — wrapped in `<Link href="/jobs/[id]}>` to navigate to detail page
 - Shows all required fields: title, company, job type, salary, location, deadline
 - Verification badge when `is_verified_by_admin = true`
-- Apply button (opens URL or email client)
-- Status badge for admin view
+- **Apply button** — uses `e.stopPropagation()` so clicking it opens URL/email instead of navigating
+  - If `apply_method === "url"`: opens `apply_url` in new tab
+  - If `apply_method === "email"`: opens `mailto:` link with pre-filled subject
+- Status badge for admin view (optional via `showStatus` prop)
+- Equal height cards in grid layout via `h-full`
 
 #### JobTypeBadge.tsx
 - Color-coded badges for job types
@@ -295,28 +304,18 @@ const result = await rejectJob(jobId, reason);
 
 ## TODO: Pages to Create
 
-1. **`/jobs`** - Public job board with filters
-   - Job grid using `JobCard` components
-   - Search and filter functionality
-   - Connect to `getJobs()` action
+1. ~~**`/jobs`**~~ - ✅ Complete — Public job board with filters, Supabase data
+2. ~~**`/jobs/[id]`**~~ - ✅ Complete — Database-connected detail page with HTML description
+3. ~~**`/jobs/post`**~~ - ✅ Complete — Public job posting form
+4. ~~**`/dashboard/jobs`**~~ - ✅ Complete — User's job management
+5. ~~**`/dashboard/jobs/post`**~~ - ✅ Complete — Dashboard posting form
 
-2. **`/jobs/[id]`** - Single job detail page
-   - Full job description
-   - Apply button
-   - Related jobs section
-
-3. **`/jobs/post`** - Public job posting form page
-   - Use `PostJobForm` component
-   - Check user role and adapt message
-   - Handle redirects after submission
-
-4. **`/dashboard/jobs`** - User's job management
-   - List user's jobs with status
-   - Edit/delete actions for draft/pending jobs
-   - View published jobs (read-only)
-
-5. **`/dashboard/jobs/post`** - Dashboard posting form
-   - Same as `/jobs/post` but in dashboard context
+**Remaining Enhancements:**
+- Related jobs section on detail page
+- Advanced search (location filter, keyword highlighting)
+- Job analytics dashboard
+- Email notifications for approval/rejection
+- Job expiry cron job
 
 ---
 
@@ -380,29 +379,20 @@ const result = await rejectJob(jobId, reason);
 
 ## Next Steps
 
-**Priority 1 - Complete CRUD Implementation:**
-1. **Implement UPDATE (Content Editing):**
-   - Create `updateJob()` server action in `src/lib/jobs/actions.ts`
-   - Add edit functionality to PostJobForm component
-   - Create edit pages: `/jobs/[id]/edit` and `/dashboard/jobs/[id]/edit`
-   - Update RLS policies to allow content editing
-
-**Priority 2 - Page Completion:**
-2. Run migration on Supabase
-3. Update `/jobs` page with Supabase data (currently using mock data)
-4. Create `/jobs/post` page
-5. Create `/dashboard/jobs` page
-
-**Priority 3 - Enhancements:**
-6. Add email notifications for approval/rejection
-7. Implement job expiry cron job
-8. Add advanced search/filters
-9. Create job analytics dashboard
+**Priority 1 - Enhancements:**
+1. Add related jobs section on `/jobs/[id]` detail page
+2. Add location filter to `/jobs` search
+3. Email notifications for job approval/rejection
+4. Job expiry cron job to auto-expire past-deadline jobs
 
 **Completed:**
 - ✅ Admin job creation flow (`/admin/jobs/new`)
 - ✅ Admin immediate publishing with verification
 - ✅ Admin dashboard integration
+- ✅ Public job detail page with database connection (`/jobs/[id]`)
+- ✅ JobCard clickable with independent apply button
+- ✅ HTML description rendering on detail page
+- ✅ Indonesian formatted dates, salary, deadlines
 
 ---
 
@@ -442,5 +432,7 @@ import { JobCard, JobTypeBadge, PostJobForm } from '@/components/jobs';
 
 *Core functionality complete as of April 7, 2026*
 *Admin job creation flow implemented on April 8, 2026*
+*Public detail page connected to database on April 11, 2026*
+*JobCard made clickable with independent apply button on April 11, 2026*
 
-**Summary:** The job board implementation is 80% complete. All core CRUD operations except UPDATE (content editing) are fully functional. Admin users can now create and publish verified jobs immediately via `/admin/jobs/new`. The missing UPDATE functionality prevents users from editing their draft or pending job content after submission.
+**Summary:** The job board implementation is 90% complete. Full CRUD operations are functional. The public detail page (`/jobs/[id]`) fetches real data from Supabase, renders HTML descriptions, displays verification badges, and has a working apply button. JobCard components are fully clickable with independent apply actions. Remaining work includes enhancements like related jobs, advanced search, and email notifications.
