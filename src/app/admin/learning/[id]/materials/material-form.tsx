@@ -34,7 +34,8 @@ import type {
   SourceType,
 } from "@/features/learning-module/types/materials";
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB for PDFs
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB for images
 const ALLOWED_TYPES = [
   "application/pdf",
   "image/jpeg",
@@ -83,8 +84,13 @@ export function MaterialForm({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > MAX_FILE_SIZE) {
-      toast.error("Ukuran file maksimal 10MB");
+    const isPdf = file.type === "application/pdf";
+    const isImage = ALLOWED_TYPES.includes(file.type) && !isPdf;
+    const maxSize = isPdf ? MAX_FILE_SIZE : MAX_IMAGE_SIZE;
+
+    if (file.size > maxSize) {
+      const sizeMB = (maxSize / (1024 * 1024)).toFixed(0);
+      toast.error(`Ukuran file maksimal ${sizeMB}MB untuk ${isPdf ? "PDF" : "gambar"}`);
       return;
     }
 
@@ -122,6 +128,52 @@ export function MaterialForm({
     setFileName("");
   };
 
+  const [videoUrlWarning, setVideoUrlWarning] = useState("");
+  const [checkingVideo, setCheckingVideo] = useState(false);
+
+  const checkYouTubeVideo = async (url: string) => {
+    const ytMatch = url.match(
+      /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/
+    );
+    if (!ytMatch) return;
+
+    setCheckingVideo(true);
+    setVideoUrlWarning("");
+
+    try {
+      const videoId = ytMatch[1];
+      const res = await fetch(
+        `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
+      );
+      if (!res.ok) {
+        setVideoUrlWarning(
+          "Video tidak ditemukan atau tidak publik. Pastikan URL video YouTube dapat diakses secara publik."
+        );
+      }
+    } catch {
+      setVideoUrlWarning(
+        "Gagal memeriksa video. Pastikan URL video YouTube benar dan dapat diakses."
+      );
+    } finally {
+      setCheckingVideo(false);
+    }
+  };
+
+  const handleSourceUrlChange = (url: string) => {
+    setSourceUrl(url);
+
+    if (sourceType === "video" && url) {
+      const isYoutube = /(?:youtube\.com\/watch\?v=|youtu\.be\/)/.test(url);
+      if (isYoutube) {
+        checkYouTubeVideo(url);
+      } else {
+        setVideoUrlWarning("");
+      }
+    } else {
+      setVideoUrlWarning("");
+    }
+  };
+
   const isImage = fileUrl && /\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(fileUrl);
   const isPdf = fileUrl && /\.(pdf)(\?.*)?$/i.test(fileUrl);
 
@@ -129,6 +181,16 @@ export function MaterialForm({
     e.preventDefault();
     if (!title.trim()) {
       toast.error("Judul wajib diisi");
+      return;
+    }
+
+    if (sourceType === "video" && !sourceUrl.trim()) {
+      toast.error("URL video wajib diisi untuk tipe video");
+      return;
+    }
+
+    if (videoUrlWarning && sourceType === "video") {
+      toast.error("Perbaiki URL video sebelum menyimpan");
       return;
     }
 
@@ -233,7 +295,7 @@ export function MaterialForm({
                 <>
                   <Upload className="h-6 w-6 text-muted-foreground mb-1" />
                   <p className="text-xs text-muted-foreground">
-                    Klik untuk upload (max 10MB)
+                    Klik untuk upload (PDF max 5MB, gambar max 10MB)
                   </p>
                   <p className="text-[10px] text-muted-foreground/60 mt-0.5">
                     PDF, JPEG, PNG, WebP, GIF
@@ -358,15 +420,32 @@ export function MaterialForm({
         </div>
         <div>
           <Label htmlFor="sourceUrl" className="mb-2">
-            URL Sumber (opsional)
+            {sourceType === "video" ? "URL Video *" : "URL Sumber (opsional)"}
           </Label>
           <Input
             id="sourceUrl"
             value={sourceUrl}
-            onChange={(e) => setSourceUrl(e.target.value)}
-            placeholder="https://..."
+            onChange={(e) => handleSourceUrlChange(e.target.value)}
+            placeholder={
+              sourceType === "video"
+                ? "https://www.youtube.com/watch?v=..."
+                : "https://..."
+            }
             type="url"
+            required={sourceType === "video"}
           />
+          {checkingVideo && (
+            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+              <Loader2 className="h-3 w-3 animate-spin" />
+              Memeriksa video...
+            </p>
+          )}
+          {videoUrlWarning && (
+            <p className="text-xs text-amber-600 dark:text-amber-400 mt-1 flex items-center gap-1">
+              <AlertCircle className="h-3 w-3 shrink-0" />
+              {videoUrlWarning}
+            </p>
+          )}
         </div>
       </div>
 

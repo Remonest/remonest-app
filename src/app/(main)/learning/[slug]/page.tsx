@@ -296,25 +296,19 @@ function MaterialCard({
             </div>
           )}
 
-          {/* PDF viewer */}
+          {/* PDF viewer - read only, no download */}
           {isPdfFile && (
             <div className="relative">
               <iframe
-                src={`${material.file_url}#toolbar=0&navpanes=0`}
+                src={`${material.file_url}#toolbar=0&navpanes=0&scrollbar=0`}
                 className="w-full h-[600px] border-0"
                 title={material.title}
+                style={{ pointerEvents: "none" }}
               />
-              {/* Fallback download button if iframe fails */}
-              <div className="absolute bottom-4 right-4 flex gap-2">
-                <a
-                  href={material.file_url!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
-                >
-                  <Download className="size-3" />
-                  Buka PDF
-                </a>
+              <div className="absolute inset-0" />
+              <div className="absolute bottom-4 left-4 flex items-center gap-2 px-3 py-2 rounded-md bg-muted/90 backdrop-blur text-xs text-muted-foreground">
+                <FileText className="size-3" />
+                Baca saja — unduh tidak tersedia
               </div>
             </div>
           )}

@@ -15,7 +15,9 @@ const ALLOWED_TYPES = [
   "application/vnd.ms-excel",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 ];
-const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_PDF_SIZE = 5 * 1024 * 1024; // 5MB for PDFs
+const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB for images
+const MAX_DOC_SIZE = 10 * 1024 * 1024; // 10MB for documents
 const BUCKET = "learning-files";
 
 export async function POST(request: NextRequest) {
@@ -27,10 +29,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No file provided" }, { status: 400 });
     }
 
-    // Validate file size
-    if (file.size > MAX_SIZE) {
+    // Validate file size (different limits per type)
+    const isPdf = file.type === "application/pdf";
+    const isImage = file.type.startsWith("image/");
+    const maxSize = isPdf ? MAX_PDF_SIZE : isImage ? MAX_IMAGE_SIZE : MAX_DOC_SIZE;
+
+    if (file.size > maxSize) {
+      const sizeMB = (maxSize / (1024 * 1024)).toFixed(0);
       return NextResponse.json(
-        { error: "Ukuran file maksimal 10MB" },
+        { error: `Ukuran file maksimal ${sizeMB}MB untuk ${isPdf ? "PDF" : "gambar/dokumen"}` },
         { status: 400 }
       );
     }
