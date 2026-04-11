@@ -27,6 +27,8 @@ import {
   FileText,
   Loader2,
   Pencil,
+  Layers,
+  HelpCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -138,6 +140,18 @@ export function LearningActions({
             <Link href={`/admin/learning/${moduleId}/edit`}>
               <Pencil className="mr-2 h-4 w-4" />
               <span>Edit</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={`/admin/learning/${moduleId}/materials`}>
+              <Layers className="mr-2 h-4 w-4" />
+              <span>Kelola Materi</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={`/admin/learning/${moduleId}/quiz`}>
+              <HelpCircle className="mr-2 h-4 w-4" />
+              <span>Kelola Kuis</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
