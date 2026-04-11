@@ -7,6 +7,44 @@ All notable changes to the Remonest App project.
 
 ---
 
+## [v1.3.2] - April 11, 2026 (Night)
+
+### 🐛 Bug Fixes
+
+#### Admin Learning CRUD Flow (5 Bugs Fixed)
+
+- ✅ **Fix #1: Create form used wrong category values**
+  - Was using display names (`"Remote Working Basics"`) instead of DB enum values (`communication`)
+  - DB CHECK constraint rejected the insert — create always failed
+  - Fixed: `schemas.ts` now uses DB enum values with `CATEGORY_LABELS` mapping for UI
+
+- ✅ **Fix #2: Create form inserted non-existent DB columns**
+  - Was inserting `level` and `passing_score` — columns don't exist in `learning_modules`
+  - DB returned error: "column does not exist"
+  - Fixed: `saveLearningModule()` now only inserts existing columns (`title`, `slug`, `category`, `description`)
+
+- ✅ **Fix #3: Create vs Edit form category mismatch**
+  - Create form used display names, Edit form used DB enum values — inconsistent
+  - Fixed: Both forms now use DB enum values (`communication`, `mindset`, `career`, `design`, `productivity`)
+
+- ✅ **Fix #4: Update redirect killed success toast**
+  - `redirect('/admin/learning?success=updated')` unmounted component before toast could render
+  - Fixed: `updateLearningModule()` now returns `{ success: true }` instead of redirect
+
+- ✅ **Fix #5: Create form had no success feedback**
+  - `useEffect` only handled error state, never showed success toast
+  - Fixed: Added success toast + `router.push('/admin/learning')` navigation
+
+### 📝 Code Changes
+
+| File | Changes |
+|------|---------|
+| `src/lib/learning/schemas.ts` | Changed `LEARNING_CATEGORIES` to DB enum values, added `CATEGORY_LABELS`, removed `passingScore` |
+| `src/lib/learning/actions.ts` | Fixed `saveLearningModule` (removed non-existent columns), fixed `updateLearningModule` (return instead of redirect) |
+| `src/app/admin/learning/new/page.tsx` | Full rewrite — localized to Indonesian, fixed categories, added success toast |
+
+---
+
 ## [v1.3.1] - April 11, 2026 (Evening)
 
 ### 🌱 Content Seeding
