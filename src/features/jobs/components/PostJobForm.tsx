@@ -51,7 +51,6 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
 
   const handleSubmitAction = async (action: "submit" | "draft") => {
     if (!formRef.current) {
-      console.error("Form ref is null");
       return;
     }
 
@@ -95,7 +94,6 @@ export function PostJobForm({ isAdmin = false }: PostJobFormProps) {
         }
       }
     } catch (error) {
-      console.error("Form submission error:", error);
       toast.error("Terjadi kesalahan saat memproses permintaan");
     } finally {
       setIsLoading(false);

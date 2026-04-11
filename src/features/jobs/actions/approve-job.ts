@@ -19,7 +19,6 @@ async function isAdmin(userId: string): Promise<boolean> {
     .single();
 
   if (error || !data) {
-    console.error("❌ isAdmin check failed:", error);
     return false;
   }
   return data.role === "admin";
@@ -56,7 +55,6 @@ export async function approveJobAction(jobId: string) {
     .maybeSingle();
 
   if (error) {
-    console.error("Error approving job:", error);
     if (error.code === "PGRST116") {
       return {
         success: false,
@@ -112,7 +110,6 @@ export async function publishDraftJobAction(jobId: string) {
     .maybeSingle();
 
   if (error) {
-    console.error("Error publishing draft job:", error);
     if (error.code === "PGRST116") {
       return {
         success: false,
@@ -164,7 +161,6 @@ export async function rejectJobAction(jobId: string, reason?: string) {
     .maybeSingle();
 
   if (error) {
-    console.error("Error rejecting job:", error);
     if (error.code === "PGRST116") {
       return {
         success: false,

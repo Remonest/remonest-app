@@ -39,7 +39,6 @@ export async function getAllLearningModules(): Promise<LearningModuleRow[]> {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("getAllLearningModules error:", error.message);
     return [];
   }
 
@@ -69,7 +68,6 @@ export async function getLearningModuleById(
     .single();
 
   if (error || !data) {
-    console.error("getLearningModuleById error:", error?.message);
     return null;
   }
 

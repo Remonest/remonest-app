@@ -30,11 +30,8 @@ export async function POST(request: NextRequest) {
     //     console.log(`Unhandled event type: ${event.type}`);
     // }
 
-    console.log("Stripe webhook received");
-
     return NextResponse.json({ received: true });
   } catch (error) {
-    console.error("Stripe webhook error:", error);
     return NextResponse.json(
       { error: "Webhook handler failed" },
       { status: 500 }

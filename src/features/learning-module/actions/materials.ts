@@ -50,7 +50,6 @@ export async function getMaterialsByModuleId(moduleId: string): Promise<Learning
     .order("created_at", { ascending: true });
 
   if (error) {
-    console.error("Error fetching materials:", error);
     return [];
   }
 
@@ -102,7 +101,6 @@ export async function createLearningMaterial(
   });
 
   if (error) {
-    console.error("Error creating material:", error);
     return { success: false, error: "Gagal membuat materi" };
   }
 
@@ -142,7 +140,6 @@ export async function updateLearningMaterial(
     .eq("id", id);
 
   if (error) {
-    console.error("Error updating material:", error);
     return { success: false, error: "Gagal mengupdate materi" };
   }
 
@@ -172,7 +169,6 @@ export async function deleteLearningMaterial(id: string): Promise<ActionResult> 
   const { error } = await supabase.from("learning_materials").delete().eq("id", id);
 
   if (error) {
-    console.error("Error deleting material:", error);
     return { success: false, error: "Gagal menghapus materi" };
   }
 
@@ -192,7 +188,6 @@ export async function getResourcesByModuleId(moduleId: string): Promise<Learning
     .order("created_at", { ascending: true });
 
   if (error) {
-    console.error("Error fetching resources:", error);
     return [];
   }
 
@@ -238,7 +233,6 @@ export async function createLearningResource(
   });
 
   if (error) {
-    console.error("Error creating resource:", error);
     return { success: false, error: "Gagal membuat resource" };
   }
 
@@ -272,7 +266,6 @@ export async function updateLearningResource(
     .eq("id", id);
 
   if (error) {
-    console.error("Error updating resource:", error);
     return { success: false, error: "Gagal mengupdate resource" };
   }
 
@@ -301,7 +294,6 @@ export async function deleteLearningResource(id: string): Promise<ActionResult> 
   const { error } = await supabase.from("learning_resources").delete().eq("id", id);
 
   if (error) {
-    console.error("Error deleting resource:", error);
     return { success: false, error: "Gagal menghapus resource" };
   }
 

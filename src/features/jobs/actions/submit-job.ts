@@ -22,7 +22,6 @@ async function isAdmin(userId: string): Promise<boolean> {
     .single();
 
   if (error || !data) {
-    console.error("❌ isAdmin check failed:", error);
     return false;
   }
   return data.role === "admin";
@@ -87,7 +86,6 @@ export async function submitJobAction(formData: FormData) {
     .single();
 
   if (error) {
-    console.error("Error creating job:", error);
     return { success: false, error: "Gagal memposting lowongan" };
   }
 
@@ -139,7 +137,6 @@ export async function saveJobDraftAction(formData: FormData) {
   const draftValidation = jobDraftSchema.safeParse(rawFormData);
 
   if (!draftValidation.success) {
-    console.error("Draft validation failed:", draftValidation.error);
     return {
       success: false,
       error: "Validasi gagal",
@@ -194,7 +191,6 @@ export async function saveJobDraftAction(formData: FormData) {
     .single();
 
   if (error) {
-    console.error("❌ Error saving draft:", error);
     return {
       success: false,
       error: error.message || "Gagal menyimpan draft",

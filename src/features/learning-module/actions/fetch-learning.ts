@@ -17,7 +17,6 @@ export async function getPublishedLearningModules(): Promise<LearningModule[]> {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("getPublishedLearningModules error:", error.message);
     return [];
   }
 
@@ -40,9 +39,6 @@ export async function getLearningModuleBySlug(slug: string): Promise<LearningMod
 
   if (error || !data) {
     // Only log actual errors, not "not found" cases
-    if (error && error.code !== "PGRST116") {
-      console.error("getLearningModuleBySlug error:", error?.message);
-    }
     return null;
   }
 
@@ -81,7 +77,6 @@ export async function getPublishedMaterialsForModule(moduleId: string): Promise<
     .order("created_at", { ascending: true });
 
   if (error) {
-    console.error("getPublishedMaterialsForModule error:", error.message);
     return [];
   }
 

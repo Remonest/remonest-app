@@ -45,7 +45,6 @@ export function JobDetailModal({
 
   const handlePublishDraft = async () => {
     if (!job?.id) {
-      console.error("handlePublishDraft: Job ID is missing");
       return;
     }
     setIsPublishing(true);
@@ -65,7 +64,6 @@ export function JobDetailModal({
         });
       }
     } catch (error) {
-      console.error("Error publishing draft:", error);
       toast.error("Gagal menerbitkan draft", {
         description: "Terjadi kesalahan yang tidak terduga.",
       });
@@ -77,7 +75,6 @@ export function JobDetailModal({
   const handleDeleteDraft = async () => {
     // Safety check: Ensure job object and ID exist
     if (!job?.id) {
-      console.error("handleDeleteDraft: Job ID is missing");
       return;
     }
     if (!confirm(`Apakah Anda yakin ingin menghapus draft "${job.title}"?`)) {
@@ -101,7 +98,6 @@ export function JobDetailModal({
         });
       }
     } catch (error) {
-      console.error("Error deleting draft:", error);
       toast.error("Gagal menghapus draft", {
         description: "Terjadi kesalahan yang tidak terduga.",
       });

@@ -82,7 +82,6 @@ export async function getRecentAdminActions(limit: number = 50, offset: number =
     .range(offset, offset + limit - 1);
 
   if (error) {
-    console.error("Error fetching admin actions:", error);
     return [];
   }
 
@@ -91,7 +90,7 @@ export async function getRecentAdminActions(limit: number = 50, offset: number =
 
 /**
  * Fetch admin action statistics
- * 
+ *
  * @returns Array of action type statistics
  */
 export async function getAdminActionStats(): Promise<AdminActionStats[]> {
@@ -106,7 +105,6 @@ export async function getAdminActionStats(): Promise<AdminActionStats[]> {
     .order("action_count", { ascending: false });
 
   if (error) {
-    console.error("Error fetching admin action stats:", error);
     return [];
   }
 
@@ -141,7 +139,6 @@ export async function getAdminActionsByType(
     .limit(limit);
 
   if (error) {
-    console.error("Error fetching admin actions by type:", error);
     return [];
   }
 
@@ -188,7 +185,6 @@ export async function getAdminActionsByAdminId(
     .limit(limit);
 
   if (error) {
-    console.error("Error fetching admin actions by admin ID:", error);
     return [];
   }
 
@@ -219,7 +215,6 @@ export async function getAdminActionsByTargetUser(
     .limit(limit);
 
   if (error) {
-    console.error("Error fetching admin actions by target user:", error);
     return [];
   }
 
@@ -245,7 +240,6 @@ export async function getAdminActionById(actionId: string): Promise<AdminActionR
     .single();
 
   if (error) {
-    console.error("Error fetching admin action by ID:", error);
     return null;
   }
 
@@ -270,7 +264,6 @@ export async function getRecentActionCount(hours: number = 24): Promise<number> 
     .gte("created_at", new Date(Date.now() - hours * 60 * 60 * 1000).toISOString());
 
   if (error) {
-    console.error("Error counting recent actions:", error);
     return 0;
   }
 

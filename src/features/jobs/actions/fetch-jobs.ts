@@ -27,7 +27,6 @@ async function isAdmin(userId: string): Promise<boolean> {
     .single();
 
   if (error || !data) {
-    console.error("❌ isAdmin check failed:", error);
     return false;
   }
   return data.role === "admin";
@@ -108,7 +107,7 @@ export async function testJobsQuery() {
     .order("created_at", { ascending: false });
 
   if (allError) {
-    console.error("❌ Test query error:", allError);
+    // Error occurred during test query
   }
 
   return {

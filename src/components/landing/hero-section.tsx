@@ -51,7 +51,6 @@ export function HeroSection() {
   }, []);
 
   const goTo = (index: number) => {
-    console.log("goTo called with index:", index);
     const next = (index + slides.length) % slides.length;
     setCurrent(next);
     startAuto();

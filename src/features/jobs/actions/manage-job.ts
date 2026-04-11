@@ -22,7 +22,6 @@ async function isAdmin(userId: string): Promise<boolean> {
     .single();
 
   if (error || !data) {
-    console.error("❌ isAdmin check failed:", error);
     return false;
   }
   return data.role === "admin";
@@ -76,7 +75,6 @@ export async function updateJobAction(jobId: string, formData: FormData) {
     .single();
 
   if (checkError) {
-    console.error("Error checking job ownership:", checkError);
     return { success: false, error: "Gagal memeriksa kepemilikan lowongan" };
   }
 
@@ -113,7 +111,6 @@ export async function updateJobAction(jobId: string, formData: FormData) {
     .maybeSingle();
 
   if (error) {
-    console.error("Error updating job:", error);
     return { success: false, error: "Gagal mengedit lowongan" };
   }
 
@@ -175,7 +172,6 @@ export async function deleteJobAction(jobId: string) {
   const { error } = await supabase.from("jobs").delete().eq("id", jobId);
 
   if (error) {
-    console.error("Error deleting job:", error);
     return { success: false, error: "Gagal menghapus lowongan" };
   }
 
@@ -229,7 +225,6 @@ export async function republishJobAction(jobId: string) {
     .single();
 
   if (error) {
-    console.error("Error republishing job:", error);
     return { success: false, error: "Gagal mempublikasi ulang lowongan" };
   }
 

@@ -78,7 +78,6 @@ export async function createQuizWithQuestions(
       .single();
 
     if (configError) {
-      console.error("createQuizConfig error:", configError.message);
       return {
         success: false,
         error: `Gagal membuat quiz: ${configError.message}`,
@@ -102,7 +101,6 @@ export async function createQuizWithQuestions(
       .insert(questionsToInsert);
 
     if (questionsError) {
-      console.error("createQuizQuestions error:", questionsError.message);
       // Rollback: delete the quiz config if questions insert fails
       await supabase.from("quiz_configs").delete().eq("id", quizConfig.id);
       
@@ -122,7 +120,6 @@ export async function createQuizWithQuestions(
       quizConfigId: quizConfig.id,
     };
   } catch (error) {
-    console.error("createQuizWithQuestions error:", error);
     return {
       success: false,
       error: "Terjadi kesalahan saat menyimpan quiz",
@@ -146,7 +143,6 @@ export async function getQuizWithQuestions(
     .single();
 
   if (configError || !config) {
-    console.error("getQuizConfig error:", configError?.message);
     return null;
   }
 
@@ -158,7 +154,6 @@ export async function getQuizWithQuestions(
     .order("order_index", { ascending: true });
 
   if (questionsError) {
-    console.error("getQuizQuestions error:", questionsError.message);
     return null;
   }
 
@@ -181,7 +176,6 @@ export async function getModuleQuizzes(moduleId: string): Promise<QuizConfig[]> 
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("getModuleQuizzes error:", error.message);
     return [];
   }
 
@@ -211,7 +205,6 @@ export async function updateQuizConfig(
       .eq("id", quizConfigId);
 
     if (error) {
-      console.error("updateQuizConfig error:", error.message);
       return {
         success: false,
         error: `Gagal mengupdate quiz: ${error.message}`,
@@ -224,7 +217,6 @@ export async function updateQuizConfig(
       success: true,
     };
   } catch (error) {
-    console.error("updateQuizConfig error:", error);
     return {
       success: false,
       error: "Terjadi kesalahan saat mengupdate quiz",
@@ -246,7 +238,6 @@ export async function deleteQuiz(quizConfigId: string): Promise<QuizResult> {
       .eq("id", quizConfigId);
 
     if (error) {
-      console.error("deleteQuiz error:", error.message);
       return {
         success: false,
         error: `Gagal menghapus quiz: ${error.message}`,
@@ -259,7 +250,6 @@ export async function deleteQuiz(quizConfigId: string): Promise<QuizResult> {
       success: true,
     };
   } catch (error) {
-    console.error("deleteQuiz error:", error);
     return {
       success: false,
       error: "Terjadi kesalahan saat menghapus quiz",
@@ -290,7 +280,6 @@ export async function updateQuestion(
       .eq("id", questionId);
 
     if (error) {
-      console.error("updateQuestion error:", error.message);
       return {
         success: false,
         error: `Gagal mengupdate pertanyaan: ${error.message}`,
@@ -303,7 +292,6 @@ export async function updateQuestion(
       success: true,
     };
   } catch (error) {
-    console.error("updateQuestion error:", error);
     return {
       success: false,
       error: "Terjadi kesalahan saat mengupdate pertanyaan",
@@ -345,7 +333,6 @@ export async function addQuestionToQuiz(
       });
 
     if (error) {
-      console.error("addQuestionToQuiz error:", error.message);
       return {
         success: false,
         error: `Gagal menambahkan pertanyaan: ${error.message}`,
@@ -358,7 +345,6 @@ export async function addQuestionToQuiz(
       success: true,
     };
   } catch (error) {
-    console.error("addQuestionToQuiz error:", error);
     return {
       success: false,
       error: "Terjadi kesalahan saat menambahkan pertanyaan",
@@ -379,7 +365,6 @@ export async function deleteQuestion(questionId: string): Promise<QuizResult> {
       .eq("id", questionId);
 
     if (error) {
-      console.error("deleteQuestion error:", error.message);
       return {
         success: false,
         error: `Gagal menghapus pertanyaan: ${error.message}`,
@@ -392,7 +377,6 @@ export async function deleteQuestion(questionId: string): Promise<QuizResult> {
       success: true,
     };
   } catch (error) {
-    console.error("deleteQuestion error:", error);
     return {
       success: false,
       error: "Terjadi kesalahan saat menghapus pertanyaan",

@@ -69,7 +69,6 @@ export function AdminApprovalTable() {
       const data = await getPendingJobs();
       setJobs(data as unknown as PendingJob[]);
     } catch (error) {
-      console.error("Failed to load pending jobs:", error);
       toast.error("Gagal memuat data pekerjaan");
     } finally {
       setLoading(false);

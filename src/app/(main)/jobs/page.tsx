@@ -15,8 +15,6 @@ export default async function JobsPage({
     // location: resolvedSearchParams.location,
   });
 
-  console.log(jobs);
-
   return (
     <div className="py-8">
       <div className="w-full max-w-[1200px] mx-auto px-8">

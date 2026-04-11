@@ -107,7 +107,6 @@ export function DashboardJobCard({
     try {
       window.location.href = `/api/jobs/${id}/publish`;
     } catch (error) {
-      console.error("Publish failed:", error);
       setIsPublishing(false);
     }
   };
@@ -121,7 +120,6 @@ export function DashboardJobCard({
     expired: "Expired",
   }[status];
 
-  console.log(statusLabel, "asdas");
   return (
     <div className="p-4 sm:p-5 md:p-6 border border-border rounded-2xl bg-card flex flex-col gap-4">
       <div className="flex items-start gap-3">

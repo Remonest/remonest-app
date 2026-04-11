@@ -66,7 +66,6 @@ export async function getUserRole(): Promise<
   } = await supabase.auth.getUser();
 
   if (!user) {
-    console.log("getUserRole: No authenticated user");
     return null;
   }
 
@@ -78,13 +77,9 @@ export async function getUserRole(): Promise<
     .single();
 
   if (error) {
-    console.warn("getUserRole: Database error:", error.message);
-    console.warn("Error code:", error.code);
-    
     // Fallback: Try with admin bypass for development
     // This bypasses RLS using service role key (only works server-side)
     if (error.code === "42P17" || error.code === "42501") {
-      console.warn("getUserRole: RLS issue detected, trying with admin client...");
       
       // Import service role client if available
       try {
@@ -101,24 +96,21 @@ export async function getUserRole(): Promise<
             .single();
             
           if (adminProfile) {
-            console.log("getUserRole: Successfully fetched role with admin client:", adminProfile.role);
             return adminProfile.role as "admin" | "user" | "client" | null;
           }
         }
       } catch (fallbackError) {
-        console.error("getUserRole: Fallback also failed:", fallbackError);
+        // Fallback also failed
       }
     }
-    
+
     return null;
   }
-  
+
   if (!profile) {
-    console.log("getUserRole: No profile found for user:", user.id);
     return null;
   }
-  
-  console.log("getUserRole: Successfully fetched role:", profile.role);
+
   return profile.role as "admin" | "user" | "client" | null;
 }
 

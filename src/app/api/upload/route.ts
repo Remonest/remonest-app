@@ -68,7 +68,6 @@ export async function POST(request: NextRequest) {
       });
 
     if (error) {
-      console.error("Storage upload error:", error);
       return NextResponse.json(
         { error: "Gagal mengupload file" },
         { status: 500 }

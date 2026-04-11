@@ -39,7 +39,6 @@ export const getPublishedJobsQuery = cache(
     const { data, error } = await query;
 
     if (error) {
-      console.error("Error fetching published jobs:", error);
       return [];
     }
 
@@ -56,7 +55,6 @@ export const getJobByIdQuery = cache(async (id: string): Promise<Job | null> => 
     .single();
 
   if (error) {
-    console.error("Error fetching job by ID:", error);
     return null;
   }
 
@@ -72,7 +70,6 @@ export const getUserJobsQuery = cache(async (userId: string): Promise<Job[]> => 
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Error fetching user jobs:", error);
     return [];
   }
 
@@ -88,7 +85,6 @@ export const getPendingJobsQuery = cache(async (): Promise<Job[]> => {
     .order("created_at", { ascending: true });
 
   if (error) {
-    console.error("Error fetching pending jobs:", error);
     return [];
   }
 
@@ -105,7 +101,6 @@ export const getAllJobsQuery = cache(async (): Promise<Job[]> => {
     .order("created_at", { ascending: false });
 
   if (jobsError) {
-    console.error("Error fetching all jobs:", jobsError);
     return [];
   }
 
@@ -131,7 +126,6 @@ export const getAllJobsQuery = cache(async (): Promise<Job[]> => {
     .in("id", userIds);
 
   if (profilesError) {
-    console.error("Error fetching user profiles:", profilesError);
     // Return jobs without author names
     return jobs.map(job => ({
       ...job,

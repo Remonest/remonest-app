@@ -27,7 +27,6 @@ export async function requireAdmin(): Promise<AdminUser> {
 
   // If RLS error, use service role key to bypass
   if (error && (error.code === "42P17" || error.code === "42501")) {
-    console.warn("requireAdmin: RLS issue detected, using admin client bypass...");
     
     const serviceUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
     const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;

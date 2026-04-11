@@ -24,7 +24,6 @@ export async function POST(
       );
     }
   } catch (error) {
-    console.error("Publish error:", error);
     return NextResponse.json(
       { error: "Failed to publish job" },
       { status: 500 }

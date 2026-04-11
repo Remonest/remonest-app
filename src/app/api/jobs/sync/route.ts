@@ -24,7 +24,6 @@ export async function GET(request: NextRequest) {
     ];
 
     // TODO: Save to Supabase database
-    console.log(`Synced ${jobs.length} jobs from external sources`);
 
     return NextResponse.json({
       success: true,
@@ -32,7 +31,6 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Job sync error:", error);
     return NextResponse.json(
       { error: "Failed to sync jobs" },
       { status: 500 }

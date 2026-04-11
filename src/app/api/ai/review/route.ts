@@ -32,7 +32,6 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(review);
   } catch (error) {
-    console.error("AI review error:", error);
     return NextResponse.json(
       { error: "Failed to process CV review" },
       { status: 500 }
