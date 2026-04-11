@@ -130,8 +130,8 @@ CREATE TABLE admin_actions (
 | `record_id` | UUID | Specific record that changed | Job ID |
 | `old_values` | JSONB | Complete state before change | `{status: "pending"}` |
 | `new_values` | JSONB | Complete state after change | `{status: "published"}` |
-| `ip_address` | TEXT | IP address of request (future) | `192.168.1.1` |
-| `user_agent` | TEXT | User agent string (future) | `Mozilla/5.0...` |
+| `ip_address` | TEXT | IP address of request (✅ **active for login/logout**) | `192.168.1.1` |
+| `user_agent` | TEXT | User agent string (✅ **active for login/logout**) | `Mozilla/5.0...` |
 | `notes` | TEXT | Human-readable description | `"Status changed from pending to published"` |
 | `created_at` | TIMESTAMPTZ | When the action occurred | `2026-04-10 14:30:00` |
 
@@ -152,8 +152,19 @@ Complete list of tracked admin actions:
 | `create_learning_module` | Admin creates module | learning_modules | New module added |
 | `update_learning_module` | Admin updates module | learning_modules | Module content changed |
 | `delete_learning_module` | Admin deletes module | learning_modules | Module removed |
+| `create_learning_material` | Admin creates material | learning_materials | New material added |
+| `update_learning_material` | Admin updates material | learning_materials | Material content changed |
+| `delete_learning_material` | Admin deletes material | learning_materials | Material removed |
+| `create_learning_resource` | Admin creates resource | learning_resources | New resource added |
+| `delete_learning_resource` | Admin deletes resource | learning_resources | Resource removed |
 | `update_user_role` | Admin changes user role | user_profiles | Role change (e.g., user → client) |
+| `update_user_settings` | Admin updates user settings | user_settings | Settings changed |
+| `update_user_profile` | Admin updates user profile | user_profiles | Profile data changed |
+| `create_user` | Admin creates user | auth.users | New user account |
 | `delete_user` | Admin deletes user | auth.users | User account removed |
+| `update_site_settings` | Admin updates site settings | site_settings | Global settings changed |
+| `login` | User logs in (any method) | auth_users | **Logs IP, user agent, login method** |
+| `logout` | User logs out | auth_users | **Logs IP, user agent** |
 | `other` | Any other admin action | Various | Fallback for untyped actions |
 
 ---

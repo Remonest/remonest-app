@@ -280,39 +280,16 @@ export function MaterialListClient({
                         <Eye className="h-4 w-4" />
                       )}
                     </Button>
-                    <Dialog
-                      open={editDialogOpen}
-                      onOpenChange={setEditDialogOpen}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setEditingMaterial(material);
+                        setEditDialogOpen(true);
+                      }}
                     >
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setEditingMaterial(material);
-                            setEditDialogOpen(true);
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <DialogHeader>
-                          <DialogTitle>Edit Materi</DialogTitle>
-                          <DialogDescription>
-                            Ubah detail materi pembelajaran
-                          </DialogDescription>
-                        </DialogHeader>
-                        <MaterialForm
-                          moduleId={module.id}
-                          material={editingMaterial}
-                          onClose={() => {
-                            setEditDialogOpen(false);
-                            setEditingMaterial(null);
-                          }}
-                        />
-                      </DialogContent>
-                    </Dialog>
+                      <Edit className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -434,6 +411,26 @@ export function MaterialListClient({
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Material Dialog - Outside the loop */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Materi</DialogTitle>
+            <DialogDescription>
+              Ubah detail materi pembelajaran
+            </DialogDescription>
+          </DialogHeader>
+          <MaterialForm
+            moduleId={module.id}
+            material={editingMaterial}
+            onClose={() => {
+              setEditDialogOpen(false);
+              setEditingMaterial(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

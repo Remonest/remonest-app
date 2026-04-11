@@ -3,6 +3,7 @@
 import { learningModuleSchema } from "@/lib/learning/schemas";
 import type { LearningModuleResult } from "@/lib/learning/schemas";
 import { getSupabaseServiceClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/admin/require-admin";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -27,6 +28,39 @@ export type LearningModuleStats = {
   draft: number;
   archived: number;
 };
+
+// ─── Helper: Log Admin Action ────────────────────────────────
+
+/**
+ * Manually log an admin action for learning module operations.
+ * This is needed because database triggers can't get auth.uid() 
+ * when using service role key.
+ */
+async function logLearningModuleAction(
+  actionType: "create_learning_module" | "update_learning_module" | "delete_learning_module",
+  recordId: string,
+  oldValues: Record<string, any> | null = null,
+  newValues: Record<string, any> | null = null,
+  notes: string | null = null
+) {
+  try {
+    const admin = await requireAdmin();
+    const supabase = getSupabaseServiceClient();
+
+    await supabase.from("admin_actions").insert({
+      admin_id: admin.id,
+      action_type: actionType,
+      table_name: "learning_modules",
+      record_id: recordId,
+      old_values: oldValues || {},
+      new_values: newValues || {},
+      notes,
+    });
+  } catch (error) {
+    // Log error but don't fail the operation
+    console.error("Failed to log admin action:", error);
+  }
+}
 
 // ─── Read ────────────────────────────────────────────────────
 
@@ -115,6 +149,13 @@ export async function updateLearningModule(
 
   const supabase = getSupabaseServiceClient();
 
+  // Fetch old values for logging
+  const { data: oldModule } = await supabase
+    .from("learning_modules")
+    .select("*")
+    .eq("id", id)
+    .single();
+
   const { error } = await supabase
     .from("learning_modules")
     .update({
@@ -132,6 +173,30 @@ export async function updateLearningModule(
   if (error) {
     return { success: false, error: error.message };
   }
+
+  // Log admin action
+  const newValues = {
+    title,
+    slug,
+    category,
+    description,
+    content,
+    duration_min: durationMin,
+    status,
+  };
+  
+  let notes = `Updated module: ${title}`;
+  if (oldModule && oldModule.status !== status) {
+    notes = `Status changed from ${oldModule.status} to ${status}`;
+  }
+
+  await logLearningModuleAction(
+    "update_learning_module",
+    id,
+    oldModule,
+    newValues,
+    notes
+  );
 
   revalidatePath("/admin/learning");
   return { success: true };
@@ -192,6 +257,15 @@ export async function saveLearningModule(
     };
   }
 
+  // Log admin action
+  await logLearningModuleAction(
+    "create_learning_module",
+    data.id,
+    null,
+    { title, slug, category, description, status: "draft" },
+    `Created new module: ${title}`
+  );
+
   revalidatePath("/admin/learning");
   return { success: true, id: data.id };
 }
@@ -204,6 +278,13 @@ export async function updateLearningModuleStatus(
 ): Promise<LearningModuleResult> {
   const supabase = getSupabaseServiceClient();
 
+  // Fetch old values for logging
+  const { data: oldModule } = await supabase
+    .from("learning_modules")
+    .select("*")
+    .eq("id", id)
+    .single();
+
   const { error } = await supabase
     .from("learning_modules")
     .update({ status, updated_at: new Date().toISOString() })
@@ -211,6 +292,17 @@ export async function updateLearningModuleStatus(
 
   if (error) {
     return { success: false, error: error.message };
+  }
+
+  // Log admin action
+  if (oldModule) {
+    await logLearningModuleAction(
+      "update_learning_module",
+      id,
+      oldModule,
+      { ...oldModule, status },
+      `Status changed from ${oldModule.status} to ${status}`
+    );
   }
 
   revalidatePath("/admin/learning");
@@ -224,6 +316,13 @@ export async function deleteLearningModule(
 ): Promise<LearningModuleResult> {
   const supabase = getSupabaseServiceClient();
 
+  // Fetch module before deletion for logging
+  const { data: deletedModule } = await supabase
+    .from("learning_modules")
+    .select("*")
+    .eq("id", id)
+    .single();
+
   const { error } = await supabase
     .from("learning_modules")
     .delete()
@@ -231,6 +330,17 @@ export async function deleteLearningModule(
 
   if (error) {
     return { success: false, error: error.message };
+  }
+
+  // Log admin action
+  if (deletedModule) {
+    await logLearningModuleAction(
+      "delete_learning_module",
+      id,
+      deletedModule,
+      null,
+      `Deleted module: ${deletedModule.title}`
+    );
   }
 
   revalidatePath("/admin/learning");

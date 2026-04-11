@@ -7,6 +7,56 @@ All notable changes to the Remonest App project.
 
 ---
 
+## [v1.5.0] - April 11, 2026
+
+### 🎉 New Features
+
+#### Login/Logout Activity Tracking (Migration 017)
+
+- ✅ **Database Enhancements**
+  - Added `'login'` and `'logout'` to `admin_action_type_enum`
+  - Updated `log_admin_action()` function to accept `ip_address` and `user_agent` parameters
+  - Created `log_user_login()` helper function — logs user ID, email, role, IP, user agent, login method
+  - Created `log_user_logout()` helper function — logs user ID, email, role, IP, user agent
+
+- ✅ **Email/Password Login Logging**
+  - Automatic logging after successful authentication
+  - Captures IP address from `x-forwarded-for` / `x-real-ip` headers
+  - Captures User-Agent (browser info)
+  - Fetches and stores user role from `user_profiles`
+  - Non-blocking: login succeeds even if logging fails
+
+- ✅ **OAuth Login Logging**
+  - Automatic logging after Google OAuth session exchange
+  - Same IP and User-Agent capture
+  - Login method detection (`email/password` vs `oauth`)
+
+- ✅ **Logout Logging**
+  - Automatic logging before `signOut()`
+  - Captures IP and User-Agent
+  - Non-blocking: logout succeeds even if logging fails
+
+- ✅ **Admin Activity Log UI**
+  - Login/logout activities appear in `/admin/activity-log`
+  - Blue "Login" badge for login events
+  - Gray "Logout" badge for logout events
+  - Displays IP address and browser info in monospace font
+  - Filterable by action type like all other admin actions
+
+- ✅ **TypeScript Types Updated**
+  - `AdminActionType` now includes `'login'` and `'logout'`
+  - `AdminActionRecord` interface includes `ip_address` and `user_agent` fields
+  - Activity log fetch functions updated to return IP/user agent data
+
+### 🔒 Security & Privacy
+
+- IP addresses and user agents logged for security audit purposes
+- Only admins can view login/logout activity
+- Helps detect suspicious activity (multiple logins, unusual locations)
+- Login method stored in `new_values.login_method` for analytics
+
+---
+
 ## [v1.4.1] - April 12, 2026 (Night)
 
 ### 🔒 Security

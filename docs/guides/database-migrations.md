@@ -19,10 +19,10 @@ Complete guide to all database migrations in the Remonest App.
 
 ## 📊 Migration Overview
 
-**Total Migrations:** 14
+**Total Migrations:** 17
 **Database:** PostgreSQL (Supabase)
 **Migration Tool:** Supabase CLI
-**Latest Migration:** 014 (add_learning_materials_and_resources)
+**Latest Migration:** 017 (add_login_logout_activity_tracking)
 **Naming Convention:** `{number}_{action}_{subject}.sql`
 
 ---
@@ -660,6 +660,127 @@ The codebase has no `lessons` table. `learning_modules` is the smallest unit of 
 
 ---
 
+### Migration 015: add_learning_files_storage
+
+**Purpose:** Add file upload support for learning materials with Supabase Storage.
+
+**Bucket Created:**
+- `learning-files` — Public storage for learning material files (PDFs, images)
+
+**Bucket Configuration:**
+- Public access: Anyone can view/download
+- Max file size: 10MB
+- Allowed MIME types: PDF, JPEG, PNG, WebP, GIF
+- RLS enabled with storage policies
+
+**Column Added:**
+- `learning_materials.file_url` — TEXT, stores uploaded file URL
+
+**Storage Policies:**
+- Public can view files (SELECT)
+- Admins can upload files (INSERT)
+
+**RLS Policies:**
+- Same as materials visibility (parent module must be published)
+
+---
+
+### Migration 016: add_learning_activity_triggers
+
+**Purpose:** Auto-log admin actions on learning materials and resources.
+
+**New Action Types Added:**
+- `create_learning_material` — Admin creates material
+- `update_learning_material` — Admin updates material
+- `delete_learning_material` — Admin deletes material
+- `create_learning_resource` — Admin creates resource
+- `delete_learning_resource` — Admin deletes resource
+
+**Trigger Functions Created:**
+- `log_admin_learning_material_actions()` — Trigger for learning_materials
+- `log_admin_learning_resource_actions()` — Trigger for learning_resources
+
+**Triggers Created:**
+- `log_admin_learning_material_actions_trigger` on `learning_materials` (INSERT/UPDATE/DELETE)
+- `log_admin_learning_resource_actions_trigger` on `learning_resources` (INSERT/DELETE)
+
+**How It Works:**
+1. Admin creates/updates/deletes material or resource
+2. Trigger fires automatically
+3. Checks if user is admin (via `auth.uid()` + `user_profiles`)
+4. Logs action to `admin_actions` table with old/new values
+5. Appears in `/admin/activity-log` for audit trail
+
+**Note:** These triggers use database-level `auth.uid()` which works for direct database operations but NOT when using service role key. For server actions using service role, manual logging is implemented in the application code.
+
+---
+
+### Migration 017: add_login_logout_activity_tracking
+
+**Purpose:** Track user login/logout activities for admin audit trail.
+
+**New Action Types Added:**
+- `login` — User logged in (all authentication methods)
+- `logout` — User logged out
+
+**Functions Updated:**
+- `log_admin_action()` — Now accepts `p_ip_address` and `p_user_agent` parameters (was 8 params, now 10 params)
+  - **Breaking change:** Old function signature dropped and replaced
+  - All existing triggers continue to work (new params have DEFAULT NULL)
+
+**Functions Created:**
+- `log_user_login()` — Helper to log user login
+  - Parameters: `p_user_id`, `p_email`, `p_role`, `p_ip_address`, `p_user_agent`
+  - Stores login method (email/password vs oauth) in `new_values.login_method`
+  - Returns action UUID
+  
+- `log_user_logout()` — Helper to log user logout
+  - Parameters: `p_user_id`, `p_email`, `p_role`, `p_ip_address`, `p_user_agent`
+  - Stores user info in `old_values`
+  - Returns action UUID
+
+**What Gets Logged:**
+| Field | Login | Logout |
+|-------|-------|--------|
+| User ID | ✅ `admin_id` | ✅ `admin_id` |
+| Email | ✅ `new_values.email` | ✅ `old_values.email` |
+| Role | ✅ `new_values.role` | ✅ `old_values.role` |
+| IP Address | ✅ `ip_address` column | ✅ `ip_address` column |
+| User Agent | ✅ `user_agent` column | ✅ `user_agent` column |
+| Login Method | ✅ `new_values.login_method` | N/A |
+| Timestamp | ✅ `created_at` | ✅ `created_at` |
+
+**Implementation:**
+- **Email/Password Login** (`src/features/auth/actions/login.ts`):
+  - Calls `log_user_login()` RPC after successful authentication
+  - Captures IP from `x-forwarded-for` or `x-real-ip` headers
+  - Captures User-Agent from `user-agent` header
+  - Non-blocking: login succeeds even if logging fails
+
+- **OAuth Login** (`src/app/auth/callback/route.ts`):
+  - Calls `log_user_login()` RPC after session exchange
+  - Same IP and User-Agent capture
+  - Works with Google OAuth
+
+- **Logout** (`src/features/auth/actions/session.ts`):
+  - Calls `log_user_logout()` RPC before `signOut()`
+  - Same IP and User-Agent capture
+  - Non-blocking: logout succeeds even if logging fails
+
+**Admin Visibility:**
+- Login/logout activities appear in `/admin/activity-log`
+- Login badge: blue "Login" 
+- Logout badge: gray "Logout"
+- Shows IP address and browser info in monospace font
+- Filterable by action type
+
+**Privacy Note:**
+- IP addresses and user agents are logged for security/audit purposes
+- Only admins can view this data
+- Used for detecting suspicious activity (multiple logins, unusual locations)
+
+---
+
 ## 🔗 Migration Dependencies
 
 ```
@@ -690,6 +811,12 @@ The codebase has no `lessons` table. `learning_modules` is the smallest unit of 
 013_add_quiz_system
   ↓
 014_add_learning_materials_and_resources
+  ↓
+015_add_learning_files_storage
+  ↓
+016_add_learning_activity_triggers
+  ↓
+017_add_login_logout_activity_tracking
 ```
 
 **Important:** Migrations must be applied in order. Do not skip migrations.

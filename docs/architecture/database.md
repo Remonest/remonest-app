@@ -241,7 +241,11 @@ CREATE TYPE admin_action_type_enum AS ENUM (
   'approve_job', 'reject_job', 'delete_job', 'publish_job',
   'republish_job', 'update_job', 'create_learning_module',
   'update_learning_module', 'delete_learning_module',
-  'update_user_role', 'delete_user', 'other'
+  'create_learning_material', 'update_learning_material', 'delete_learning_material',
+  'create_learning_resource', 'delete_learning_resource',
+  'update_user_role', 'delete_user', 'update_user_settings',
+  'update_user_profile', 'create_user', 'update_site_settings',
+  'login', 'logout', 'other'
 );
 
 CREATE TABLE admin_actions (
@@ -253,8 +257,8 @@ CREATE TABLE admin_actions (
   record_id UUID,
   old_values JSONB DEFAULT '{}',
   new_values JSONB DEFAULT '{}',
-  ip_address TEXT,
-  user_agent TEXT,
+  ip_address TEXT,              -- ✅ Populated for login/logout
+  user_agent TEXT,              -- ✅ Populated for login/logout
   notes TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -262,11 +266,16 @@ CREATE TABLE admin_actions (
 
 **Design Decisions:**
 - **Immutable**: No UPDATE or DELETE policies (security feature)
-- **Automatic logging**: Triggers on jobs and learning_modules tables
+- **Automatic logging**: Triggers on jobs, learning_modules, learning_materials, learning_resources tables
+- **Login/logout tracking**: Manual logging via `log_user_login()` and `log_user_logout()` functions
 - **Complete context**: Old and new values stored as JSONB
 - **User attribution**: Links actions to specific admins
 - **Target tracking**: Records which users were affected
-- **Helper function**: `log_admin_action()` for manual logging
+- **IP & User Agent**: Captured from HTTP headers for login/logout events (security audit)
+- **Helper functions**: 
+  - `log_admin_action()` for manual logging (now accepts ip_address, user_agent)
+  - `log_user_login()` for login tracking
+  - `log_user_logout()` for logout tracking
 - **Convenience views**: `recent_admin_actions`, `admin_action_summary`
 
 **Indexes:**
@@ -276,8 +285,15 @@ CREATE TABLE admin_actions (
 - `idx_admin_actions_record_id` on `record_id` for record-specific actions
 
 **Automatic Triggers:**
-- `log_admin_job_actions_trigger` on `jobs` table
-- `log_admin_learning_module_actions_trigger` on `learning_modules` table
+- `log_admin_job_actions_trigger` on `jobs` table (INSERT/UPDATE/DELETE)
+- `log_admin_learning_module_actions_trigger` on `learning_modules` table (INSERT/UPDATE/DELETE)
+- `log_admin_learning_material_actions_trigger` on `learning_materials` table (INSERT/UPDATE/DELETE)
+- `log_admin_learning_resource_actions_trigger` on `learning_resources` table (INSERT/DELETE)
+
+**Manual Logging (Server Actions):**
+- Login events: `log_user_login()` called from `login.ts` and OAuth callback
+- Logout events: `log_user_logout()` called from `session.ts`
+- Learning materials/resources: Manual logging in server actions (service role bypasses triggers)
 
 ---
 

@@ -159,6 +159,93 @@ Appears in Activity Log with blue "Membuat Modul Pembelajaran" badge
 
 ---
 
+### Flow 5: User Logs In
+
+```
+User visits /login
+    ↓
+Enters email and password
+    ↓
+Clicks "Login"
+    ↓
+Server action validates credentials
+    ↓
+Supabase authentication succeeds
+    ↓
+🔒 AUTOMATIC: Login activity logged
+    ↓
+Logged data:
+  ├── User ID
+  ├── User email
+  ├── User role (from user_profiles)
+  ├── IP address (from HTTP headers)
+  ├── User agent (browser info)
+  └── Login method (email/password)
+    ↓
+Action type: 'login'
+    ↓
+Admin can view in /admin/activity-log:
+  ├── Blue "Login" badge
+  ├── User name/email
+  ├── Timestamp
+  ├── IP address
+  └── Browser info
+```
+
+**What Gets Logged:**
+```json
+{
+  "action_type": "login",
+  "admin_id": "user-uuid",
+  "admin_name": "John Doe",
+  "admin_email": "john@example.com",
+  "table_name": "auth_users",
+  "record_id": "user-uuid",
+  "target_user_id": "user-uuid",
+  "new_values": {
+    "email": "john@example.com",
+    "role": "client",
+    "login_method": "email/password"
+  },
+  "ip_address": "192.168.1.1",
+  "user_agent": "Mozilla/5.0...",
+  "notes": "User logged in",
+  "created_at": "2026-04-11T14:30:00Z"
+}
+```
+
+---
+
+### Flow 6: User Logs Out
+
+```
+User clicks "Sign Out" button
+    ↓
+Logout action triggered
+    ↓
+🔒 AUTOMATIC: Logout activity logged
+    ↓
+Logged data:
+  ├── User ID
+  ├── User email
+  ├── User role
+  ├── IP address
+  └── User agent
+    ↓
+Action type: 'logout'
+    ↓
+Supabase signOut() called
+    ↓
+Admin can view in /admin/activity-log:
+  ├── Gray "Logout" badge
+  ├── User name/email
+  ├── Timestamp
+  ├── IP address
+  └── Browser info
+```
+
+---
+
 ## UI Architecture
 
 ### Component Tree
@@ -326,10 +413,18 @@ CREATE TABLE admin_actions (
   record_id UUID,
   old_values JSONB DEFAULT '{}',
   new_values JSONB DEFAULT '{}',
+  ip_address TEXT,              -- ✅ Populated for login/logout events
+  user_agent TEXT,              -- ✅ Populated for login/logout events  
   notes TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 ```
+
+**Field Notes:**
+- `ip_address` and `user_agent` are now **actively populated** for login/logout events
+- Captured from HTTP headers (`x-forwarded-for`, `x-real-ip`, `user-agent`)
+- Used for security audit trail and detecting suspicious activity
+- Only visible to admins in the activity log
 
 ### Action Types
 
@@ -344,8 +439,19 @@ CREATE TYPE admin_action_type_enum AS ENUM (
   'create_learning_module',-- Admin creates module
   'update_learning_module',-- Admin updates module
   'delete_learning_module',-- Admin deletes module
+  'create_learning_material',-- Admin creates material
+  'update_learning_material',-- Admin updates material
+  'delete_learning_material',-- Admin deletes material
+  'create_learning_resource',-- Admin creates resource
+  'delete_learning_resource',-- Admin deletes resource
   'update_user_role',      -- Admin changes user role
   'delete_user',           -- Admin deletes user
+  'update_user_settings',  -- Admin updates user settings
+  'update_user_profile',   -- Admin updates user profile
+  'create_user',           -- Admin creates user
+  'update_site_settings',  -- Admin updates site settings
+  'login',                 -- User logged in (all methods)
+  'logout',                -- User logged out
   'other'                  -- Fallback
 );
 ```

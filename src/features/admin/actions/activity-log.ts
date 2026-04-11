@@ -35,6 +35,8 @@ export type AdminActionType =
   | "create_user"
   | "delete_user"
   | "update_site_settings"
+  | "login"
+  | "logout"
   | "other";
 
 /**
@@ -54,6 +56,8 @@ export interface AdminActionRecord {
   old_values: Record<string, any>;
   new_values: Record<string, any>;
   notes: string | null;
+  ip_address: string | null;
+  user_agent: string | null;
   created_at: string;
 }
 
@@ -162,6 +166,8 @@ export async function getAdminActionsByType(
     old_values: item.old_values || {},
     new_values: item.new_values || {},
     notes: item.notes,
+    ip_address: item.ip_address || null,
+    user_agent: item.user_agent || null,
     created_at: item.created_at,
   }));
 }

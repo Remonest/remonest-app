@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { getSupabaseServiceClient, requireAdmin } from "@/lib/supabase/server";
+import { getSupabaseServiceClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/admin/require-admin";
+import type { AdminUser } from "@/lib/admin/require-admin";
 import type {
   LearningMaterial,
   LearningResource,
@@ -72,8 +74,9 @@ export async function createLearningMaterial(
   moduleId: string,
   input: LearningMaterialInput
 ): Promise<ActionResult> {
+  let admin: AdminUser;
   try {
-    await requireAdmin();
+    admin = await requireAdmin();
   } catch {
     return { success: false, error: "Unauthorized" };
   }
@@ -85,7 +88,7 @@ export async function createLearningMaterial(
   }
 
   const supabase = getSupabaseServiceClient();
-  const { error } = await supabase.from("learning_materials").insert({
+  const { data, error } = await supabase.from("learning_materials").insert({
     module_id: moduleId,
     title: parsed.data.title,
     content: parsed.data.content || null,
@@ -98,10 +101,27 @@ export async function createLearningMaterial(
     difficulty: parsed.data.difficulty,
     tags: parsed.data.tags ? parsed.data.tags.split(",").map((t: string) => t.trim()).filter(Boolean) : null,
     is_published: parsed.data.isPublished,
-  });
+  }).select("id").single();
 
   if (error) {
     return { success: false, error: "Gagal membuat materi" };
+  }
+
+  // Log admin action
+  if (data?.id) {
+    try {
+      await supabase.from("admin_actions").insert({
+        admin_id: admin.id,
+        action_type: "create_learning_material",
+        table_name: "learning_materials",
+        record_id: data.id,
+        old_values: {},
+        new_values: { module_id: moduleId, ...parsed.data },
+        notes: `Created material: ${parsed.data.title}`,
+      });
+    } catch (logError) {
+      console.error("Failed to log admin action:", logError);
+    }
   }
 
   revalidatePath(`/admin/learning/${moduleId}`);
@@ -113,13 +133,22 @@ export async function updateLearningMaterial(
   id: string,
   input: Partial<LearningMaterialInput>
 ): Promise<ActionResult> {
+  let admin: AdminUser;
   try {
-    await requireAdmin();
+    admin = await requireAdmin();
   } catch {
     return { success: false, error: "Unauthorized" };
   }
 
   const supabase = getSupabaseServiceClient();
+  
+  // Fetch old values for logging
+  const { data: oldMaterial } = await supabase
+    .from("learning_materials")
+    .select("*")
+    .eq("id", id)
+    .single();
+
   const updateData: Record<string, unknown> = {};
 
   if (input.title !== undefined) updateData.title = input.title;
@@ -143,6 +172,23 @@ export async function updateLearningMaterial(
     return { success: false, error: "Gagal mengupdate materi" };
   }
 
+  // Log admin action
+  if (oldMaterial) {
+    try {
+      await supabase.from("admin_actions").insert({
+        admin_id: admin.id,
+        action_type: "update_learning_material",
+        table_name: "learning_materials",
+        record_id: id,
+        old_values: oldMaterial,
+        new_values: { ...oldMaterial, ...updateData },
+        notes: `Updated material: ${input.title || oldMaterial.title}`,
+      });
+    } catch (logError) {
+      console.error("Failed to log admin action:", logError);
+    }
+  }
+
   // Revalidate paths — we need the module_id, so fetch it first
   const { data: material } = await supabase
     .from("learning_materials")
@@ -159,17 +205,43 @@ export async function updateLearningMaterial(
 }
 
 export async function deleteLearningMaterial(id: string): Promise<ActionResult> {
+  let admin: AdminUser;
   try {
-    await requireAdmin();
+    admin = await requireAdmin();
   } catch {
     return { success: false, error: "Unauthorized" };
   }
 
   const supabase = getSupabaseServiceClient();
+  
+  // Fetch material before deletion for logging
+  const { data: deletedMaterial } = await supabase
+    .from("learning_materials")
+    .select("*")
+    .eq("id", id)
+    .single();
+
   const { error } = await supabase.from("learning_materials").delete().eq("id", id);
 
   if (error) {
     return { success: false, error: "Gagal menghapus materi" };
+  }
+
+  // Log admin action
+  if (deletedMaterial) {
+    try {
+      await supabase.from("admin_actions").insert({
+        admin_id: admin.id,
+        action_type: "delete_learning_material",
+        table_name: "learning_materials",
+        record_id: id,
+        old_values: deletedMaterial,
+        new_values: {},
+        notes: `Deleted material: ${deletedMaterial.title}`,
+      });
+    } catch (logError) {
+      console.error("Failed to log admin action:", logError);
+    }
   }
 
   return { success: true };
@@ -210,8 +282,9 @@ export async function createLearningResource(
   moduleId: string,
   input: LearningResourceInput
 ): Promise<ActionResult> {
+  let admin: AdminUser;
   try {
-    await requireAdmin();
+    admin = await requireAdmin();
   } catch {
     return { success: false, error: "Unauthorized" };
   }
@@ -223,17 +296,34 @@ export async function createLearningResource(
   }
 
   const supabase = getSupabaseServiceClient();
-  const { error } = await supabase.from("learning_resources").insert({
+  const { data, error } = await supabase.from("learning_resources").insert({
     module_id: moduleId,
     title: parsed.data.title,
     description: parsed.data.description || null,
     url: parsed.data.url,
     resource_type: parsed.data.resourceType || null,
     is_free: parsed.data.isFree,
-  });
+  }).select("id").single();
 
   if (error) {
     return { success: false, error: "Gagal membuat resource" };
+  }
+
+  // Log admin action
+  if (data?.id) {
+    try {
+      await supabase.from("admin_actions").insert({
+        admin_id: admin.id,
+        action_type: "create_learning_resource",
+        table_name: "learning_resources",
+        record_id: data.id,
+        old_values: {},
+        new_values: { module_id: moduleId, ...parsed.data },
+        notes: `Created resource: ${parsed.data.title}`,
+      });
+    } catch (logError) {
+      console.error("Failed to log admin action:", logError);
+    }
   }
 
   revalidatePath(`/admin/learning/${moduleId}`);
@@ -245,13 +335,22 @@ export async function updateLearningResource(
   id: string,
   input: Partial<LearningResourceInput>
 ): Promise<ActionResult> {
+  let admin: AdminUser;
   try {
-    await requireAdmin();
+    admin = await requireAdmin();
   } catch {
     return { success: false, error: "Unauthorized" };
   }
 
   const supabase = getSupabaseServiceClient();
+  
+  // Fetch old values for logging
+  const { data: oldResource } = await supabase
+    .from("learning_resources")
+    .select("*")
+    .eq("id", id)
+    .single();
+
   const updateData: Record<string, unknown> = {};
 
   if (input.title !== undefined) updateData.title = input.title;
@@ -269,6 +368,23 @@ export async function updateLearningResource(
     return { success: false, error: "Gagal mengupdate resource" };
   }
 
+  // Log admin action
+  if (oldResource) {
+    try {
+      await supabase.from("admin_actions").insert({
+        admin_id: admin.id,
+        action_type: "update_learning_material",
+        table_name: "learning_resources",
+        record_id: id,
+        old_values: oldResource,
+        new_values: { ...oldResource, ...updateData },
+        notes: `Updated resource: ${input.title || oldResource.title}`,
+      });
+    } catch (logError) {
+      console.error("Failed to log admin action:", logError);
+    }
+  }
+
   const { data: resource } = await supabase
     .from("learning_resources")
     .select("module_id")
@@ -284,17 +400,43 @@ export async function updateLearningResource(
 }
 
 export async function deleteLearningResource(id: string): Promise<ActionResult> {
+  let admin: AdminUser;
   try {
-    await requireAdmin();
+    admin = await requireAdmin();
   } catch {
     return { success: false, error: "Unauthorized" };
   }
 
   const supabase = getSupabaseServiceClient();
+  
+  // Fetch resource before deletion for logging
+  const { data: deletedResource } = await supabase
+    .from("learning_resources")
+    .select("*")
+    .eq("id", id)
+    .single();
+
   const { error } = await supabase.from("learning_resources").delete().eq("id", id);
 
   if (error) {
     return { success: false, error: "Gagal menghapus resource" };
+  }
+
+  // Log admin action
+  if (deletedResource) {
+    try {
+      await supabase.from("admin_actions").insert({
+        admin_id: admin.id,
+        action_type: "delete_learning_resource",
+        table_name: "learning_resources",
+        record_id: id,
+        old_values: deletedResource,
+        new_values: {},
+        notes: `Deleted resource: ${deletedResource.title}`,
+      });
+    } catch (logError) {
+      console.error("Failed to log admin action:", logError);
+    }
   }
 
   return { success: true };

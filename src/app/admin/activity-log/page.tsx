@@ -72,6 +72,8 @@ function getActionLabel(actionType: string): string {
     create_user: "Membuat User Baru",
     delete_user: "Menghapus User",
     update_site_settings: "Memperbarui Pengaturan Situs",
+    login: "Login",
+    logout: "Logout",
     other: "Lainnya",
   };
   return labels[actionType] || actionType;
@@ -102,6 +104,8 @@ function getActionVariant(actionType: string): "default" | "secondary" | "destru
     create_user: "default",
     delete_user: "destructive",
     update_site_settings: "outline",
+    login: "default",
+    logout: "secondary",
     other: "outline",
   };
   return variants[actionType] || "outline";
@@ -231,6 +235,23 @@ function ActionRow({ action }: { action: AdminActionRecord }) {
             )}
             {action.notes && (
               <p className="italic">{action.notes}</p>
+            )}
+          </div>
+        )}
+
+        {/* IP Address and User Agent (for login/logout) */}
+        {(action.ip_address || action.user_agent) && (
+          <div className="flex flex-col gap-1 text-xs font-mono text-muted-foreground">
+            {action.ip_address && (
+              <div className="flex items-center gap-1">
+                <span className="font-sans font-medium">IP:</span>
+                <span>{action.ip_address}</span>
+              </div>
+            )}
+            {action.user_agent && (
+              <div className="truncate" title={action.user_agent}>
+                <span className="font-sans font-medium">Browser:</span> {action.user_agent}
+              </div>
             )}
           </div>
         )}
