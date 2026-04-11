@@ -151,6 +151,34 @@ CREATE TABLE IF NOT EXISTS public.learning_resources (
 
 ---
 
+## Public Routes
+
+### `/learning` — Public Module Catalog
+
+**File:** `src/app/(main)/learning/page.tsx`
+
+Features:
+- Grid of published modules (3 columns responsive)
+- Category filter buttons (All, Communication, Mindset, Career, Design, Productivity)
+- Card layout: icon, category badge, title, description, duration
+- Links to `/learning/[slug]` for detail view
+
+### `/learning/[slug]` — Public Module Detail
+
+**File:** `src/app/(main)/learning/[slug]/page.tsx`
+
+Features:
+- Back link to catalog
+- Module header: category badge, title, description, duration, material count
+- Markdown content rendering (H2-H4, lists, code blocks, tables, bold/italic)
+- Materials section showing published learning materials
+  - Material cards: title, summary, source type, difficulty, reading time, tags, language
+  - External source links
+  - Inline Markdown content per material
+- 404 for non-existent or unpublished modules
+
+---
+
 ## Admin Routes
 
 ### `/admin/learning` — Module Management Dashboard

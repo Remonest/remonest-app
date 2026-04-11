@@ -298,6 +298,37 @@ interface Translations {
       updated: string;
     };
   };
+  notFound: {
+    badge: string;
+    kicker: string;
+    code: string;
+    title: string;
+    description: string;
+    returnDashboard: string;
+    goBack: string;
+    progressSafe: string;
+    contactSupport: string;
+    recommendedTitle: string;
+    recommendedChip: string;
+    links: {
+      dashboard: {
+        title: string;
+        description: string;
+      };
+      jobs: {
+        title: string;
+        description: string;
+      };
+      portfolio: {
+        title: string;
+        description: string;
+      };
+      support: {
+        title: string;
+        description: string;
+      };
+    };
+  };
 }
 
 const translations: Record<Language, Translations> = {

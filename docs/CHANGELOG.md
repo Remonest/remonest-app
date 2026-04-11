@@ -7,6 +7,50 @@ All notable changes to the Remonest App project.
 
 ---
 
+## [v1.3.3] - April 12, 2026
+
+### 🎉 New Features
+
+#### Public Learning Module Detail Page (Rewritten)
+
+- ✅ **Replaced hardcoded data with Supabase**
+  - Uses `getLearningModuleBySlug(slug)` to fetch real module content
+  - Fetches `content` column from `learning_modules` table
+  - Returns null for non-existent/unpublished slugs → 404
+
+- ✅ **Materials Section**
+  - Fetches published materials via `getPublishedMaterialsForModule(moduleId)`
+  - Shows material cards with title, summary, difficulty, reading time, tags
+  - External source links open in new tab
+  - Markdown content rendered inline
+
+- ✅ **Markdown Rendering**
+  - Custom lightweight Markdown parser (no external dependency)
+  - Supports: H2-H4, bold, italic, lists, numbered lists, code blocks, inline code, horizontal rules
+  - Proper prose styling with `prose prose-neutral dark:prose-invert`
+
+- ✅ **UI Improvements**
+  - Category badges with color coding
+  - Duration and material count metadata
+  - "Kembali ke Katalog" back link
+  - Clean reading layout (800px max width, proper spacing)
+
+### 🐛 Bug Fixes
+
+- ✅ **Detail page showed "Module not found" for all slugs** — was using hardcoded map
+- ✅ **Content column not fetched** — added to Supabase select query
+- ✅ **No materials shown** — new `getPublishedMaterialsForModule()` action
+
+### 📝 Code Changes
+
+| File | Changes |
+|------|---------|
+| `src/app/(main)/learning/[slug]/page.tsx` | Complete rewrite — Supabase data, Markdown rendering, materials section |
+| `src/features/learning-module/actions/fetch-learning.ts` | Added `getLearningModuleBySlug` (with content), `getPublishedMaterialsForModule`, `LearningMaterial` interface |
+| `src/features/learning-module/types/learning.ts` | Added `content` to `LearningModule` and `LearningModuleRow`, added `LearningModuleWithContent` |
+
+---
+
 ## [v1.3.2] - April 11, 2026 (Night)
 
 ### 🐛 Bug Fixes

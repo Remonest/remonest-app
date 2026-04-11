@@ -33,7 +33,8 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
 - **[Client Role](./features/client-role/implementation.md)** — Client role (employer/job poster) system
 - **[Learning Module](./features/learning-module/overview.md)** — Learning module system: admin CRUD, progress tracking, quiz builder, materials
   - [Quiz Builder](./features/learning-module/quiz-builder.md) — Quiz creation with multiple-choice questions
-  - [Materials & Resources](./features/learning-module/materials.md) — 🆕 Articles, videos, tools, templates, PDFs
+  - [Materials & Resources](./features/learning-module/materials.md) — Articles, videos, tools, templates, PDFs
+- **[Public Module Detail](./features/learning-module/overview.md#admin-routes)** — `/learning/[slug]` with Markdown rendering and materials
 - **[Language Switcher](./features/language-switcher/implementation.md)** — EN/ID language system
 - **[Admin Activity Logging](./features/admin/activity-logging.md)** — 🆕 Admin action tracking with UI flows
 
