@@ -7,6 +7,100 @@ All notable changes to the Remonest App project.
 
 ---
 
+## [v1.3.0] - April 11, 2026 (Afternoon)
+
+### 🎉 New Features
+
+#### Learning Materials & Resources
+
+- ✅ **Database: Migration 014** (`014_add_learning_materials_and_resources.sql`)
+  - `learning_materials` table — articles, videos, documentation, tutorials
+    - Markdown content, summary, source URL, source type
+    - Difficulty levels (beginner/intermediate/advanced)
+    - Language support (ID/EN), reading time estimate
+    - Tags (TEXT[] with GIN index for fast search)
+    - Publish toggle for staged release
+  - `learning_resources` table — tools, templates, ebooks, PDFs
+    - Title, description, external URL
+    - Resource type (tool/template/ebook/checklist/cheatsheet/pdf)
+    - Free/paid toggle
+  - 7 indexes for performance (including GIN for tags)
+  - RLS policies: public read for published, admin manage all
+  - Auto-update trigger for `updated_at`
+
+- ✅ **Admin UI: `/admin/learning/[id]/materials`**
+  - Stats dashboard (Total Materials, Published, Total Resources, Free)
+  - Materials list with publish toggle, edit, delete actions
+  - Resources list with delete and external link display
+  - Material form: title, Markdown content, summary, source type/URL, difficulty, language, tags
+  - Resource form: title, description, URL, type, free toggle
+  - Empty states with helpful messaging
+  - Files: `src/app/admin/learning/[id]/materials/page.tsx` (server)
+  - Files: `material-list-client.tsx`, `material-form.tsx`, `resource-form.tsx` (client)
+
+- ✅ **Server Actions**
+  - `getMaterialsByModuleId()`, `getMaterialById()` — fetch materials
+  - `createLearningMaterial()`, `updateLearningMaterial()`, `deleteLearningMaterial()` — material CRUD
+  - `getResourcesByModuleId()`, `getResourceById()` — fetch resources
+  - `createLearningResource()`, `updateLearningResource()`, `deleteLearningResource()` — resource CRUD
+  - Zod validation with Indonesian error messages
+  - Path revalidation after mutations
+  - Files: `src/features/learning-module/actions/materials.ts`
+
+- ✅ **TypeScript Types**
+  - `LearningMaterial`, `LearningResource` interfaces
+  - `LearningMaterialInput`, `LearningResourceInput` input types
+  - `SourceType`, `ResourceFileType`, `MaterialDifficulty` enums
+  - Files: `src/features/learning-module/types/materials.ts`
+
+- ✅ **Navigation Update**
+  - Added "Kelola Materi" link to learning module action dropdown
+  - Added "Kelola Kuis" link to learning module action dropdown
+  - Files: `src/components/admin/learning-actions.tsx`
+
+### 📚 Documentation
+
+#### New Documentation
+- ✅ **Materials & Resources Guide** (`docs/features/learning-module/materials.md`)
+  - Complete feature overview with database schema
+  - RLS policies documentation
+  - File structure and server actions reference
+  - Admin UI walkthrough with form fields
+  - How-to guide for adding materials and resources
+  - Type definitions and known issues/TODOs
+
+#### Updated Documentation
+- ✅ **Learning Module Overview** (`docs/features/learning-module/overview.md`)
+  - Added learning materials & resources section
+  - Added `learning_materials` and `learning_resources` table schemas
+  - Added `/admin/learning/[id]/materials` route documentation
+  - Updated file structure with new directories
+  - Updated RLS policies section
+
+- ✅ **Main README** (`docs/README.md`) — Updated version to v1.3.0, added materials links
+- ✅ **Implementation Summary** — Updated migration/table counts, added materials feature
+- ✅ **Migration Guide** (`docs/guides/database-migrations.md`) — Added migration 014 details
+- ✅ **Migration Naming** (`docs/guides/migration-naming-quick-reference.md`) — Version 013 → 014
+
+### 🏗️ Architecture
+
+#### Key Design Decision
+- **FK to `learning_modules` (not `lessons`)** — The codebase has no `lessons` table. `learning_modules` is the smallest unit of content with a single `content` TEXT column. Materials and resources extend modules rather than replacing the structure.
+
+### 📊 Build Status
+
+```
+✓ Compiled successfully
+✓ Finished TypeScript in 10.9s
+✓ Generating static pages (32/32)
+✓ Build completed successfully
+```
+
+**New routes:**
+- `/admin/learning/[id]/materials` — Materials & resources manager
+
+---
+
 ## [v1.2.1] - April 11, 2026
 
 ### 🔧 Code Quality

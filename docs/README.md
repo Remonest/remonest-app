@@ -2,7 +2,7 @@
 
 Comprehensive documentation for the Remonest platform — a remote work hub for Indonesian professionals with learning modules, job board, CV/portfolio builder, and admin management.
 
-**Current Version:** v1.2.1 | [View Changelog](./CHANGELOG.md)
+**Current Version:** v1.3.0 | [View Changelog](./CHANGELOG.md)
 
 ---
 
@@ -31,7 +31,9 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
   - [Posting Workflow](./features/job-board/posting-workflow.md) — Role-based posting with admin approval queue
   - [Detail Modal](./features/job-board/detail-modal.md) — Dialog component for viewing/managing job drafts
 - **[Client Role](./features/client-role/implementation.md)** — Client role (employer/job poster) system
-- **[Learning Module](./features/learning-module/overview.md)** — Learning module system: admin CRUD, progress tracking
+- **[Learning Module](./features/learning-module/overview.md)** — Learning module system: admin CRUD, progress tracking, quiz builder, materials
+  - [Quiz Builder](./features/learning-module/quiz-builder.md) — Quiz creation with multiple-choice questions
+  - [Materials & Resources](./features/learning-module/materials.md) — 🆕 Articles, videos, tools, templates, PDFs
 - **[Language Switcher](./features/language-switcher/implementation.md)** — EN/ID language system
 - **[Admin Activity Logging](./features/admin/activity-logging.md)** — 🆕 Admin action tracking with UI flows
 
@@ -67,19 +69,22 @@ docs/
 │   ├── client-role/
 │   │   └── implementation.md         # Client role system v0.3.0
 │   ├── learning-module/
-│   │   └── overview.md               # Learning module system v1.0.0
+│   │   ├── overview.md               # Learning module system v1.3.0
+│   │   ├── quiz-builder.md           # Quiz creation system v1.0.0
+│   │   └── materials.md              # 🆕 Materials & resources v1.0.0
 │   ├── language-switcher/
 │   │   └── implementation.md         # i18n system (EN/ID)
 │   └── admin/
-│       └── activity-logging.md       # 🆕 Admin action tracking UI
+│       └── activity-logging.md       # Admin action tracking UI
 └── guides/                            # 📖 How-to guides
     ├── design-guidelines.md          # 🎨 Design system & component patterns
     ├── social-media-icons.md         # 🐦 Custom SVG icons (Twitter, LinkedIn, Instagram)
     ├── git-workflow.md               # 🔄 Commit messages, branching, PR guidelines
-    ├── database-migrations.md        # 🗄️ Complete guide to all 12 migrations
+    ├── database-migrations.md        # 🗄️ Complete guide to all 14 migrations
     ├── rls-policies.md               # 🔒 Complete RLS policy reference
     ├── rls-recursion-fix.md          # 🛠️ Fix for infinite recursion error
     ├── admin-action-logging.md       # 📊 Admin audit trail system
+    ├── migration-naming-quick-reference.md  # 🏷️ Migration naming conventions
     ├── admin-access.md               # Admin panel access guide
     ├── quick-admin-access.md         # Quick admin reference
     └── new-feature.md                # How to add new features
@@ -155,8 +160,11 @@ docs/
   - Activity log UI with statistics
 
 #### Learning & Content
-- **Learning Module System** (admin CRUD, progress tracking)
+- **Learning Module System** (admin CRUD, progress tracking, quiz builder, materials)
 - **Language Switcher** (EN/ID translation system)
+- **Quiz Builder** (🆕 admin assessment system with multiple-choice questions)
+- **Learning Materials** (🆕 articles, videos, documentation per module)
+- **Learning Resources** (🆕 tools, templates, ebooks, PDFs, external links)
 
 ### ⚠️ In Progress (Hardcoded/Mock Data)
 - Public job detail page `/jobs/[id]` (1 hardcoded job)

@@ -11,6 +11,8 @@ Learning Module adalah fitur edukasi Remonest yang memungkinkan freelancer untuk
 
 **Quiz System (v1.0.0):** Admin dapat membuat quiz dengan multiple-choice questions (A-E), mengatur durasi, nilai kelulusan, dan tingkat kesulitan. [Lihat Quiz Builder Docs](./quiz-builder.md)
 
+**Learning Materials & Resources (v1.0.0):** Admin dapat menambahkan materi pembelajaran (artikel, video, dokumentasi, tutorial) dan resource tambahan (tools, template, ebook, PDF) ke setiap modul. [Lihat Materials Guide](./materials.md)
+
 ---
 
 ## Kategori & Topik
@@ -98,12 +100,54 @@ CREATE TABLE IF NOT EXISTS public.questions (
 
 **Detailed Quiz Documentation:** [Quiz Builder Guide](./quiz-builder.md)
 
+### `learning_materials` (v1.3.0 - Materials System)
+
+```sql
+CREATE TABLE IF NOT EXISTS public.learning_materials (
+  id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  module_id             UUID NOT NULL REFERENCES learning_modules(id) ON DELETE CASCADE,
+  title                 TEXT NOT NULL,
+  content               TEXT,                    -- HTML or Markdown content
+  summary               TEXT,                    -- Brief Indonesian summary
+  source_url            TEXT,                    -- External source URL
+  source_type           TEXT CHECK (source_type IN ('article', 'video', 'documentation', 'tutorial')),
+  language              TEXT DEFAULT 'id',       -- 'id' = Indonesian, 'en' = English
+  reading_time_minutes  INT,                     -- Estimated reading time
+  difficulty            TEXT DEFAULT 'beginner'
+                        CHECK (difficulty IN ('beginner', 'intermediate', 'advanced')),
+  tags                  TEXT[],                  -- Array of tags
+  is_published          BOOLEAN DEFAULT false,
+  created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### `learning_resources` (v1.3.0 - Materials System)
+
+```sql
+CREATE TABLE IF NOT EXISTS public.learning_resources (
+  id            UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  module_id     UUID NOT NULL REFERENCES learning_modules(id) ON DELETE CASCADE,
+  title         TEXT NOT NULL,
+  description   TEXT,
+  url           TEXT NOT NULL,
+  resource_type TEXT CHECK (resource_type IN ('tool', 'template', 'ebook', 'checklist', 'cheatsheet', 'pdf')),
+  is_free       BOOLEAN DEFAULT true,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+**Detailed Materials Documentation:** [Materials Guide](./materials.md)
+
 ### RLS Policies
 
 - **Anyone can view published modules** — `status = 'published'`
 - **Admins can manage modules** — Full CRUD for users with `role = 'admin'`
 - **Users can view/manage own progress** — Scoped to `auth.uid() = user_id`
 - **Admins can view all progress** — Read access for admins
+- **Anyone can view published materials** — `is_published = true` AND parent module `status = 'published'`
+- **Anyone can view resources from published modules** — Parent module `status = 'published'`
+- **Admins can manage materials & resources** — Full CRUD via `is_admin()` helper
 
 ---
 
@@ -144,6 +188,27 @@ Form fields:
 - Deskripsi (textarea)
 - Konten / Markdown (textarea, monospace)
 - Durasi / menit (number)
+
+### `/admin/learning/[id]/quiz` — Create Quiz for Module
+
+**File:** `src/app/admin/learning/[id]/quiz/page.tsx`
+
+Features:
+- Quiz configuration (title, duration, passing grade, publish toggle)
+- Dynamic question builder with unlimited questions
+- 5-option multiple choice (A-E) with radio button selection
+- Difficulty levels (easy/medium/hard) with color-coded badges
+
+### `/admin/learning/[id]/materials` — Manage Materials & Resources
+
+**File:** `src/app/admin/learning/[id]/materials/page.tsx`
+
+Features:
+- Stats cards (total materials, published, resources, free)
+- Materials list with publish toggle, edit, delete
+- Resources list with delete and external links
+- Material form: title, Markdown content, summary, source, tags
+- Resource form: title, description, URL, type, free toggle
 
 ---
 
@@ -226,16 +291,32 @@ src/
 │   ├── page.tsx                    # Module management dashboard
 │   ├── new/
 │   │   └── page.tsx                # Create new module form
-│   └── [id]/edit/
-│       ├── page.tsx                # Edit module (server component)
-│       └── form.tsx                # Edit module form (client component)
+│   └── [id]/
+│       ├── edit/
+│       │   ├── page.tsx            # Edit module (server component)
+│       │   └── form.tsx            # Edit module form (client component)
+│       ├── quiz/
+│       │   ├── page.tsx            # Quiz builder (server component)
+│       │   └── quiz-builder.tsx    # Quiz form (client component)
+│       └── materials/
+│           ├── page.tsx            # Materials manager (server component)
+│           ├── material-list-client.tsx  # Client UI
+│           ├── material-form.tsx   # Material create/edit form
+│           └── resource-form.tsx   # Resource create form
 ├── components/admin/
 │   ├── learning-data-table.tsx     # Data table with search & pagination
 │   ├── learning-columns.tsx        # Column definitions
-│   └── learning-actions.tsx        # Row action dropdown
-└── lib/learning/
-    ├── actions.ts                  # Server actions (CRUD)
-    └── schemas.ts                  # Zod schemas & constants
+│   └── learning-actions.tsx        # Row action dropdown (Edit, Kelola Materi, Kelola Kuis)
+├── features/learning-module/
+│   ├── actions/
+│   │   ├── quiz-actions.ts         # Quiz CRUD server actions
+│   │   └── materials.ts            # Materials & resources CRUD
+│   └── types/
+│       ├── quiz.ts                 # Quiz TypeScript interfaces
+│       └── materials.ts            # Materials TypeScript interfaces
+├── lib/learning/
+│   ├── actions.ts                  # Module CRUD server actions
+│   └── schemas.ts                  # Zod schemas & constants
 ```
 
 ---
@@ -248,6 +329,7 @@ src/
 | `/admin/learning/new` | Admin only | `requireAdmin()` via layout |
 | `/admin/learning/[id]/edit` | Admin only | `requireAdmin()` via layout |
 | `/admin/learning/[id]/quiz` | Admin only | `requireAdmin()` via layout |
+| `/admin/learning/[id]/materials` | Admin only | `requireAdmin()` via layout |
 | `/learning` | Authenticated | Middleware |
 
 All admin routes are protected by the `AdminShell` component in `src/app/admin/layout.tsx` which calls `requireAdmin()`. Non-admin users are redirected to `/dashboard`.
@@ -268,6 +350,9 @@ http://localhost:3000/admin/learning/{module-id}/edit
 
 # Create quiz for module
 http://localhost:3000/admin/learning/{module-id}/quiz
+
+# Manage materials & resources
+http://localhost:3000/admin/learning/{module-id}/materials
 
 # Grant admin role (SQL)
 UPDATE user_profiles SET role = 'admin' WHERE id = 'your-uuid';
