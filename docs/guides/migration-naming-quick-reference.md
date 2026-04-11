@@ -173,6 +173,6 @@ See [Database Migrations Guide](./database-migrations.md) for complete documenta
 
 ---
 
-**Last Updated:** April 11, 2026  
-**Current Version:** 013  
+**Last Updated:** April 11, 2026
+**Current Version:** 014
 **Status:** ✅ Active

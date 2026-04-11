@@ -19,10 +19,10 @@ Complete guide to all database migrations in the Remonest App.
 
 ## 📊 Migration Overview
 
-**Total Migrations:** 13
+**Total Migrations:** 14
 **Database:** PostgreSQL (Supabase)
 **Migration Tool:** Supabase CLI
-**Latest Migration:** 013 (add_quiz_system)
+**Latest Migration:** 014 (add_learning_materials_and_resources)
 **Naming Convention:** `{number}_{action}_{subject}.sql`
 
 ---
@@ -312,7 +312,8 @@ Before creating a new migration file, verify:
 | 010 | `make_is_verified_by_admin_nullable` | Apr 8, 2026 | Make verification field nullable | ✅ Applied |
 | 011 | `complete_rls_policies` | Apr 10, 2026 | Complete RLS + admin audit trail | ✅ Applied |
 | 012 | `fix_rls_recursion` | Apr 10, 2026 | Fix final RLS recursion with SECURITY DEFINER | ✅ Applied |
-| 013 | `add_quiz_system` | Apr 11, 2026 | Quiz/assessment system for learning modules | ⏳ Pending |
+| 013 | `add_quiz_system` | Apr 11, 2026 | Quiz/assessment system for learning modules | ✅ Applied |
+| 014 | `add_learning_materials_and_resources` | Apr 11, 2026 | Learning materials & resources tables | ⏳ Pending |
 
 ---
 
@@ -563,6 +564,102 @@ USING (is_admin())
 
 ---
 
+### Migration 013: add_quiz_system
+
+**Purpose:** Add quiz/assessment system for learning modules.
+
+**Tables Created:**
+- `quiz_configs` — Quiz settings per learning module
+- `questions` — Multiple-choice questions with 5 options (A-E)
+- `user_quiz_attempts` — Track user quiz attempts (schema ready)
+
+**Key Features:**
+- Foreign keys to `learning_modules` with CASCADE delete
+- Duration control, passing grade (0-100%), publication toggle
+- Difficulty levels: easy, medium, hard
+- JSONB options for A-E answers
+- One attempt per user per quiz (UNIQUE constraint)
+
+**RLS Policies:**
+- Public can view published quizzes and their questions
+- Admins can manage quiz configs and questions
+- Users can view/create own quiz attempts
+- Admins can view all quiz attempts
+
+---
+
+### Migration 014: add_learning_materials_and_resources
+
+**Purpose:** Add rich multimedia learning materials and supplementary resources to learning modules.
+
+**Problem:**
+The current `learning_modules` table has a single `content` TEXT column for all module content (Markdown). There's no way to:
+- Attach multiple articles, videos, or tutorials to a module
+- Link to external tools, templates, or PDFs
+- Tag materials by difficulty, language, or source type
+
+**Tables Created:**
+
+#### `learning_materials`
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK | Unique material ID |
+| `module_id` | UUID | FK → learning_modules, CASCADE | Parent module |
+| `title` | TEXT | NOT NULL | Material title |
+| `content` | TEXT | NULL | HTML/Markdown content |
+| `summary` | TEXT | NULL | Brief Indonesian summary |
+| `source_url` | TEXT | NULL | External source URL |
+| `source_type` | TEXT | CHECK (article/video/documentation/tutorial) | Material type |
+| `language` | TEXT | DEFAULT 'id' | 'id' = Indonesian, 'en' = English |
+| `reading_time_minutes` | INT | NULL | Estimated reading time |
+| `difficulty` | TEXT | DEFAULT 'beginner', CHECK (beginner/intermediate/advanced) | Difficulty level |
+| `tags` | TEXT[] | NULL | Array of tags |
+| `is_published` | BOOLEAN | DEFAULT false | Publication status |
+| `created_at` | TIMESTAMPTZ | NOT NULL | Creation timestamp |
+| `updated_at` | TIMESTAMPTZ | NOT NULL | Last update timestamp |
+
+#### `learning_resources`
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | UUID | PK | Unique resource ID |
+| `module_id` | UUID | FK → learning_modules, CASCADE | Parent module |
+| `title` | TEXT | NOT NULL | Resource title |
+| `description` | TEXT | NULL | Resource description |
+| `url` | TEXT | NOT NULL | Resource URL |
+| `resource_type` | TEXT | CHECK (tool/template/ebook/checklist/cheatsheet/pdf) | Resource type |
+| `is_free` | BOOLEAN | DEFAULT true | Free or paid |
+| `created_at` | TIMESTAMPTZ | NOT NULL | Creation timestamp |
+
+**RLS Policies:**
+- **Public materials:** SELECT WHERE `is_published = true` AND parent module `status = 'published'`
+- **Public resources:** SELECT WHERE parent module `status = 'published'`
+- **Admins:** ALL operations on both tables (using `is_admin()` helper)
+
+**Indexes:**
+- `idx_learning_materials_module` on `learning_materials(module_id)`
+- `idx_learning_materials_published` on `learning_materials(is_published)`
+- `idx_learning_materials_source_type` on `learning_materials(source_type)`
+- `idx_learning_materials_difficulty` on `learning_materials(difficulty)`
+- `idx_learning_materials_tags` on `learning_materials USING GIN(tags)` — GIN index for array search
+- `idx_learning_resources_module` on `learning_resources(module_id)`
+- `idx_learning_resources_type` on `learning_resources(resource_type)`
+
+**Triggers:**
+- `update_learning_materials_updated_at` — Auto-update `updated_at` on materials
+
+**Admin UI:**
+- Route: `/admin/learning/[id]/materials`
+- Stats cards: total materials, published, resources, free
+- Materials list with publish toggle, edit, delete
+- Resources list with delete and external links
+- Material form: title, content (Markdown), summary, source URL/type, difficulty, language, tags
+- Resource form: title, description, URL, type, free toggle
+
+**Why FK to `learning_modules` (not `lessons`)?**
+The codebase has no `lessons` table. `learning_modules` is the smallest unit of content with a single `content` TEXT (Markdown) column. Materials and resources extend modules with rich multimedia and external links.
+
+---
+
 ## 🔗 Migration Dependencies
 
 ```
@@ -589,6 +686,10 @@ USING (is_admin())
 011_complete_rls_policies
   ↓
 012_fix_rls_recursion (FINAL - Stable)
+  ↓
+013_add_quiz_system
+  ↓
+014_add_learning_materials_and_resources
 ```
 
 **Important:** Migrations must be applied in order. Do not skip migrations.
@@ -725,14 +826,14 @@ ALTER TYPE your_enum_type ADD VALUE 'new_value';
 
 | Metric | Value |
 |--------|-------|
-| Total Migrations | 13 |
-| Tables Created | 11 |
+| Total Migrations | 14 |
+| Tables Created | 14 |
 | Enum Types | 6 |
-| RLS Policies | 50+ |
-| Triggers | 10 |
-| Functions | 12+ |
+| RLS Policies | 55+ |
+| Triggers | 12 |
+| Functions | 13+ |
 | Views | 2 |
-| Indexes | 20+ |
+| Indexes | 28+ |
 
 ---
 
@@ -742,6 +843,7 @@ ALTER TYPE your_enum_type ADD VALUE 'new_value';
 - **[RLS Policies Guide](../guides/rls-policies.md)** - Complete RLS reference
 - **[RLS Recursion Fix](../guides/rls-recursion-fix.md)** - Migration 012 details
 - **[Quiz Builder Guide](../features/learning-module/quiz-builder.md)** - Migration 013 details
+- **[Learning Materials Guide](../features/learning-module/materials.md)** - Migration 014 details
 - **[Migration Guide](../scripts/MIGRATION_GUIDE.md)** - Step-by-step instructions
 - **[Admin Action Logging](../guides/admin-action-logging.md)** - Audit trail details
 
@@ -770,7 +872,7 @@ When creating new migrations, follow this template:
 
 ---
 
-**Last Updated:** April 11, 2026  
-**Migration Version:** 013  
+**Last Updated:** April 11, 2026
+**Migration Version:** 014
 **Naming Convention:** `{number}_{action}_{subject}.sql`
 **Status:** ✅ All migrations applied successfully

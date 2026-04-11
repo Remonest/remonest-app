@@ -378,7 +378,7 @@ Table auto-refreshes (job removed from list)
 - **Status:** ✅ Complete
 
 #### 8. Learning Module System
-- **Files:** `src/app/(main)/learning/`, `src/app/admin/learning/`, `src/lib/learning/`
+- **Files:** `src/app/(main)/learning/`, `src/app/admin/learning/`, `src/lib/learning/`, `src/features/learning-module/`
 - **Features:**
   - Admin CRUD for learning modules (create, edit, publish, archive, delete)
   - Module management dashboard with stats, search, pagination
@@ -388,13 +388,21 @@ Table auto-refreshes (job removed from list)
     - Difficulty levels (easy, medium, hard) with color-coded badges
     - Duration control, passing grade, publication toggle
     - Transaction-based creation (all-or-nothing)
+  - **Learning Materials** (v1.0.0) — rich multimedia content per module
+    - Articles, videos, documentation, tutorials
+    - Markdown content, summary, source URL, tags
+    - Difficulty levels, language (ID/EN), reading time estimate
+    - Publish toggle for staged release
+  - **Learning Resources** (v1.0.0) — supplementary external resources
+    - Tools, templates, ebooks, checklists, cheatsheets, PDFs
+    - URL + description, free/paid toggle
   - User progress tracking (`user_learning_progress` table)
-- **Database:** Migrations 002, 011, 013 (quiz system)
+- **Database:** Migrations 002, 011, 013 (quiz), 014 (materials & resources)
 - **Status:** ✅ Complete
 
 #### 9. Database Architecture
-- **Migrations:** 001-013 (sequential, with naming conventions)
-- **Tables:** 11 core tables
+- **Migrations:** 001-014 (sequential, with naming conventions)
+- **Tables:** 14 core tables
   - `user_profiles` (with role system)
   - `jobs` (with approval workflow)
   - `job_applications`
@@ -406,6 +414,8 @@ Table auto-refreshes (job removed from list)
   - `quiz_configs` (quiz settings per module)
   - `questions` (multiple-choice questions)
   - `user_quiz_attempts` (attempt tracking — schema ready)
+  - `learning_materials` (articles, videos, documentation per module)
+  - `learning_resources` (tools, templates, PDFs, external links)
 - **Features:**
   - Complete Row Level Security (RLS) policies (35+ policies)
   - ENUM types (job_status, job_type, apply_method, etc.)
@@ -498,8 +508,8 @@ Table auto-refreshes (job removed from list)
 ## 📈 Database Statistics
 
 ### Migrations
-- **Total:** 13 sequential migrations
-- **Naming:** `001_` through `013_`
+- **Total:** 14 sequential migrations
+- **Naming:** `001_` through `014_`
 - **Convention:** `{number}_{action}_{subject}.sql`
 - **Rollback:** All migrations include rollback SQL
 
@@ -517,6 +527,8 @@ Table auto-refreshes (job removed from list)
 | quiz_configs | 9 | 1 | 2 |
 | questions | 10 | 1 | 2 |
 | user_quiz_attempts | 9 | 1 | 3 |
+| learning_materials | 14 | 7 | 2 |
+| learning_resources | 8 | 2 | 2 |
 
 ### Enums
 - `job_type_enum` (full-time, part-time, project, freelance)
