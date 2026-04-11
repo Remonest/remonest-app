@@ -2,9 +2,24 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Plus, FileText, Link as LinkIcon, Trash2, Edit, Eye, EyeOff } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  FileText,
+  Link as LinkIcon,
+  Trash2,
+  Edit,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -22,7 +37,10 @@ import {
   updateLearningMaterial,
 } from "@/features/learning-module/actions/materials";
 import { toast } from "sonner";
-import type { LearningMaterial, LearningResource } from "@/features/learning-module/types/materials";
+import type {
+  LearningMaterial,
+  LearningResource,
+} from "@/features/learning-module/types/materials";
 
 interface MaterialListClientProps {
   module: {
@@ -35,10 +53,20 @@ interface MaterialListClientProps {
   resources: LearningResource[];
 }
 
-export function MaterialListClient({ module, materials, resources }: MaterialListClientProps) {
-  const [localMaterials, setLocalMaterials] = useState<LearningMaterial[]>(materials);
-  const [localResources, setLocalResources] = useState<LearningResource[]>(resources);
-  const [editingMaterial, setEditingMaterial] = useState<LearningMaterial | null>(null);
+export function MaterialListClient({
+  module,
+  materials,
+  resources,
+}: MaterialListClientProps) {
+  const [localMaterials, setLocalMaterials] =
+    useState<LearningMaterial[]>(materials);
+  const [localResources, setLocalResources] =
+    useState<LearningResource[]>(resources);
+  const [editingMaterial, setEditingMaterial] =
+    useState<LearningMaterial | null>(null);
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [resourceDialogOpen, setResourceDialogOpen] = useState(false);
 
   const handleDeleteMaterial = async (id: string) => {
     if (!confirm("Hapus materi ini?")) return;
@@ -69,10 +97,12 @@ export function MaterialListClient({ module, materials, resources }: MaterialLis
     if (result.success) {
       setLocalMaterials((prev) =>
         prev.map((m) =>
-          m.id === material.id ? { ...m, is_published: !m.is_published } : m
-        )
+          m.id === material.id ? { ...m, is_published: !m.is_published } : m,
+        ),
       );
-      toast.success(material.is_published ? "Materi diarsipkan" : "Materi dipublikasikan");
+      toast.success(
+        material.is_published ? "Materi diarsipkan" : "Materi dipublikasikan",
+      );
     } else {
       toast.error(result.error || "Gagal mengubah status");
     }
@@ -106,7 +136,9 @@ export function MaterialListClient({ module, materials, resources }: MaterialLis
           </Link>
           <div>
             <h1 className="text-2xl font-bold">{module.title}</h1>
-            <p className="text-muted-foreground">Kelola materi dan resource pembelajaran</p>
+            <p className="text-muted-foreground">
+              Kelola materi dan resource pembelajaran
+            </p>
           </div>
         </div>
       </div>
@@ -122,7 +154,9 @@ export function MaterialListClient({ module, materials, resources }: MaterialLis
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Terpublikasi</CardDescription>
-            <CardTitle>{localMaterials.filter((m) => m.is_published).length}</CardTitle>
+            <CardTitle>
+              {localMaterials.filter((m) => m.is_published).length}
+            </CardTitle>
           </CardHeader>
         </Card>
         <Card>
@@ -134,7 +168,9 @@ export function MaterialListClient({ module, materials, resources }: MaterialLis
         <Card>
           <CardHeader className="pb-2">
             <CardDescription>Gratis</CardDescription>
-            <CardTitle>{localResources.filter((r) => r.is_free).length}</CardTitle>
+            <CardTitle>
+              {localResources.filter((r) => r.is_free).length}
+            </CardTitle>
           </CardHeader>
         </Card>
       </div>
@@ -144,13 +180,15 @@ export function MaterialListClient({ module, materials, resources }: MaterialLis
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 mb-2">
                 <FileText className="h-5 w-5" />
                 Materi Pembelajaran
               </CardTitle>
-              <CardDescription>Artikel, video, dokumentasi, dan tutorial</CardDescription>
+              <CardDescription>
+                Artikel, video, dokumentasi, dan tutorial
+              </CardDescription>
             </div>
-            <Dialog>
+            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
               <DialogTrigger asChild>
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
@@ -164,7 +202,12 @@ export function MaterialListClient({ module, materials, resources }: MaterialLis
                     Tambahkan artikel, video, atau materi pembelajaran lainnya
                   </DialogDescription>
                 </DialogHeader>
-                <MaterialForm moduleId={module.id} />
+                <MaterialForm
+                  moduleId={module.id}
+                  onClose={() => {
+                    setCreateDialogOpen(false);
+                  }}
+                />
               </DialogContent>
             </Dialog>
           </div>
@@ -174,7 +217,9 @@ export function MaterialListClient({ module, materials, resources }: MaterialLis
             <div className="text-center py-8 text-muted-foreground">
               <FileText className="h-12 w-12 mx-auto mb-3 opacity-50" />
               <p>Belum ada materi pembelajaran</p>
-              <p className="text-sm">Klik "Tambah Materi" untuk memulai</p>
+              <p className="text-sm">
+                Klik &ldquo;Tambah Materi&ldquo; untuk memulai
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -187,13 +232,18 @@ export function MaterialListClient({ module, materials, resources }: MaterialLis
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-medium truncate">{material.title}</h3>
                       {material.is_published ? (
-                        <Badge variant="default" className="text-xs">Terbit</Badge>
+                        <Badge variant="default" className="text-xs">
+                          Terbit
+                        </Badge>
                       ) : (
-                        <Badge variant="secondary" className="text-xs">Draft</Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          Draft
+                        </Badge>
                       )}
                       {material.source_type && (
                         <Badge variant="outline" className="text-xs">
-                          {sourceTypeLabels[material.source_type] || material.source_type}
+                          {sourceTypeLabels[material.source_type] ||
+                            material.source_type}
                         </Badge>
                       )}
                       <Badge variant="outline" className="text-xs">
@@ -209,7 +259,10 @@ export function MaterialListClient({ module, materials, resources }: MaterialLis
                       {material.reading_time_minutes && (
                         <span>{material.reading_time_minutes} menit</span>
                       )}
-                      <span>{material.language === "id" ? "🇮🇩" : "🇬🇧"} {material.language}</span>
+                      <span>
+                        {material.language === "id" ? "🇮🇩" : "🇬🇧"}{" "}
+                        {material.language}
+                      </span>
                       {material.tags && material.tags.length > 0 && (
                         <span>#{material.tags.slice(0, 3).join(" #")}</span>
                       )}
@@ -227,12 +280,18 @@ export function MaterialListClient({ module, materials, resources }: MaterialLis
                         <Eye className="h-4 w-4" />
                       )}
                     </Button>
-                    <Dialog>
+                    <Dialog
+                      open={editDialogOpen}
+                      onOpenChange={setEditDialogOpen}
+                    >
                       <DialogTrigger asChild>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setEditingMaterial(material)}
+                          onClick={() => {
+                            setEditingMaterial(material);
+                            setEditDialogOpen(true);
+                          }}
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -240,15 +299,18 @@ export function MaterialListClient({ module, materials, resources }: MaterialLis
                       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>Edit Materi</DialogTitle>
-                          <DialogDescription>Ubah detail materi pembelajaran</DialogDescription>
+                          <DialogDescription>
+                            Ubah detail materi pembelajaran
+                          </DialogDescription>
                         </DialogHeader>
-                        {editingMaterial && (
-                          <MaterialForm
-                            moduleId={module.id}
-                            material={editingMaterial}
-                            onSuccess={() => setEditingMaterial(null)}
-                          />
-                        )}
+                        <MaterialForm
+                          moduleId={module.id}
+                          material={editingMaterial}
+                          onClose={() => {
+                            setEditDialogOpen(false);
+                            setEditingMaterial(null);
+                          }}
+                        />
                       </DialogContent>
                     </Dialog>
                     <Button
@@ -271,13 +333,18 @@ export function MaterialListClient({ module, materials, resources }: MaterialLis
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 mb-2">
                 <LinkIcon className="h-5 w-5" />
                 Resource Tambahan
               </CardTitle>
-              <CardDescription>Tools, template, ebook, checklist, dan cheatsheet</CardDescription>
+              <CardDescription>
+                Tools, template, ebook, checklist, dan cheatsheet
+              </CardDescription>
             </div>
-            <Dialog>
+            <Dialog
+              open={resourceDialogOpen}
+              onOpenChange={setResourceDialogOpen}
+            >
               <DialogTrigger asChild>
                 <Button variant="outline">
                   <Plus className="h-4 w-4 mr-2" />
@@ -291,7 +358,12 @@ export function MaterialListClient({ module, materials, resources }: MaterialLis
                     Tambahkan link, tools, template, atau resource lainnya
                   </DialogDescription>
                 </DialogHeader>
-                <ResourceForm moduleId={module.id} />
+                <ResourceForm
+                  moduleId={module.id}
+                  onClose={() => {
+                    setResourceDialogOpen(false);
+                  }}
+                />
               </DialogContent>
             </Dialog>
           </div>
@@ -301,7 +373,9 @@ export function MaterialListClient({ module, materials, resources }: MaterialLis
             <div className="text-center py-8 text-muted-foreground">
               <LinkIcon className="h-12 w-12 mx-auto mb-3 opacity-50" />
               <p>Belum ada resource tambahan</p>
-              <p className="text-sm">Klik "Tambah Resource" untuk memulai</p>
+              <p className="text-sm">
+                Klik &ldquo;Tambah Resource&ldquo; untuk memulai
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -315,13 +389,18 @@ export function MaterialListClient({ module, materials, resources }: MaterialLis
                       <h3 className="font-medium truncate">{resource.title}</h3>
                       {resource.resource_type && (
                         <Badge variant="outline" className="text-xs">
-                          {resourceTypeLabels[resource.resource_type] || resource.resource_type}
+                          {resourceTypeLabels[resource.resource_type] ||
+                            resource.resource_type}
                         </Badge>
                       )}
                       {resource.is_free ? (
-                        <Badge variant="secondary" className="text-xs">Gratis</Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          Gratis
+                        </Badge>
                       ) : (
-                        <Badge variant="default" className="text-xs">Berbayar</Badge>
+                        <Badge variant="default" className="text-xs">
+                          Berbayar
+                        </Badge>
                       )}
                     </div>
                     {resource.description && (

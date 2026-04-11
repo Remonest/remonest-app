@@ -21,9 +21,10 @@ import type { ResourceFileType } from "@/features/learning-module/types/material
 
 interface ResourceFormProps {
   moduleId: string;
+  onClose?: () => void;
 }
 
-export function ResourceForm({ moduleId }: ResourceFormProps) {
+export function ResourceForm({ moduleId, onClose }: ResourceFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -57,6 +58,7 @@ export function ResourceForm({ moduleId }: ResourceFormProps) {
       if (result.success) {
         toast.success("Resource berhasil dibuat");
         router.refresh();
+        onClose?.();
       } else {
         toast.error(result.error || "Terjadi kesalahan");
       }
@@ -71,7 +73,9 @@ export function ResourceForm({ moduleId }: ResourceFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Title */}
       <div>
-        <Label htmlFor="title">Judul Resource *</Label>
+        <Label htmlFor="title" className="mb-2">
+          Judul Resource *
+        </Label>
         <Input
           id="title"
           value={title}
@@ -83,7 +87,10 @@ export function ResourceForm({ moduleId }: ResourceFormProps) {
 
       {/* Description */}
       <div>
-        <Label htmlFor="description">Deskripsi</Label>
+        <Label htmlFor="description" className="mb-2">
+          {" "}
+          Deskripsi
+        </Label>
         <Textarea
           id="description"
           value={description}
@@ -95,7 +102,9 @@ export function ResourceForm({ moduleId }: ResourceFormProps) {
 
       {/* URL */}
       <div>
-        <Label htmlFor="url">URL *</Label>
+        <Label htmlFor="url" className="mb-2">
+          URL *
+        </Label>
         <Input
           id="url"
           value={url}
@@ -108,8 +117,13 @@ export function ResourceForm({ moduleId }: ResourceFormProps) {
 
       {/* Resource Type */}
       <div>
-        <Label htmlFor="resourceType">Tipe Resource</Label>
-        <Select value={resourceType} onValueChange={(v) => setResourceType(v as ResourceFileType)}>
+        <Label htmlFor="resourceType" className="mb-2">
+          Tipe Resource
+        </Label>
+        <Select
+          value={resourceType}
+          onValueChange={(v) => setResourceType(v as ResourceFileType)}
+        >
           <SelectTrigger>
             <SelectValue placeholder="Pilih tipe" />
           </SelectTrigger>
@@ -127,20 +141,26 @@ export function ResourceForm({ moduleId }: ResourceFormProps) {
       {/* Is Free Toggle */}
       <div className="flex items-center justify-between p-3 border rounded-lg">
         <div>
-          <Label htmlFor="isFree">Gratis</Label>
+          <Label htmlFor="isFree" className="mb-2">
+            Gratis
+          </Label>
           <p className="text-xs text-muted-foreground">
             Resource ini dapat diakses secara gratis
           </p>
         </div>
-        <Switch
-          id="isFree"
-          checked={isFree}
-          onCheckedChange={setIsFree}
-        />
+        <Switch id="isFree" checked={isFree} onCheckedChange={setIsFree} />
       </div>
 
       {/* Submit */}
       <div className="flex justify-end gap-2 pt-4">
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => onClose?.()}
+          disabled={loading}
+        >
+          Batal
+        </Button>
         <Button type="submit" disabled={loading}>
           {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           Simpan Resource

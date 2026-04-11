@@ -16,16 +16,27 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { createLearningMaterial, updateLearningMaterial } from "@/features/learning-module/actions/materials";
-import type { LearningMaterial, MaterialDifficulty, SourceType } from "@/features/learning-module/types/materials";
+import {
+  createLearningMaterial,
+  updateLearningMaterial,
+} from "@/features/learning-module/actions/materials";
+import type {
+  LearningMaterial,
+  MaterialDifficulty,
+  SourceType,
+} from "@/features/learning-module/types/materials";
 
 interface MaterialFormProps {
   moduleId: string;
   material?: LearningMaterial | null;
-  onSuccess?: () => void;
+  onClose?: () => void;
 }
 
-export function MaterialForm({ moduleId, material, onSuccess }: MaterialFormProps) {
+export function MaterialForm({
+  moduleId,
+  material,
+  onClose,
+}: MaterialFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -33,12 +44,20 @@ export function MaterialForm({ moduleId, material, onSuccess }: MaterialFormProp
   const [content, setContent] = useState(material?.content || "");
   const [summary, setSummary] = useState(material?.summary || "");
   const [sourceUrl, setSourceUrl] = useState(material?.source_url || "");
-  const [sourceType, setSourceType] = useState<"" | SourceType>(material?.source_type || "");
+  const [sourceType, setSourceType] = useState<"" | SourceType>(
+    material?.source_type || "",
+  );
   const [language, setLanguage] = useState(material?.language || "id");
-  const [readingTime, setReadingTime] = useState<number | "">(material?.reading_time_minutes || "");
-  const [difficulty, setDifficulty] = useState<MaterialDifficulty>(material?.difficulty || "beginner");
+  const [readingTime, setReadingTime] = useState<number | "">(
+    material?.reading_time_minutes || "",
+  );
+  const [difficulty, setDifficulty] = useState<MaterialDifficulty>(
+    material?.difficulty || "beginner",
+  );
   const [tags, setTags] = useState(material?.tags?.join(", ") || "");
-  const [isPublished, setIsPublished] = useState(material?.is_published || false);
+  const [isPublished, setIsPublished] = useState(
+    material?.is_published || false,
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,9 +95,11 @@ export function MaterialForm({ moduleId, material, onSuccess }: MaterialFormProp
           });
 
       if (result.success) {
-        toast.success(material ? "Materi berhasil diupdate" : "Materi berhasil dibuat");
+        toast.success(
+          material ? "Materi berhasil diupdate" : "Materi berhasil dibuat",
+        );
         router.refresh();
-        onSuccess?.();
+        onClose?.();
       } else {
         toast.error(result.error || "Terjadi kesalahan");
       }
@@ -93,7 +114,9 @@ export function MaterialForm({ moduleId, material, onSuccess }: MaterialFormProp
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Title */}
       <div>
-        <Label htmlFor="title">Judul Materi *</Label>
+        <Label htmlFor="title" className="mb-2">
+          Judul Materi *
+        </Label>
         <Input
           id="title"
           value={title}
@@ -105,7 +128,9 @@ export function MaterialForm({ moduleId, material, onSuccess }: MaterialFormProp
 
       {/* Summary */}
       <div>
-        <Label htmlFor="summary">Ringkasan</Label>
+        <Label htmlFor="summary" className="mb-2">
+          Ringkasan
+        </Label>
         <Textarea
           id="summary"
           value={summary}
@@ -117,7 +142,9 @@ export function MaterialForm({ moduleId, material, onSuccess }: MaterialFormProp
 
       {/* Content */}
       <div>
-        <Label htmlFor="content">Konten (Markdown)</Label>
+        <Label htmlFor="content" className="mb-2">
+          Konten (Markdown)
+        </Label>
         <Textarea
           id="content"
           value={content}
@@ -134,8 +161,13 @@ export function MaterialForm({ moduleId, material, onSuccess }: MaterialFormProp
       {/* Source Type & URL */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="sourceType">Tipe Sumber</Label>
-          <Select value={sourceType} onValueChange={(v) => setSourceType(v as "" | SourceType)}>
+          <Label htmlFor="sourceType" className="mb-2">
+            Tipe Sumber
+          </Label>
+          <Select
+            value={sourceType}
+            onValueChange={(v) => setSourceType(v as "" | SourceType)}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Pilih tipe" />
             </SelectTrigger>
@@ -148,7 +180,9 @@ export function MaterialForm({ moduleId, material, onSuccess }: MaterialFormProp
           </Select>
         </div>
         <div>
-          <Label htmlFor="sourceUrl">URL Sumber</Label>
+          <Label htmlFor="sourceUrl" className="mb-2">
+            URL Sumber
+          </Label>
           <Input
             id="sourceUrl"
             value={sourceUrl}
@@ -162,8 +196,13 @@ export function MaterialForm({ moduleId, material, onSuccess }: MaterialFormProp
       {/* Difficulty & Language */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="difficulty">Tingkat Kesulitan</Label>
-          <Select value={difficulty} onValueChange={(v) => setDifficulty(v as MaterialDifficulty)}>
+          <Label htmlFor="difficulty" className="mb-2">
+            Tingkat Kesulitan
+          </Label>
+          <Select
+            value={difficulty}
+            onValueChange={(v) => setDifficulty(v as MaterialDifficulty)}
+          >
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
@@ -175,7 +214,9 @@ export function MaterialForm({ moduleId, material, onSuccess }: MaterialFormProp
           </Select>
         </div>
         <div>
-          <Label htmlFor="language">Bahasa</Label>
+          <Label htmlFor="language" className="mb-2">
+            Bahasa
+          </Label>
           <Select value={language} onValueChange={setLanguage}>
             <SelectTrigger>
               <SelectValue />
@@ -191,18 +232,26 @@ export function MaterialForm({ moduleId, material, onSuccess }: MaterialFormProp
       {/* Reading Time & Tags */}
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <Label htmlFor="readingTime">Estimasi Waktu Baca (menit)</Label>
+          <Label htmlFor="readingTime" className="mb-2">
+            Estimasi Waktu Baca (menit)
+          </Label>
           <Input
             id="readingTime"
             type="number"
             min="0"
             value={readingTime}
-            onChange={(e) => setReadingTime(e.target.value === "" ? "" : parseInt(e.target.value))}
+            onChange={(e) =>
+              setReadingTime(
+                e.target.value === "" ? "" : parseInt(e.target.value),
+              )
+            }
             placeholder="10"
           />
         </div>
         <div>
-          <Label htmlFor="tags">Tags (pisahkan koma)</Label>
+          <Label htmlFor="tags" className="mb-2">
+            Tags (pisahkan koma)
+          </Label>
           <Input
             id="tags"
             value={tags}
@@ -232,7 +281,7 @@ export function MaterialForm({ moduleId, material, onSuccess }: MaterialFormProp
         <Button
           type="button"
           variant="outline"
-          onClick={() => onSuccess?.()}
+          onClick={() => onClose?.()}
           disabled={loading}
         >
           Batal
