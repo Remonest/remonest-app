@@ -6,7 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { LearningActions } from "@/components/admin/learning-actions";
 import { formatDistanceToNow } from "date-fns";
 import { id as localeId } from "date-fns/locale/id";
-import { BookOpen, Clock, CheckCircle2, FileText, Archive } from "lucide-react";
+import { BookOpen, Clock, CheckCircle2, FileText, Archive, ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const categoryConfig: Record<string, { label: string; color: string }> = {
   communication: {
@@ -71,7 +73,27 @@ export const learningColumns: ColumnDef<LearningModuleRow>[] = [
             <BookOpen className="h-5 w-5" />
           </div>
           <div className="min-w-0 space-y-0.5">
-            <p className="truncate font-medium leading-tight">{module.title}</p>
+            <div className="flex items-center gap-2">
+              <p className="truncate font-medium leading-tight">
+                {module.title}
+              </p>
+              {module.status === "published" && (
+                <Link
+                  href={`/learning/${module.slug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-5 w-5 shrink-0 text-muted-foreground hover:text-foreground"
+                    title="Lihat halaman publik"
+                  >
+                    <ExternalLink className="h-3 w-3" />
+                  </Button>
+                </Link>
+              )}
+            </div>
             {module.description && (
               <p className="truncate text-xs text-muted-foreground max-w-[280px]">
                 {module.description}

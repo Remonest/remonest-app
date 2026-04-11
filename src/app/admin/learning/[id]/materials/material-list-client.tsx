@@ -146,13 +146,13 @@ export function MaterialListClient({
       {/* Stats */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader>
             <CardDescription>Total Materi</CardDescription>
             <CardTitle>{localMaterials.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader>
             <CardDescription>Terpublikasi</CardDescription>
             <CardTitle>
               {localMaterials.filter((m) => m.is_published).length}
@@ -160,13 +160,13 @@ export function MaterialListClient({
           </CardHeader>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader>
             <CardDescription>Total Resource</CardDescription>
             <CardTitle>{localResources.length}</CardTitle>
           </CardHeader>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
+          <CardHeader>
             <CardDescription>Gratis</CardDescription>
             <CardTitle>
               {localResources.filter((r) => r.is_free).length}
