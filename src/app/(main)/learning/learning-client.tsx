@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { BookOpen, Clock, Filter } from "lucide-react";
+import { BookOpen, Clock, Filter, CheckCircle2, PlayCircle } from "lucide-react";
 import {
   LEARNING_CATEGORY_LABELS,
   LEARNING_CATEGORY_COLORS,
@@ -10,9 +10,15 @@ import {
 
 interface LearningClientProps {
   initialModules: LearningModule[];
+  progressMap: Map<string, number>;
+  completedSet: Set<string>;
 }
 
-export default function LearningClient({ initialModules }: LearningClientProps) {
+export default function LearningClient({
+  initialModules,
+  progressMap,
+  completedSet,
+}: LearningClientProps) {
   const [activeCategory, setActiveCategory] = useState("All");
 
   const categories = ["All", ...Object.keys(LEARNING_CATEGORY_LABELS)];
@@ -23,6 +29,13 @@ export default function LearningClient({ initialModules }: LearningClientProps) 
       : initialModules.filter(
           (mod) => mod.category === activeCategory
         );
+
+  // Helper to get module status
+  function getModuleStatus(mod: LearningModule): "completed" | "in-progress" | "not-started" {
+    if (completedSet.has(mod.id)) return "completed";
+    if (progressMap.has(mod.id)) return "in-progress";
+    return "not-started";
+  }
 
   return (
     <div className="py-8">
@@ -73,38 +86,72 @@ export default function LearningClient({ initialModules }: LearningClientProps) 
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {filteredModules.map((mod) => (
-              <a
-                key={mod.id}
-                href={`/learning/${mod.slug}`}
-                className="group flex flex-col p-5 border border-border rounded-xl bg-card hover:border-primary/50 transition-colors no-underline"
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-8 h-8 rounded-md bg-secondary text-primary flex items-center justify-center">
-                    <BookOpen className="size-4" />
+            {filteredModules.map((mod) => {
+              const status = getModuleStatus(mod);
+              const progress = progressMap.get(mod.id) ?? 0;
+
+              return (
+                <a
+                  key={mod.id}
+                  href={`/learning/${mod.slug}`}
+                  className="group relative flex flex-col p-5 border border-border rounded-xl bg-card hover:border-primary/50 transition-colors no-underline"
+                >
+                  {/* Status badge */}
+                  <div className="absolute top-3 right-3">
+                    {status === "completed" && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                        <CheckCircle2 className="size-3" />
+                        Selesai
+                      </span>
+                    )}
+                    {status === "in-progress" && (
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
+                        <PlayCircle className="size-3" />
+                        {progress}%
+                      </span>
+                    )}
                   </div>
-                  <span
-                    className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                      LEARNING_CATEGORY_COLORS[mod.category]
-                    }`}
-                  >
-                    {LEARNING_CATEGORY_LABELS[mod.category]}
-                  </span>
-                </div>
-                <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-                  {mod.title}
-                </h3>
-                <p className="mt-2 text-sm text-muted-foreground line-clamp-2 flex-1">
-                  {mod.description}
-                </p>
-                <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border">
-                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Clock className="size-3.5" />
-                    {mod.durationMin} min
-                  </span>
-                </div>
-              </a>
-            ))}
+
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-8 h-8 rounded-md bg-secondary text-primary flex items-center justify-center">
+                      <BookOpen className="size-4" />
+                    </div>
+                    <span
+                      className={`text-xs font-medium px-2 py-0.5 rounded-full ${
+                        LEARNING_CATEGORY_COLORS[mod.category]
+                      }`}
+                    >
+                      {LEARNING_CATEGORY_LABELS[mod.category]}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors pr-16">
+                    {mod.title}
+                  </h3>
+                  <p className="mt-2 text-sm text-muted-foreground line-clamp-2 flex-1">
+                    {mod.description}
+                  </p>
+                  <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border">
+                    <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                      <Clock className="size-3.5" />
+                      {mod.durationMin} min
+                    </span>
+                    {status === "in-progress" && (
+                      <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
+                        <div
+                          className="h-full rounded-full bg-primary transition-all"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
+                    )}
+                    {status === "not-started" && (
+                      <span className="text-xs text-muted-foreground">
+                        Belum dimulai
+                      </span>
+                    )}
+                  </div>
+                </a>
+              );
+            })}
           </div>
         )}
       </div>

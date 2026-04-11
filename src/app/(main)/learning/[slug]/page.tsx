@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import {
   BookOpen,
@@ -12,9 +12,15 @@ import {
   Video,
   File,
   Image as ImageIcon,
+  CheckCircle2,
+  PlayCircle,
 } from "lucide-react";
+import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { getLearningModuleBySlug, getPublishedMaterialsForModule } from "@/features/learning-module/actions/fetch-learning";
+import { enrollUserInModule, getUserModuleProgress } from "@/features/learning-module/actions/enrollment";
 import { LEARNING_CATEGORY_LABELS, LEARNING_CATEGORY_COLORS } from "@/features/learning-module/types/learning";
+import PDFCanvasViewer from "@/features/learning-module/components/PDFCanvasViewer";
+import EnrollButton from "@/features/learning-module/components/EnrollButton";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -59,13 +65,33 @@ function wrapLists(html: string): string {
 }
 
 export default async function ModuleDetailPage({ params }: PageProps) {
+  const supabase = getSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    const { slug } = await params;
+    redirect(`/login?next=/learning/${slug}`);
+  }
+
   const { slug } = await params;
   const mod = await getLearningModuleBySlug(slug);
-  const materials = mod ? await getPublishedMaterialsForModule(mod.id) : [];
 
   if (!mod) {
     notFound();
   }
+
+  const materials = mod ? await getPublishedMaterialsForModule(mod.id) : [];
+
+  // Auto-enroll on first visit
+  await enrollUserInModule(mod.id);
+
+  // Get current progress
+  const progressRecord = await getUserModuleProgress(mod.id);
+  const progress = progressRecord?.progress ?? 0;
+  const isCompleted = progressRecord?.completedAt != null;
+  const isInProgress = progress > 0 && !isCompleted;
 
   const categoryLabel = LEARNING_CATEGORY_LABELS[mod.category] || mod.category;
   const categoryColor = LEARNING_CATEGORY_COLORS[mod.category] || "bg-gray-100 text-gray-700";
@@ -106,7 +132,7 @@ export default async function ModuleDetailPage({ params }: PageProps) {
           )}
 
           {/* Meta info */}
-          <div className="flex items-center gap-6 mt-5 text-sm text-muted-foreground">
+          <div className="flex items-center gap-6 mt-5 text-sm text-muted-foreground flex-wrap">
             <span className="flex items-center gap-1.5">
               <Clock className="size-4" />
               {mod.durationMin > 0 ? `${mod.durationMin} menit` : "—"}
@@ -117,6 +143,30 @@ export default async function ModuleDetailPage({ params }: PageProps) {
                 {materials.length} materi
               </span>
             )}
+            {/* Progress status badge */}
+            {isCompleted && (
+              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
+                <CheckCircle2 className="size-4" />
+                Selesai
+              </span>
+            )}
+            {isInProgress && (
+              <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium">
+                <PlayCircle className="size-4" />
+                Sedang dipelajari ({progress}%)
+              </span>
+            )}
+          </div>
+
+          {/* Enroll / Complete button */}
+          <div className="mt-5">
+            <EnrollButton
+              moduleId={mod.id}
+              moduleTitle={mod.title}
+              progress={progress}
+              isCompleted={isCompleted}
+              materialsCount={materials.length}
+            />
           </div>
         </div>
 
@@ -133,7 +183,7 @@ export default async function ModuleDetailPage({ params }: PageProps) {
 
         {/* Materials section */}
         {materials.length > 0 && (
-          <div className="mt-12 border-t pt-8">
+          <div data-materials className="mt-12 border-t pt-8">
             <h2 className="text-xl font-semibold mb-6 text-foreground flex items-center gap-2">
               <FileText className="size-5" />
               Materi Pembelajaran
@@ -285,47 +335,44 @@ function MaterialCard({
       {/* ===== FILE PREVIEW ===== */}
       {showFile && (
         <div className="border-t border-border/50">
-          {/* Image display */}
+          {/* Image display with download protection */}
           {isImageFile && (
-            <div className="p-4 bg-muted/20">
+            <div className="relative p-4 bg-muted/20 select-none" onContextMenu={(e) => e.preventDefault()}>
               <img
                 src={material.file_url!}
                 alt={material.title}
-                className="w-full rounded-lg max-h-[600px] object-contain mx-auto"
+                className="w-full rounded-lg max-h-[600px] object-contain mx-auto pointer-events-none"
+                draggable={false}
+              />
+              {/* Transparent overlay to block right-click */}
+              <div
+                className="absolute inset-0 cursor-default"
+                onContextMenu={(e) => e.preventDefault()}
+                onDragStart={(e) => e.preventDefault()}
+                style={{ userSelect: "none", WebkitUserSelect: "none" }}
               />
             </div>
           )}
 
-          {/* PDF viewer - read only via proxy (no Supabase URL exposed) */}
+          {/* PDF viewer - canvas-based rendering (no iframe, no download) */}
           {isPdfFile && (
-            <div className="relative">
-              <iframe
-                src={material.file_url!}
-                className="w-full h-[600px] border-0"
+            <div className="border-t border-border/50">
+              <PDFCanvasViewer
+                fileUrl={material.file_url!}
                 title={material.title}
               />
-              <div className="absolute bottom-4 left-4 flex items-center gap-2 px-3 py-2 rounded-md bg-muted/90 backdrop-blur text-xs text-muted-foreground">
-                <FileText className="size-3" />
-                Baca saja — unduh tidak tersedia
-              </div>
             </div>
           )}
 
-          {/* Generic file (no preview) */}
+          {/* Generic file (no preview, no download) */}
           {!isImageFile && !isPdfFile && (
             <div className="flex items-center justify-center p-8 text-muted-foreground">
               <div className="text-center">
                 <File className="size-12 mx-auto mb-3 opacity-50" />
                 <p className="text-sm">Preview tidak tersedia</p>
-                <a
-                  href={material.file_url!}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 mt-2 text-xs text-blue-600 hover:underline"
-                >
-                  <Download className="size-3" />
-                  Unduh file
-                </a>
+                <p className="text-xs mt-1 text-muted-foreground/60">
+                  File hanya dapat dilihat oleh admin
+                </p>
               </div>
             </div>
           )}

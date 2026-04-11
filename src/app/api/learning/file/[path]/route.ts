@@ -56,13 +56,21 @@ export async function GET(
     headers.set("Content-Length", arrayBuffer.byteLength.toString());
     headers.set("Cache-Control", "public, max-age=3600");
 
-    // For PDFs: disable download toolbar and prevent right-click
+    // Security headers to prevent download/extraction
+    headers.set("X-Content-Type-Options", "nosniff");
+    headers.set("X-Frame-Options", "DENY");
+    headers.set("Referrer-Policy", "no-referrer");
+    headers.set(
+      "Content-Security-Policy",
+      "default-src 'none'; style-src 'unsafe-inline'; img-src 'self'; frame-ancestors 'none';"
+    );
+
+    // For PDFs: inline only (legacy, now handled by canvas viewer)
     if (contentType === "application/pdf") {
       headers.set("Content-Disposition", `inline; filename="${path}"`);
-      headers.set("X-Content-Type-Options", "nosniff");
     }
 
-    // For images: prevent download via right-click (basic protection)
+    // For images: inline display only
     if (contentType.startsWith("image/")) {
       headers.set("Content-Disposition", `inline; filename="${path}"`);
     }

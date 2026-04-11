@@ -34,6 +34,7 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
 - **[Learning Module](./features/learning-module/overview.md)** — Learning module system: admin CRUD, progress tracking, quiz builder, materials
   - [Quiz Builder](./features/learning-module/quiz-builder.md) — Quiz creation with multiple-choice questions
   - [Materials & Resources](./features/learning-module/materials.md) — Articles, videos, tools, templates, PDFs
+  - [Enrollment](./features/learning-module/enrollment.md) — 🆕 Module enrollment system: auto-enroll, progress tracking, completion
 - **[Public Module Detail](./features/learning-module/overview.md#admin-routes)** — `/learning/[slug]` with Markdown rendering and materials
 - **[Language Switcher](./features/language-switcher/implementation.md)** — EN/ID language system
 - **[Admin Activity Logging](./features/admin/activity-logging.md)** — 🆕 Admin action tracking with UI flows
@@ -73,7 +74,8 @@ docs/
 │   ├── learning-module/
 │   │   ├── overview.md               # Learning module system v1.3.0
 │   │   ├── quiz-builder.md           # Quiz creation system v1.0.0
-│   │   └── materials.md              # Materials & resources v1.1.0
+│   │   ├── materials.md              # Materials & resources v1.1.0
+│   │   └── enrollment.md             # 🆕 Enrollment & progress tracking v1.7.0
 │   ├── language-switcher/
 │   │   └── implementation.md         # i18n system (EN/ID)
 │   └── admin/
@@ -164,13 +166,17 @@ docs/
 
 #### Learning & Content
 - **Learning Module System** (admin CRUD, progress tracking, quiz builder, materials)
+- **Learning Module Enrollment** (🆕 auto-enroll, progress tracking, completion)
+  - Auto-enrollment on first visit to module detail page
+  - Manual "Mark as complete" button for users
+  - Progress bar and status badges on listing page
+  - Activity logging (module_started, module_completed)
 - **Language Switcher** (EN/ID translation system)
 - **Quiz Builder** (🆕 admin assessment system with multiple-choice questions)
 - **Learning Materials** (🆕 articles, videos, documentation per module)
 - **Learning Resources** (🆕 tools, templates, ebooks, PDFs, external links)
 
 ### ⚠️ In Progress (Hardcoded/Mock Data)
-- Learning modules (6 hardcoded modules, DB tables exist)
 - Public portfolio (1 hardcoded portfolio)
 - CV builder (static UI, no persistence)
 - Portfolio builder (static UI, no persistence)
@@ -233,7 +239,6 @@ pnpm lint         # Run ESLint
 - `/forgot-password` route linked from login page but backend not fully implemented
 - `/admin/learning` and `/admin/settings` sidebar links exist but pages need enhancement
 - Profile views and CV downloads on dashboard are placeholder metrics (not yet tracked in DB)
-- `/learning` pages still use hardcoded data despite DB tables existing
 - Client profile stats use some placeholder values
 
 ### ⚠️ Migration Required
