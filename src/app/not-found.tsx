@@ -13,15 +13,18 @@ import {
   LifeBuoy,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTranslations } from "@/lib/translations";
+import { useTranslations, TranslationProvider } from "@/lib/translations";
+import { Header, Footer } from "@/components/landing";
 
-export default function NotFoundPage() {
+function NotFoundContent() {
   const router = useRouter();
   const { t } = useTranslations();
 
   return (
-    <main className="flex-1">
-      <section className="py-16 pb-32">
+    <>
+      <Header />
+      <main className="flex-1">
+        <section className="py-16 pb-32">
           <div className="w-full max-w-[1280px] mx-auto px-6 lg:px-8">
             <div className="grid grid-cols-1 lg:grid-cols-[1.2fr_0.9fr] gap-6 p-6 border border-border rounded-xl bg-gradient-to-b from-card to-secondary max-w-[1160px] mx-auto">
               {/* Left Content Panel */}
@@ -189,5 +192,15 @@ export default function NotFoundPage() {
           </div>
         </section>
       </main>
+      <Footer />
+    </>
+  );
+}
+
+export default function NotFoundPage() {
+  return (
+    <TranslationProvider>
+      <NotFoundContent />
+    </TranslationProvider>
   );
 }

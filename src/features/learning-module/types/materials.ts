@@ -10,6 +10,7 @@ export interface LearningMaterial {
   summary: string | null;
   source_url: string | null;
   source_type: SourceType | null;
+  file_url: string | null;
   language: string;
   reading_time_minutes: number | null;
   difficulty: MaterialDifficulty;
@@ -36,6 +37,7 @@ export interface LearningMaterialInput {
   summary: string;
   sourceUrl: string;
   sourceType: SourceType | "";
+  fileUrl: string;
   language: string;
   readingTimeMinutes: number | "";
   difficulty: MaterialDifficulty;

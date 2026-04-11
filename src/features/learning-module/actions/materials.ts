@@ -21,6 +21,7 @@ const materialSchema = z.object({
   summary: z.string().optional(),
   sourceUrl: z.string().url("URL tidak valid").optional().or(z.literal("")),
   sourceType: z.enum(["article", "video", "documentation", "tutorial"]).optional().or(z.literal("")),
+  fileUrl: z.string().optional(),
   language: z.string().default("id"),
   readingTimeMinutes: z.number().optional().or(z.literal("")),
   difficulty: z.enum(["beginner", "intermediate", "advanced"]).default("beginner"),
@@ -92,6 +93,7 @@ export async function createLearningMaterial(
     summary: parsed.data.summary || null,
     source_url: parsed.data.sourceUrl || null,
     source_type: parsed.data.sourceType || null,
+    file_url: parsed.data.fileUrl || null,
     language: parsed.data.language,
     reading_time_minutes: parsed.data.readingTimeMinutes || null,
     difficulty: parsed.data.difficulty,
@@ -127,6 +129,7 @@ export async function updateLearningMaterial(
   if (input.summary !== undefined) updateData.summary = input.summary;
   if (input.sourceUrl !== undefined) updateData.source_url = input.sourceUrl || null;
   if (input.sourceType !== undefined) updateData.source_type = input.sourceType || null;
+  if (input.fileUrl !== undefined) updateData.file_url = input.fileUrl || null;
   if (input.language !== undefined) updateData.language = input.language;
   if (input.readingTimeMinutes !== undefined) updateData.reading_time_minutes = input.readingTimeMinutes || null;
   if (input.difficulty !== undefined) updateData.difficulty = input.difficulty;

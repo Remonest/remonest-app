@@ -11,6 +11,7 @@ import {
   Download,
   Video,
   File,
+  Image as ImageIcon,
 } from "lucide-react";
 import { getLearningModuleBySlug, getPublishedMaterialsForModule } from "@/features/learning-module/actions/fetch-learning";
 import { LEARNING_CATEGORY_LABELS, LEARNING_CATEGORY_COLORS } from "@/features/learning-module/types/learning";
@@ -162,6 +163,7 @@ function MaterialCard({
     summary: string | null;
     source_url: string | null;
     source_type: string | null;
+    file_url: string | null;
     difficulty: string;
     language: string;
     reading_time_minutes: number | null;
@@ -170,11 +172,21 @@ function MaterialCard({
 }) {
   const isVideo = material.source_type === "video";
   const hasContent = !!material.content;
+  const hasFile = !!material.file_url;
 
-  // Extract video embed URL if applicable
+  // Detect file type
+  const isImageFile =
+    hasFile && /\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(material.file_url!);
+  const isPdfFile =
+    hasFile && /\.(pdf)(\?.*)?$/i.test(material.file_url!);
+
+  // Extract video embed URL
   const embedUrl = isVideo
     ? extractVideoEmbedUrl(material.source_url)
     : null;
+
+  // Primary display: uploaded file takes priority over markdown content
+  const showFile = hasFile && !isVideo;
 
   return (
     <article className="rounded-lg border bg-card overflow-hidden">
@@ -185,6 +197,10 @@ function MaterialCard({
             <div className="flex items-center gap-2 mb-2">
               {isVideo ? (
                 <Video className="size-4 text-red-500 shrink-0" />
+              ) : isPdfFile ? (
+                <FileText className="size-4 text-red-500 shrink-0" />
+              ) : isImageFile ? (
+                <ImageIcon className="size-4 text-blue-500 shrink-0" />
               ) : (
                 <File className="size-4 text-blue-500 shrink-0" />
               )}
@@ -209,6 +225,16 @@ function MaterialCard({
                     : material.source_type === "tutorial"
                     ? "Tutorial"
                     : material.source_type}
+                </span>
+              )}
+              {isPdfFile && (
+                <span className="px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-[10px] font-medium">
+                  PDF
+                </span>
+              )}
+              {isImageFile && (
+                <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] font-medium">
+                  Gambar
                 </span>
               )}
               <span className="capitalize">{material.difficulty}</span>
@@ -256,7 +282,65 @@ function MaterialCard({
         </div>
       </div>
 
-      {/* Video embed */}
+      {/* ===== FILE PREVIEW ===== */}
+      {showFile && (
+        <div className="border-t border-border/50">
+          {/* Image display */}
+          {isImageFile && (
+            <div className="p-4 bg-muted/20">
+              <img
+                src={material.file_url!}
+                alt={material.title}
+                className="w-full rounded-lg max-h-[600px] object-contain mx-auto"
+              />
+            </div>
+          )}
+
+          {/* PDF viewer */}
+          {isPdfFile && (
+            <div className="relative">
+              <iframe
+                src={`${material.file_url}#toolbar=0&navpanes=0`}
+                className="w-full h-[600px] border-0"
+                title={material.title}
+              />
+              {/* Fallback download button if iframe fails */}
+              <div className="absolute bottom-4 right-4 flex gap-2">
+                <a
+                  href={material.file_url!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg"
+                >
+                  <Download className="size-3" />
+                  Buka PDF
+                </a>
+              </div>
+            </div>
+          )}
+
+          {/* Generic file (no preview) */}
+          {!isImageFile && !isPdfFile && (
+            <div className="flex items-center justify-center p-8 text-muted-foreground">
+              <div className="text-center">
+                <File className="size-12 mx-auto mb-3 opacity-50" />
+                <p className="text-sm">Preview tidak tersedia</p>
+                <a
+                  href={material.file_url!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 mt-2 text-xs text-blue-600 hover:underline"
+                >
+                  <Download className="size-3" />
+                  Unduh file
+                </a>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ===== VIDEO EMBED ===== */}
       {isVideo && embedUrl && (
         <div className="border-t border-border/50">
           <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
@@ -270,7 +354,7 @@ function MaterialCard({
         </div>
       )}
 
-      {/* Content (readable article) */}
+      {/* ===== MARKDOWN CONTENT ===== */}
       {hasContent && !isVideo && (
         <div className="border-t border-border/50 p-5 pt-4">
           <div

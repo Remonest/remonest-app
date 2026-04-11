@@ -39,7 +39,10 @@ export async function getLearningModuleBySlug(slug: string): Promise<LearningMod
     .single();
 
   if (error || !data) {
-    console.error("getLearningModuleBySlug error:", error?.message);
+    // Only log actual errors, not "not found" cases
+    if (error && error.code !== "PGRST116") {
+      console.error("getLearningModuleBySlug error:", error?.message);
+    }
     return null;
   }
 
@@ -60,6 +63,7 @@ export interface LearningMaterial {
   summary: string | null;
   source_url: string | null;
   source_type: string | null;
+  file_url: string | null;
   difficulty: string;
   language: string;
   reading_time_minutes: number | null;
@@ -71,7 +75,7 @@ export async function getPublishedMaterialsForModule(moduleId: string): Promise<
 
   const { data, error } = await supabase
     .from("learning_materials")
-    .select("id, title, content, summary, source_url, source_type, difficulty, language, reading_time_minutes, tags")
+    .select("id, title, content, summary, source_url, source_type, file_url, difficulty, language, reading_time_minutes, tags")
     .eq("module_id", moduleId)
     .eq("is_published", true)
     .order("created_at", { ascending: true });

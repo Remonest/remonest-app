@@ -14,7 +14,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Loader2 } from "lucide-react";
+import {
+  Loader2,
+  Upload,
+  FileText,
+  Image as ImageIcon,
+  X,
+  CheckCircle2,
+  AlertCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   createLearningMaterial,
@@ -25,6 +33,15 @@ import type {
   MaterialDifficulty,
   SourceType,
 } from "@/features/learning-module/types/materials";
+
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_TYPES = [
+  "application/pdf",
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+];
 
 interface MaterialFormProps {
   moduleId: string;
@@ -39,11 +56,14 @@ export function MaterialForm({
 }: MaterialFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const [title, setTitle] = useState(material?.title || "");
   const [content, setContent] = useState(material?.content || "");
   const [summary, setSummary] = useState(material?.summary || "");
   const [sourceUrl, setSourceUrl] = useState(material?.source_url || "");
+  const [fileUrl, setFileUrl] = useState(material?.file_url || "");
+  const [fileName, setFileName] = useState("");
   const [sourceType, setSourceType] = useState<"" | SourceType>(
     material?.source_type || "",
   );
@@ -58,6 +78,52 @@ export function MaterialForm({
   const [isPublished, setIsPublished] = useState(
     material?.is_published || false,
   );
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > MAX_FILE_SIZE) {
+      toast.error("Ukuran file maksimal 10MB");
+      return;
+    }
+
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      toast.error("Hanya PDF dan gambar (JPEG, PNG, WebP, GIF) yang didukung");
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast.error(data.error || "Gagal mengupload file");
+        return;
+      }
+
+      setFileUrl(data.url);
+      setFileName(file.name);
+      toast.success("File berhasil diupload");
+    } catch {
+      toast.error("Gagal mengupload file");
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  };
+
+  const removeFile = () => {
+    setFileUrl("");
+    setFileName("");
+  };
+
+  const isImage = fileUrl && /\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(fileUrl);
+  const isPdf = fileUrl && /\.(pdf)(\?.*)?$/i.test(fileUrl);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +141,7 @@ export function MaterialForm({
             summary,
             sourceUrl,
             sourceType,
+            fileUrl,
             language,
             readingTimeMinutes: readingTime,
             difficulty,
@@ -87,6 +154,7 @@ export function MaterialForm({
             summary,
             sourceUrl,
             sourceType,
+            fileUrl,
             language,
             readingTimeMinutes: readingTime,
             difficulty,
@@ -140,6 +208,115 @@ export function MaterialForm({
         />
       </div>
 
+      {/* File Upload */}
+      <div>
+        <Label className="mb-2">Upload File (PDF / Gambar)</Label>
+
+        {/* Upload area */}
+        {!fileUrl && (
+          <label
+            className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+              uploading
+                ? "border-primary/50 bg-primary/5"
+                : "border-border hover:border-primary/50 hover:bg-muted/50"
+            }`}
+          >
+            <div className="flex flex-col items-center justify-center py-2">
+              {uploading ? (
+                <>
+                  <Loader2 className="h-6 w-6 text-muted-foreground animate-spin mb-1" />
+                  <p className="text-xs text-muted-foreground">
+                    Mengupload...
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Upload className="h-6 w-6 text-muted-foreground mb-1" />
+                  <p className="text-xs text-muted-foreground">
+                    Klik untuk upload (max 10MB)
+                  </p>
+                  <p className="text-[10px] text-muted-foreground/60 mt-0.5">
+                    PDF, JPEG, PNG, WebP, GIF
+                  </p>
+                </>
+              )}
+            </div>
+            <input
+              type="file"
+              className="hidden"
+              accept=".pdf,.jpg,.jpeg,.png,.webp,.gif"
+              onChange={handleFileUpload}
+              disabled={uploading}
+            />
+          </label>
+        )}
+
+        {/* Uploaded file preview */}
+        {fileUrl && (
+          <div className="relative rounded-lg border bg-muted/30 overflow-hidden">
+            {/* Image preview */}
+            {isImage && (
+              <div className="relative">
+                <img
+                  src={fileUrl}
+                  alt={fileName}
+                  className="w-full h-32 object-cover"
+                />
+                <button
+                  type="button"
+                  onClick={removeFile}
+                  className="absolute top-2 right-2 p-1 rounded-full bg-black/60 text-white hover:bg-black/80"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+
+            {/* PDF preview */}
+            {isPdf && (
+              <div className="flex items-center gap-3 p-3">
+                <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+                  <FileText className="h-5 w-5 text-red-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{fileName}</p>
+                  <p className="text-xs text-muted-foreground">PDF Document</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={removeFile}
+                  className="p-1.5 rounded-md hover:bg-muted"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+
+            {/* Generic file */}
+            {!isImage && !isPdf && (
+              <div className="flex items-center gap-3 p-3">
+                <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+                  <CheckCircle2 className="h-5 w-5 text-blue-600" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{fileName}</p>
+                  <p className="text-xs text-green-600 flex items-center gap-1">
+                    <CheckCircle2 className="h-3 w-3" /> Uploaded
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={removeFile}
+                  className="p-1.5 rounded-md hover:bg-muted"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
       {/* Content */}
       <div>
         <Label htmlFor="content" className="mb-2">
@@ -150,11 +327,11 @@ export function MaterialForm({
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="# Header\n\nIsi materi dalam format Markdown..."
-          rows={8}
+          rows={6}
           className="font-mono text-sm"
         />
         <p className="text-xs text-muted-foreground mt-1">
-          Gunakan format Markdown untuk format teks
+          Opsional — gunakan jika file yang diupload perlu penjelasan tambahan
         </p>
       </div>
 
@@ -181,7 +358,7 @@ export function MaterialForm({
         </div>
         <div>
           <Label htmlFor="sourceUrl" className="mb-2">
-            URL Sumber
+            URL Sumber (opsional)
           </Label>
           <Input
             id="sourceUrl"
@@ -282,11 +459,11 @@ export function MaterialForm({
           type="button"
           variant="outline"
           onClick={() => onClose?.()}
-          disabled={loading}
+          disabled={loading || uploading}
         >
           Batal
         </Button>
-        <Button type="submit" disabled={loading}>
+        <Button type="submit" disabled={loading || uploading}>
           {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           {material ? "Update Materi" : "Simpan Materi"}
         </Button>
