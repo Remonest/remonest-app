@@ -16,6 +16,7 @@ export interface LearningModule {
   slug: string;
   title: string;
   description: string | null;
+  content: string | null;
   category: LearningCategory;
   thumbnailUrl: string | null;
   durationMin: number;
@@ -29,12 +30,17 @@ export interface LearningModuleRow {
   slug: string;
   title: string;
   description: string | null;
+  content: string | null;
   category: LearningCategory;
   thumbnail_url: string | null;
   duration_min: number;
   status: LearningStatus;
   created_at: string;
   updated_at: string;
+}
+
+export interface LearningModuleWithContent extends LearningModule {
+  content: string | null;
 }
 
 export const LEARNING_CATEGORY_LABELS: Record<LearningCategory, string> = {
