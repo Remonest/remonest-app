@@ -33,7 +33,6 @@ const TOPICS = [
     keywords: ['remote work', 'collaboration tools', 'productivity'],
     sourceUrls: [
       'https://buffer.com/resources/remote-work/',
-      'https://buffer.com/resources/category/productivity/',
     ]
   },
   {
@@ -41,8 +40,7 @@ const TOPICS = [
     module: 'Skill Freelance',
     keywords: ['freelance portfolio', 'freelancer tips', 'freelance career'],
     sourceUrls: [
-      'https://buffer.com/resources/freelance/',
-      'https://buffer.com/resources/personal-branding/',
+      'https://buffer.com/resources/freelance-tips/',
     ]
   },
 ];
