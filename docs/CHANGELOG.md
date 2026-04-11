@@ -7,6 +7,37 @@ All notable changes to the Remonest App project.
 
 ---
 
+## [v1.3.1] - April 11, 2026 (Evening)
+
+### 🌱 Content Seeding
+
+#### Indonesian Learning Materials
+- ✅ **Replaced raw English scraped content with Indonesian educational materials**
+  - Material 1: "Panduan Lengkap Bekerja dari Rumah untuk Pemula" (8,260 chars)
+  - Material 2: "Panduan Memulai Karir Freelance untuk Pemula" (7,848 chars)
+  - Both published, beginner level, Bahasa Indonesia
+- ✅ **Seed scripts** — `scripts/seed-learning-materials-id.js` and `.sql`
+- ✅ **Cleanup** — Deleted old raw Buffer.com English articles
+
+#### Content Collector Improvements
+- ✅ **Dual-mode scraping** — Cheerio first, Puppeteer fallback for JS-rendered sites
+- ✅ **Puppeteer + Chromium** installed and configured
+- ✅ **Utility scripts** — `check-materials.js`, `cleanup-materials.js`, `run-seed.js`
+
+### 📚 Documentation
+
+#### New Documentation
+- ✅ **Seeding Guide** (`docs/guides/seed-learning-materials.md`)
+  - 3 methods: JS script, SQL Editor, web scraping
+  - Step-by-step instructions for each method
+  - Content structure and database field reference
+  - Verification and cleanup instructions
+
+#### Updated Documentation
+- ✅ **Main README** (`docs/README.md`) — Added seed-learning-materials link
+
+---
+
 ## [v1.3.0] - April 11, 2026 (Afternoon)
 
 ### 🎉 New Features

@@ -85,6 +85,7 @@ docs/
     ├── rls-recursion-fix.md          # 🛠️ Fix for infinite recursion error
     ├── admin-action-logging.md       # 📊 Admin audit trail system
     ├── migration-naming-quick-reference.md  # 🏷️ Migration naming conventions
+    ├── seed-learning-materials.md          # 🌱 How to populate learning content
     ├── admin-access.md               # Admin panel access guide
     ├── quick-admin-access.md         # Quick admin reference
     └── new-feature.md                # How to add new features
