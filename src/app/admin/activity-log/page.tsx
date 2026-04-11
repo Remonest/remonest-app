@@ -62,7 +62,11 @@ function getActionLabel(actionType: string): string {
     update_learning_module: "Memperbarui Modul",
     delete_learning_module: "Menghapus Modul",
     update_user_role: "Mengubah Role User",
+    update_user_settings: "Memperbarui Pengaturan User",
+    update_user_profile: "Memperbarui Profil User",
+    create_user: "Membuat User Baru",
     delete_user: "Menghapus User",
+    update_site_settings: "Memperbarui Pengaturan Situs",
     other: "Lainnya",
   };
   return labels[actionType] || actionType;
@@ -83,7 +87,11 @@ function getActionVariant(actionType: string): "default" | "secondary" | "destru
     update_learning_module: "outline",
     delete_learning_module: "destructive",
     update_user_role: "secondary",
+    update_user_settings: "outline",
+    update_user_profile: "outline",
+    create_user: "default",
     delete_user: "destructive",
+    update_site_settings: "outline",
     other: "outline",
   };
   return variants[actionType] || "outline";
@@ -167,7 +175,7 @@ function ActionRow({ action }: { action: AdminActionRecord }) {
         {/* Header */}
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Badge variant={getActionVariant(action.action_type)}>
                 {getActionLabel(action.action_type)}
               </Badge>
@@ -175,18 +183,25 @@ function ActionRow({ action }: { action: AdminActionRecord }) {
                 {action.table_name}
               </span>
             </div>
-            <p className="text-sm text-muted-foreground">
-              Oleh: <span className="font-medium text-foreground">{action.admin_name || action.admin_email || "Unknown"}</span>
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-x-3 gap-y-1 text-sm">
+              <p className="text-sm text-muted-foreground">
+                Oleh: <span className="font-medium text-foreground">{action.admin_name || "Unknown"}</span>
+              </p>
+              {action.admin_email && (
+                <p className="text-xs text-muted-foreground font-mono">
+                  {action.admin_email}
+                </p>
+              )}
+            </div>
           </div>
 
           {/* Timestamp */}
           <div className="flex items-center gap-1 text-xs text-muted-foreground shrink-0">
             <Calendar className="h-3 w-3" />
             <time dateTime={action.created_at}>
-              {formatDistanceToNow(new Date(action.created_at), { 
+              {formatDistanceToNow(new Date(action.created_at), {
                 addSuffix: true,
-                locale: localeID 
+                locale: localeID
               })}
             </time>
           </div>
@@ -194,11 +209,14 @@ function ActionRow({ action }: { action: AdminActionRecord }) {
 
         {/* Details */}
         {(action.notes || action.target_user_name) && (
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+          <div className="flex items-center gap-4 text-xs text-muted-foreground flex-wrap">
             {action.target_user_name && (
               <div className="flex items-center gap-1">
                 <User className="h-3 w-3" />
                 <span>Target: {action.target_user_name}</span>
+                {action.target_user_email && (
+                  <span className="font-mono">({action.target_user_email})</span>
+                )}
               </div>
             )}
             {action.notes && (

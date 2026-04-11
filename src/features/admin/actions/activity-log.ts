@@ -25,7 +25,11 @@ export type AdminActionType =
   | "update_learning_module"
   | "delete_learning_module"
   | "update_user_role"
+  | "update_user_settings"
+  | "update_user_profile"
+  | "create_user"
   | "delete_user"
+  | "update_site_settings"
   | "other";
 
 /**

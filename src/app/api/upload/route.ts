@@ -75,15 +75,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get public URL
-    const { data: urlData } = supabase.storage
-      .from(BUCKET)
-      .getPublicUrl(fileName);
-
     return NextResponse.json({
       success: true,
-      url: urlData.publicUrl,
       path: fileName,
+      url: `/api/learning/file/${fileName}`,
       size: file.size,
       type: file.type,
     });

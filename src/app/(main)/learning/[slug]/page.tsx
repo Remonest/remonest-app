@@ -174,7 +174,7 @@ function MaterialCard({
   const hasContent = !!material.content;
   const hasFile = !!material.file_url;
 
-  // Detect file type
+  // Detect file type from proxy URL
   const isImageFile =
     hasFile && /\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(material.file_url!);
   const isPdfFile =
@@ -296,16 +296,14 @@ function MaterialCard({
             </div>
           )}
 
-          {/* PDF viewer - read only, no download */}
+          {/* PDF viewer - read only via proxy (no Supabase URL exposed) */}
           {isPdfFile && (
             <div className="relative">
               <iframe
-                src={`${material.file_url}#toolbar=0&navpanes=0&scrollbar=0`}
+                src={material.file_url!}
                 className="w-full h-[600px] border-0"
                 title={material.title}
-                style={{ pointerEvents: "none" }}
               />
-              <div className="absolute inset-0" />
               <div className="absolute bottom-4 left-4 flex items-center gap-2 px-3 py-2 rounded-md bg-muted/90 backdrop-blur text-xs text-muted-foreground">
                 <FileText className="size-3" />
                 Baca saja — unduh tidak tersedia
