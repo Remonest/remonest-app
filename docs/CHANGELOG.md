@@ -7,6 +7,40 @@ All notable changes to the Remonest App project.
 
 ---
 
+## [v1.4.0] - April 12, 2026 (Afternoon)
+
+### 🎉 New Features
+
+#### File Upload for Learning Materials
+
+- ✅ **Supabase Storage Bucket** (Migration 015)
+  - `learning-files` bucket — public, 10MB max
+  - Allowed types: PDF, JPEG, PNG, WebP, GIF, Word, Excel
+  - `file_url` column added to `learning_materials` table
+  - RLS: anyone can view, admins can upload
+
+- ✅ **Upload API** (`/api/upload`)
+  - File size validation (max 10MB)
+  - File type validation (PDF, images, documents)
+  - Uploads to Supabase Storage with unique filename
+  - Returns public URL for immediate use
+
+- ✅ **Admin Material Form** — file upload UI
+  - Drag-and-drop style upload area
+  - Image preview for uploaded images
+  - PDF icon with file name display
+  - Remove uploaded file button
+  - Upload progress indicator
+
+- ✅ **Public Detail Page** — enhanced material rendering
+  - **PDF**: Embedded iframe viewer with "Buka PDF" button
+  - **Images**: Displayed with max-h-[600px], object-contain
+  - **Video**: YouTube/Vimeo/Google Drive embed (16:9 responsive)
+  - **Files**: Download link with fallback for unsupported types
+  - File type badges (PDF, Gambar) in material header
+
+---
+
 ## [v1.3.3] - April 12, 2026
 
 ### 🎉 New Features
