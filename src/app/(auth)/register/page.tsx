@@ -136,11 +136,9 @@ function RegisterFormInner() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [workType, setWorkType] = useState("");
-  const [inputError, setInputError] = useState<string | null>(null);
 
   useEffect(() => {
     if (state?.error) {
-      setInputError(state.error);
       toast.error(state.error, { icon: <AlertCircle className="size-4" /> });
       const card = document.getElementById("register-card");
       if (card) {

@@ -1,6 +1,5 @@
 "use client"
 
-import { useTranslations } from "@/lib/translations"
 import { getUserRoleInfo } from "@/lib/roles"
 
 interface DashboardRoleBadgeProps {
@@ -8,8 +7,6 @@ interface DashboardRoleBadgeProps {
 }
 
 export function DashboardRoleBadge({ role }: DashboardRoleBadgeProps) {
-  const { t } = useTranslations()
-
   if (!role) return null
 
   return (

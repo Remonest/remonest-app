@@ -3,7 +3,6 @@
 import { useState, useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  User,
   Mail,
   MapPin,
   Briefcase,
@@ -18,8 +17,6 @@ import {
   Eye,
   Download,
   Clock,
-  CheckCircle2,
-  Circle,
   Building2,
   Users,
   CheckSquare,

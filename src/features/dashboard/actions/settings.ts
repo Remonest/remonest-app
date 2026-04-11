@@ -2,7 +2,6 @@
 
 import { requireAuth } from "@/features/auth/actions/guards";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-import { revalidatePath } from "next/cache";
 import { profileSchema } from "@/features/dashboard/schemas/profile";
 import type { UserSettings, UserProfile } from "@/features/dashboard/types/dashboard";
 

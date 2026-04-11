@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, CircleCheck, Clock } from "lucide-react";
 
 export default async function PostJobPage() {
-  const user = await requireAuth();
+  await requireAuth();
   const role = await getUserRole();
 
   // Redirect non-clients/non-admins

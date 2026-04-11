@@ -176,7 +176,7 @@ src/
 
 | Route | Path | File | Status | Auth Required | Description |
 |-------|------|------|--------|---------------|-------------|
-| Learning Modules | `/learning` | `src/app/(main)/learning/page.tsx` | ⚠️ UI Only | ❌ No | Module grid with category filters |
+| Learning Modules | `/learning` | `src/app/(main)/learning/page.tsx` | ⚠️ Partial | ❌ No | Module grid with category filters, Supabase integrated (detail pages need work) |
 | Job Board | `/jobs` | `src/app/(main)/jobs/page.tsx` | ⚠️ UI Only | ❌ No | Job listings with search and filters |
 | CV Builder | `/cv-builder` | `src/app/(main)/cv-builder/page.tsx` | ⚠️ Skeleton | ❌ No | Split-view CV editor (form + preview) |
 | Portfolio Builder | `/portfolio` | `src/app/(main)/portfolio/page.tsx` | ⚠️ Skeleton | ❌ No | Portfolio project editor |
@@ -187,7 +187,7 @@ src/
 
 | Route Pattern | Example Path | File | Status | SSG | Auth Required | Description |
 |---------------|--------------|------|--------|-----|---------------|-------------|
-| `/learning/[slug]` | `/learning/communication-basics` | `src/app/(main)/learning/[slug]/page.tsx` | ⚠️ UI Only | ❌ No | ❌ No | Individual learning module content |
+| `/learning/[slug]` | `/learning/communication-basics` | `src/app/(main)/learning/[slug]/page.tsx` | ⚠️ UI Complete | ❌ No | ❌ No | Individual learning module content (hardcoded, needs Supabase integration) |
 | `/jobs/[id]` | `/jobs/123` | `src/app/(main)/jobs/[id]/page.tsx` | ⚠️ UI Only | ❌ No | ❌ No | Individual job posting details |
 | `/portfolio/[username]` | `/portfolio/johndoe` | `src/app/(main)/portfolio/[username]/page.tsx` | ⚠️ UI Only | ✅ Yes (`generateStaticParams`) | ❌ No | Public portfolio page |
 
@@ -486,15 +486,21 @@ remonest-app/
 **Location:** `src/app/(main)/learning/`
 
 **Implemented:**
-- **Module Grid** with category filters (Communication, Mindset, Career, Design, Productivity)
-- **Individual Module Pages** at `/learning/[slug]`
-- Basic markdown-like content rendering
-- Category badge display
-- Module metadata (title, description, category, content)
+- **Server Component** (`page.tsx`): Fetches published modules from Supabase using server actions
+- **Client Component** (`learning-client.tsx`): Interactive UI with category filters, module grid, and navigation
+- **Category Filters**: Filter by Communication, Mindset, Career, Design, Productivity
+- Category badge display with color coding
+- Module metadata (title, description, category, duration)
+- Empty state handling
+- **Supabase Integration**: Connected to `learning_modules` table via `getPublishedLearningModules()` server action
+- **Type Safety**: Full TypeScript types defined in `@/features/learning-module/types/learning`
 
-**Current Data:** 1 hardcoded module
+**Not Implemented:**
+- **Individual Module Pages** at `/learning/[slug]` - still uses hardcoded content, needs Supabase integration for module content fetching
 
-**Status:** ⚠️ UI complete, data hardcoded, no Supabase integration
+**Data Source:** Supabase `learning_modules` table (published status only) for module list; hardcoded content for individual modules
+
+**Status:** ⚠️ Module list page complete with Supabase, individual module pages need backend integration
 
 ---
 
@@ -1730,9 +1736,11 @@ Embedded in landing page:
    - Add application notes/reminders
 
 8. **Learning Modules**
+   - ✅ Connect `/learning` module list to Supabase via `getPublishedLearningModules()` server action
+   - ✅ Implement category filtering with client-side interactivity
    - Add progress tracking via `user_learning_progress` table
    - Implement module completion status
-   - Connect `/learning/[slug]` to DB
+   - Connect `/learning/[slug]` to DB for module content fetching (currently hardcoded)
 
 9. **Job Board**
    - ✅ Connect `/jobs` to DB queries — server actions created in `src/lib/jobs/actions.ts`
@@ -1770,7 +1778,7 @@ Embedded in landing page:
 | Settings | ✅ | ✅ (Supabase) | ✅ Server actions | ✅ Complete (profile, notifications, password) |
 | Applications | ✅ | ✅ (Supabase) | ✅ Server actions | ✅ Complete (real applications with join) |
 | Admin Panel | ⚠️ | ✅ Supabase | ✅ Server actions | ⚠️ Partially complete (jobs + approval workflow + learning form done, index pages missing) |
-| Learning Modules | ✅ | ⚠️ Hardcoded + DB seed | ❌ | ⚠️ UI complete, DB tables exist, not wired to pages |
+| Learning Modules | ✅ | ⚠️ Partial | ✅ Server actions | ⚠️ Module list complete with Supabase, individual module pages use hardcoded content |
 | Job Board | ✅ | ✅ Supabase + seed | ✅ Server actions | ⚠️ UI components + server actions + admin workflow complete, public pages need Supabase integration |
 | CV Builder | ✅ | ❌ None | ❌ | ⚠️ Skeleton |
 | Portfolio Builder | ✅ | ❌ None | ❌ | ⚠️ Skeleton |

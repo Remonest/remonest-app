@@ -33,63 +33,6 @@ function Background() {
   return <div className="fixed inset-0 bg-background" />;
 }
 
-// Floating label input component
-function FloatingInput({
-  id,
-  label,
-  error,
-  success,
-  children,
-}: {
-  id: string;
-  label: string;
-  error?: string;
-  success?: boolean;
-  children: React.ReactNode;
-}) {
-  const [isFocused, setIsFocused] = useState(false);
-  const [hasValue, setHasValue] = useState(false);
-
-  return (
-    <div className="relative">
-      <label
-        htmlFor={id}
-        className={`absolute left-4 transition-all duration-300 pointer-events-none z-10 ${
-          isFocused || hasValue
-            ? "-top-2.5 text-xs bg-white/90 dark:bg-gray-900/90 px-2 rounded-md"
-            : "top-1/2 -translate-y-1/2 text-base"
-        } ${
-          error
-            ? "text-red-500"
-            : success
-              ? "text-green-500"
-              : isFocused
-                ? "text-blue-600 dark:text-blue-400 font-medium"
-                : "text-gray-500 dark:text-gray-400"
-        }`}
-      >
-        {label}
-      </label>
-      <div
-        className={`transition-all duration-300 ${
-          isFocused ? "scale-[1.02]" : "scale-100"
-        }`}
-      >
-        {children}
-      </div>
-      <style jsx>{`
-        :global(input#${id}) {
-          padding-top: 1.5rem;
-          padding-bottom: 0.5rem;
-        }
-        :global(input#${id}:focus) {
-          outline: none;
-        }
-      `}</style>
-    </div>
-  );
-}
-
 function LoginFormInner() {
   const { t, language, setLanguage } = useTranslations();
   const [state, formAction, pending] = useActionState(
@@ -267,7 +210,7 @@ function LoginFormInner() {
                   autoComplete="email"
                   required
                   defaultValue={unconfirmedEmail ?? ""}
-                  onChange={(e) => {
+                  onChange={() => {
                     if (inputError) setInputError(null);
                   }}
                   className={`text-sm ${inputError ? "border-red-500" : ""}`}

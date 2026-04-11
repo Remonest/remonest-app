@@ -6,7 +6,7 @@ import {
 } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/features/auth/actions/guards";
 import { revalidatePath } from "next/cache";
-import type { JobStatus, JobType, ApplyMethod } from "@/features/jobs/types/job";
+import type { JobType, ApplyMethod } from "@/features/jobs/types/job";
 import { jobSubmissionSchema } from "@/features/jobs/schemas/job-submission";
 
 // ============================================================

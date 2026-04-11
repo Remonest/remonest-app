@@ -9,6 +9,8 @@ Learning Module adalah fitur edukasi Remonest yang memungkinkan freelancer untuk
 3. **Ikut Tes / Kuis** — Tes pemahaman di akhir setiap modul (min. passing 70%)
 4. **Dapat Sertifikat** — Sertifikat digital Remonest bisa diunduh & di-share
 
+**Quiz System (v1.0.0):** Admin dapat membuat quiz dengan multiple-choice questions (A-E), mengatur durasi, nilai kelulusan, dan tingkat kesulitan. [Lihat Quiz Builder Docs](./quiz-builder.md)
+
 ---
 
 ## Kategori & Topik
@@ -60,6 +62,41 @@ CREATE TABLE IF NOT EXISTS public.user_learning_progress (
   UNIQUE(user_id, module_id)
 );
 ```
+
+### `quiz_configs` (v1.2.1 - Quiz System)
+
+```sql
+CREATE TABLE IF NOT EXISTS public.quiz_configs (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  module_id        UUID NOT NULL REFERENCES learning_modules(id) ON DELETE CASCADE,
+  title            TEXT NOT NULL,
+  description      TEXT,
+  duration_minutes INT CHECK (duration_minutes IS NULL OR duration_minutes > 0),
+  passing_grade    INT NOT NULL DEFAULT 70 CHECK (passing_grade >= 0 AND passing_grade <= 100),
+  is_published     BOOLEAN NOT NULL DEFAULT false,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+### `questions` (v1.2.1 - Quiz System)
+
+```sql
+CREATE TABLE IF NOT EXISTS public.questions (
+  id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  quiz_config_id   UUID NOT NULL REFERENCES quiz_configs(id) ON DELETE CASCADE,
+  question_text    TEXT NOT NULL,
+  options          JSONB NOT NULL,  -- {"A": "...", "B": "...", "C": "...", "D": "...", "E": "..."}
+  correct_answer   TEXT NOT NULL CHECK (correct_answer IN ('A', 'B', 'C', 'D', 'E')),
+  explanation      TEXT,
+  difficulty       TEXT NOT NULL DEFAULT 'easy' CHECK (difficulty IN ('easy', 'medium', 'hard')),
+  order_index      INT NOT NULL DEFAULT 0,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+```
+
+**Detailed Quiz Documentation:** [Quiz Builder Guide](./quiz-builder.md)
 
 ### RLS Policies
 
@@ -210,6 +247,7 @@ src/
 | `/admin/learning` | Admin only | `requireAdmin()` via layout |
 | `/admin/learning/new` | Admin only | `requireAdmin()` via layout |
 | `/admin/learning/[id]/edit` | Admin only | `requireAdmin()` via layout |
+| `/admin/learning/[id]/quiz` | Admin only | `requireAdmin()` via layout |
 | `/learning` | Authenticated | Middleware |
 
 All admin routes are protected by the `AdminShell` component in `src/app/admin/layout.tsx` which calls `requireAdmin()`. Non-admin users are redirected to `/dashboard`.
@@ -227,6 +265,9 @@ http://localhost:3000/admin/learning/new
 
 # Edit module
 http://localhost:3000/admin/learning/{module-id}/edit
+
+# Create quiz for module
+http://localhost:3000/admin/learning/{module-id}/quiz
 
 # Grant admin role (SQL)
 UPDATE user_profiles SET role = 'admin' WHERE id = 'your-uuid';

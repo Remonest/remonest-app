@@ -1,6 +1,5 @@
 "use client";
 
-import { Languages } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type Language = "en" | "id";

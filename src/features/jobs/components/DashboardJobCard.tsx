@@ -1,9 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Eye, Pencil, Send, Pause, Rocket } from "lucide-react";
+import { Eye, Pencil, Send, Pause } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { StatusBadge } from "@/components/admin/status-badge";
 import { useState } from "react";
 
 interface JobCardProps {

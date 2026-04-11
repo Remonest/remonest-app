@@ -24,7 +24,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { submitJobAction, saveJobDraftAction } from "@/features/jobs/actions/submit-job";
 import { toast } from "sonner";
 import { Loader2, Save, Send } from "lucide-react";
-import type { JobType } from "@/features/jobs/types/job";
 
 interface PostJobFormProps {
   isAdmin?: boolean;

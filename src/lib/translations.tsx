@@ -28,6 +28,7 @@ interface Translations {
     howItWorks: string;
     successStories: string;
     jobs: string;
+    learning: string;
     logIn: string;
     getStartedFree: string;
     menu: string;
@@ -306,6 +307,7 @@ const translations: Record<Language, Translations> = {
       howItWorks: "How it works",
       successStories: "Success stories",
       jobs: "Jobs",
+      learning: "Learning",
       logIn: "Log In",
       getStartedFree: "Get Started Free",
       menu: "Menu",
@@ -616,6 +618,7 @@ const translations: Record<Language, Translations> = {
       howItWorks: "Cara kerja",
       successStories: "Kisah sukses",
       jobs: "Lowongan",
+      learning: "Pembelajaran",
       logIn: "Masuk",
       getStartedFree: "Mulai Gratis",
       menu: "Menu",

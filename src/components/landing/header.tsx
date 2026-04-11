@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { Globe2, Menu, X, Sun, Moon, LogIn, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { useTranslations } from "@/lib/translations";
 
 interface NavItem {
@@ -53,6 +52,11 @@ export function Header() {
       id: "jobs",
       label: t.header.jobs,
       href: "/jobs",
+    },
+    {
+      id: "learning",
+      label: t.header.learning || "Learning",
+      href: "/learning",
     },
   ];
 

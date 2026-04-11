@@ -1,7 +1,6 @@
 "use server";
 
 import {
-  getSupabaseServerClient,
   getSupabaseServiceClient,
 } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/features/auth/actions/guards";

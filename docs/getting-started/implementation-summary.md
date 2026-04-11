@@ -1,11 +1,129 @@
-# Implementation Summary — April 10, 2026
+# Implementation Summary — April 11, 2026
 
 ## Overview
 
-This document summarizes all features implemented in the Remonest App as of April 10, 2026.
+This document summarizes all features implemented in the Remonest App as of April 11, 2026.
 
-**Version:** v1.2.0 (Latest)
-**Last Updated:** April 10, 2026
+**Version:** v1.2.1 (Latest)
+**Last Updated:** April 11, 2026
+
+---
+
+## 🎯 Latest Updates (April 11, 2026 — Morning)
+
+### Quiz Builder System (Learning Module Assessment)
+
+**Status:** ✅ Complete
+**Version:** v1.0.0
+
+#### What's New
+
+1. **Quiz Configuration & Questions Tables** (NEW — Migration 013)
+   - File: `supabase/migrations/013_add_quiz_system.sql`
+   - `quiz_configs` table — per-module quiz settings (duration, passing grade, publish toggle)
+   - `questions` table — multiple-choice questions with 5 options (A-E), difficulty levels, explanations
+   - `user_quiz_attempts` table — tracks user attempts (schema ready for future use)
+   - Complete RLS policies for all 3 tables
+
+2. **Quiz Builder UI** (NEW)
+   - File: `src/app/admin/learning/[id]/quiz/page.tsx` — Server component (route entry)
+   - File: `src/app/admin/learning/[id]/quiz/quiz-builder.tsx` — Client component (form UI)
+   - Dynamic question builder with unlimited questions
+   - Collapsible accordion cards per question
+   - Color-coded difficulty badges (🟢 Easy, 🟡 Medium, 🔴 Hard)
+   - Sticky submit bar with backdrop blur
+   - Client-side + server-side validation (Bahasa Indonesia messages)
+
+3. **TypeScript Types** (NEW)
+   - File: `src/features/learning-module/types/quiz.ts`
+   - `QuizConfig`, `Question`, `QuizConfigInput`, `QuestionInput`, `QuizResult` interfaces
+   - `QuestionDifficulty` enum type
+
+4. **Server Actions** (NEW)
+   - File: `src/features/learning-module/actions/quiz-actions.ts`
+   - `createQuizWithQuestions()` — Creates quiz config + all questions in single transaction
+   - `getQuizWithQuestions()` — Fetches complete quiz with all questions
+   - `getModuleQuizzes()` — Gets all quizzes for a module
+   - `updateQuizConfig()`, `deleteQuiz()` — Config CRUD
+   - `addQuestionToQuiz()`, `updateQuestion()`, `deleteQuestion()` — Question CRUD
+
+5. **Migration Naming System** (NEW)
+   - File: `docs/guides/database-migrations.md` — Comprehensive guide (313+ lines)
+   - File: `docs/guides/migration-naming-quick-reference.md` — Quick reference cheat sheet
+   - File: `docs/guides/quiz-builder-setup.md` — Setup & implementation guide
+   - Standardized format: `{number}_{action}_{subject}.sql`
+
+#### Features
+
+**Quiz Configuration:**
+- Title, description, duration (0 = unlimited)
+- Passing grade (0-100%, default: 70%)
+- Publication toggle (draft/published)
+
+**Question Builder:**
+- Unlimited questions with dynamic add/remove
+- 5 options per question (A, B, C, D, E) with radio button selection
+- Optional explanation field (shown to users after answering)
+- Difficulty levels: Easy, Medium, Hard
+- Minimum 1 question required (delete protection)
+
+**Security:**
+- All quiz builder routes protected by `requireAdmin()` via AdminShell layout
+- RLS policies: admins can manage, public can view published quizzes
+- Transaction-based creation (all-or-nothing, no partial quizzes)
+
+**User Flow:**
+```
+Admin creates/edits learning module
+  ↓
+Clicks "Buat Quiz" or navigates to /admin/learning/[id]/quiz
+  ↓
+Fills quiz configuration (title, duration, passing grade)
+  ↓
+Adds questions (text, 5 options, correct answer, difficulty)
+  ↓
+Clicks "Simpan Quiz"
+  ↓
+Server action validates → inserts quiz_config → inserts all questions
+  ↓
+Success toast → auto-redirect to learning modules list
+```
+
+#### Files Created/Modified
+
+| File | Status | Purpose |
+|------|--------|---------|
+| `supabase/migrations/013_add_quiz_system.sql` | ✨ NEW | Database schema + RLS |
+| `src/app/admin/learning/[id]/quiz/page.tsx` | ✨ NEW | Server component route |
+| `src/app/admin/learning/[id]/quiz/quiz-builder.tsx` | ✨ NEW | Client form UI |
+| `src/features/learning-module/types/quiz.ts` | ✨ NEW | TypeScript interfaces |
+| `src/features/learning-module/actions/quiz-actions.ts` | ✨ NEW | Server actions for CRUD |
+| `docs/features/learning-module/quiz-builder.md` | ✨ NEW | Complete quiz builder docs |
+| `docs/guides/quiz-builder-setup.md` | ✨ NEW | Setup & quick start guide |
+| `docs/guides/database-migrations.md` | Modified | Added migration 013 + naming conventions |
+| `docs/guides/migration-naming-quick-reference.md` | ✨ NEW | Naming convention cheat sheet |
+
+---
+
+### Code Quality: Unused Imports Cleanup
+
+**Status:** ✅ Complete
+**Version:** v1.2.1
+
+#### What Changed
+
+- ✅ **Removed 47 unused imports/variables across 30+ files**
+  - Auth pages: Removed `FloatingInput`, `inputError` state, `Globe2` icon
+  - Learning page: Removed `BookOpen`, `Clock`, category labels/colors, `LearningModule` type
+  - Profile page: Removed `User`, `CheckCircle2`, `Circle` icons
+  - Admin pages: Removed 12 unused imports (icons, components, variables)
+  - API routes: Removed unused `createClient`, `body`, `jobDescription`
+  - Job features: Removed 8 unused imports/variables across components and actions
+  - Components: Removed `Badge`, `DialogTrigger`, `Languages`, `VariantProps`, etc.
+  - Utils: Removed `CookieOptions`, `getSupabaseServerClient`, `revalidatePath`
+- ✅ **ESLint: 0 unused import warnings** (down from 47)
+- ✅ **Build: Compiled successfully** with no type errors
+- ✅ **Learning module page fix** — Cleared stale `.next` cache, verified `learning-client.tsx` import
 
 ---
 
@@ -259,9 +377,24 @@ Table auto-refreshes (job removed from list)
   - Navigation updates (desktop + mobile)
 - **Status:** ✅ Complete
 
-#### 8. Database Architecture
-- **Migrations:** 001-010 (sequential)
-- **Tables:** 7 core tables
+#### 8. Learning Module System
+- **Files:** `src/app/(main)/learning/`, `src/app/admin/learning/`, `src/lib/learning/`
+- **Features:**
+  - Admin CRUD for learning modules (create, edit, publish, archive, delete)
+  - Module management dashboard with stats, search, pagination
+  - **Quiz Builder** (v1.0.0) — admin assessment system
+    - Dynamic question builder with unlimited questions
+    - 5-option multiple choice (A-E) with radio button selection
+    - Difficulty levels (easy, medium, hard) with color-coded badges
+    - Duration control, passing grade, publication toggle
+    - Transaction-based creation (all-or-nothing)
+  - User progress tracking (`user_learning_progress` table)
+- **Database:** Migrations 002, 011, 013 (quiz system)
+- **Status:** ✅ Complete
+
+#### 9. Database Architecture
+- **Migrations:** 001-013 (sequential, with naming conventions)
+- **Tables:** 11 core tables
   - `user_profiles` (with role system)
   - `jobs` (with approval workflow)
   - `job_applications`
@@ -269,12 +402,18 @@ Table auto-refreshes (job removed from list)
   - `user_learning_progress`
   - `user_settings`
   - `activity_log`
+  - `admin_actions` (immutable audit trail)
+  - `quiz_configs` (quiz settings per module)
+  - `questions` (multiple-choice questions)
+  - `user_quiz_attempts` (attempt tracking — schema ready)
 - **Features:**
-  - Row Level Security (RLS) policies
+  - Complete Row Level Security (RLS) policies (35+ policies)
   - ENUM types (job_status, job_type, apply_method, etc.)
   - CHECK constraints
   - Auto-update triggers
+  - Automatic admin action logging via database triggers
   - Indexes for performance
+  - Standardized migration naming: `{number}_{action}_{subject}.sql`
 - **Status:** ✅ Complete
 
 ---
@@ -284,7 +423,7 @@ Table auto-refreshes (job removed from list)
 | Feature | Status | What's Missing |
 |---------|--------|----------------|
 | Public job detail `/jobs/[id]` | UI only | Supabase integration (uses hardcoded data) |
-| Learning modules `/learning` | UI only | Supabase integration (6 hardcoded modules) |
+| Learning module detail `/learning/[slug]` | UI only | Supabase integration for module content (uses hardcoded data) |
 | CV builder `/cv-builder` | UI only | No persistence, PDF generation |
 | Portfolio builder `/portfolio` | UI only | No persistence, image upload |
 | Public portfolio `/portfolio/[username]` | SSG | Hardcoded data |
@@ -311,23 +450,31 @@ Table auto-refreshes (job removed from list)
 3. **ROLE_SYSTEM.md** — RBAC system documentation (~300 lines)
 4. **DATABASE_ARCHITECTURE.md** — Complete database schema (~600 lines)
 
-### Feature Documentation (7 files)
+### Feature Documentation (10 files)
 5. **CLIENT_ROLE_IMPLEMENTATION.md** — Client role feature (v0.3.0)
 6. **JOB_BOARD_IMPLEMENTATION.md** — Job board v1.0.0
 7. **JOB_POSTING_WORKFLOW.md** — Role-based posting (v0.3.2)
 8. **AUTO_VERIFIED_JOB_POSTING.md** — Reverted approach (v0.3.1, historical)
-9. **JOB_DETAIL_MODAL.md** — ✨ NEW — Draft job modal (v1.1.0, 1099 lines)
+9. **JOB_DETAIL_MODAL.md** — Draft job modal (v1.1.0, 1099 lines)
 10. **LANGUAGE_SWITCHER.md** — i18n system (EN/ID)
 11. **LEARNING_MODULE.md** — Learning module system
+12. **QUIZ_BUILDER.md** — ✨ NEW — Quiz builder system (v1.0.0)
+13. **QUIZ_BUILDER_SETUP.md** — ✨ NEW — Quick start guide
+
+### Guides & References (4 files)
+14. **DATABASE_MIGRATIONS.md** — ✨ UPDATED — All 13 migrations + naming conventions
+15. **MIGRATION_NAMING_QUICK_REFERENCE.md** — ✨ NEW — Naming convention cheat sheet
+16. **RLS_POLICIES.md** — Complete RLS reference
+17. **ADMIN_ACTION_LOGGING.md** — Audit trail system
 
 ### Admin Documentation (2 files)
-12. **ADMIN_ACCESS.md** — Admin panel access guide
-13. **QUICK_ADMIN_ACCESS.md** — Quick reference
+18. **ADMIN_ACCESS.md** — Admin panel access guide
+19. **QUICK_ADMIN_ACCESS.md** — Quick reference
 
 ### Index
-14. **README.md** — Documentation index (updated with v1.1.0)
+20. **README.md** — Documentation index (updated with v1.2.1)
 
-**Total:** 14 documentation files, ~6,500+ lines
+**Total:** 20 documentation files, ~8,500+ lines
 
 ---
 
@@ -351,20 +498,25 @@ Table auto-refreshes (job removed from list)
 ## 📈 Database Statistics
 
 ### Migrations
-- **Total:** 10 sequential migrations
-- **Naming:** `001_` through `010_`
+- **Total:** 13 sequential migrations
+- **Naming:** `001_` through `013_`
+- **Convention:** `{number}_{action}_{subject}.sql`
 - **Rollback:** All migrations include rollback SQL
 
 ### Tables
 | Table | Columns | Indexes | RLS Policies |
 |-------|---------|---------|--------------|
-| user_profiles | 6 | 1 (role) | 3 |
-| jobs | 21 | 7 | 6 |
+| user_profiles | 6 | 1 (role) | 5 |
+| jobs | 21 | 7 | 8 |
 | job_applications | 10 | 2 | 4 |
-| learning_modules | 11 | 2 | 3 |
+| learning_modules | 11 | 2 | 5 |
 | user_learning_progress | 8 | 2 | 3 |
 | user_settings | 11 | 1 | 2 |
 | activity_log | 6 | 1 | 2 |
+| admin_actions | 13 | 4 | 3 (immutable) |
+| quiz_configs | 9 | 1 | 2 |
+| questions | 10 | 1 | 2 |
+| user_quiz_attempts | 9 | 1 | 3 |
 
 ### Enums
 - `job_type_enum` (full-time, part-time, project, freelance)
@@ -385,8 +537,15 @@ Table auto-refreshes (job removed from list)
 ### Admin Components (8 components)
 `src/components/admin/`
 - data-table, job-actions, job-columns, sidebar, sign-out-button, status-badge
-- **✨ NEW:** draft-jobs-content (client wrapper)
-- **✨ UPDATED:** job-detail-modal (v1.1.0), draft-jobs-table
+- learning-data-table, learning-columns, learning-actions
+- draft-jobs-content (client wrapper)
+- job-detail-modal (v1.1.0), draft-jobs-table
+
+### Learning Module Components
+`src/features/learning-module/`
+- **✨ NEW:** `types/quiz.ts` — TypeScript interfaces
+- **✨ NEW:** `actions/quiz-actions.ts` — Server actions for quiz CRUD
+- **✨ NEW:** `app/admin/learning/[id]/quiz/quiz-builder.tsx` — Quiz builder UI
 
 ### Job Components (10 components)
 `src/components/jobs/`
@@ -432,14 +591,20 @@ Table auto-refreshes (job removed from list)
 3. ✅ Runtime TypeError (null property access)
 4. ✅ TypeScript compilation errors (variable ordering, type mismatch)
 5. ✅ Empty refresh handler (action not executing)
+6. ✅ RLS infinite recursion error (Migration 012)
+7. ✅ Social icons in footer (custom SVG Twitter, LinkedIn, Instagram)
+8. ✅ **47 unused imports/variables across 30+ files** (April 11, 2026)
+9. ✅ Learning module page module resolution error (cleared stale `.next` cache)
 
 ### Known (Remaining)
 - `@types/react-pdf` type warning (harmless)
 - `/forgot-password` route linked but not implemented
-- `/admin/learning` and `/admin/settings` sidebar links exist, pages missing
-- Footer social icons use wrong icons (X, Link, Camera)
+- `/admin/learning` and `/admin/settings` sidebar links exist, pages need enhancement
 - Dashboard placeholder metrics (profile views, CV downloads)
-- Client profile stats use placeholder values
+- Client profile stats use some placeholder values
+- Quiz edit functionality pending (currently only create is supported)
+- Quiz list page to view/manage existing quizzes pending
+- User-facing quiz taking UI not yet implemented
 
 ---
 
@@ -471,9 +636,13 @@ Table auto-refreshes (job removed from list)
 - ✅ Dashboard with real data
 - ✅ Job board (posting, approval, management)
 - ✅ Admin panel with draft management
+- ✅ Admin activity logging & audit trail
 - ✅ Profile page (role-aware)
-- ✅ Database schema with RLS
+- ✅ Database schema with complete RLS (35+ policies)
 - ✅ Language switcher (dashboard)
+- ✅ Learning module admin CRUD
+- ✅ **Quiz Builder** (admin assessment system v1.0.0)
+- ✅ Code quality: 0 unused import warnings
 
 ### Pending
 - ⚠️ Public job detail page (Supabase integration)
@@ -505,9 +674,9 @@ Table auto-refreshes (job removed from list)
 
 ### Priority 1 - Complete Existing Features
 1. Connect `/jobs/[id]` to Supabase
-2. Connect `/learning` to Supabase
-3. Implement CV builder persistence
-4. Implement Portfolio builder persistence
+2. Implement CV builder persistence
+3. Implement Portfolio builder persistence
+4. **Quiz: User-facing quiz taking UI** (quiz attempt tracking, timer, scoring)
 
 ### Priority 2 - Missing Pages
 5. Create `/admin/learning` index page
@@ -519,26 +688,33 @@ Table auto-refreshes (job removed from list)
 9. Implement job expiry automation
 10. Add analytics dashboard for clients
 11. Connect API routes (AI review, job sync, file upload, Stripe)
+12. **Quiz: Quiz list page** (view/edit/delete existing quizzes for a module)
+13. **Quiz: Quiz edit functionality** (currently only create is supported)
 
 ### Priority 4 - Polish
-12. Fix footer social icons
-13. Replace dashboard placeholder metrics
-14. Extend language switcher to all feature pages
-15. Add loading skeletons for all async pages
+14. Replace dashboard placeholder metrics
+15. Extend language switcher to all feature pages
+16. Add loading skeletons for all async pages
+17. **Quiz: Question reordering** (drag & drop)
+18. **Quiz: Bulk import questions from CSV/JSON**
+19. **Quiz: Certificate generation** after passing quiz
 
 ---
 
 ## 📞 Support
 
-**Documentation:** See `../README.md` for complete index  
-**Implementation Guide:** See `./implementation-guide.md` for exhaustive details  
-**Database Guide:** See `../architecture/database.md` for schema and patterns  
-**RLS Policies:** See `../guides/rls-policies.md` for complete RLS reference  
-**Admin Activity Logging:** See `../features/admin/activity-logging.md` for UI flows  
+**Documentation:** See `../README.md` for complete index
+**Implementation Guide:** See `./implementation-guide.md` for exhaustive details
+**Database Guide:** See `../architecture/database.md` for schema and patterns
+**RLS Policies:** See `../guides/rls-policies.md` for complete RLS reference
+**Admin Activity Logging:** See `../features/admin/activity-logging.md` for UI flows
 **Admin Action Logging (Backend):** See `../guides/admin-action-logging.md` for database details
+**Quiz Builder:** See `../features/learning-module/quiz-builder.md` for complete quiz docs
+**Quiz Setup:** See `../guides/quiz-builder-setup.md` for quick start guide
+**Migration Naming:** See `../guides/migration-naming-quick-reference.md` for conventions
 
 ---
 
-**Document Version:** 1.0.0  
-**Last Updated:** April 10, 2026  
+**Document Version:** 1.1.0
+**Last Updated:** April 11, 2026
 **Maintained By:** Development Team

@@ -151,7 +151,7 @@ export async function saveJobDraftAction(formData: FormData) {
 
   const insertData = Object.fromEntries(
     Object.entries(validatedData || {}).filter(
-      ([_, value]) => value !== undefined && value !== "",
+      ([, value]) => value !== undefined && value !== "",
     ),
   ) as Record<string, any>;
 

@@ -51,8 +51,6 @@ export function AdminSidebar() {
 }
 
 export function MobileAdminHeader() {
-  const pathname = usePathname();
-
   return (
     <header className="flex h-16 items-center justify-between border-b border-border px-4 lg:hidden">
       <Sheet>

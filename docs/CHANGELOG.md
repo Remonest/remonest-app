@@ -7,6 +7,36 @@ All notable changes to the Remonest App project.
 
 ---
 
+## [v1.2.1] - April 11, 2026
+
+### 🔧 Code Quality
+
+#### Unused Imports & Variables Cleanup
+- ✅ **Removed 47 unused imports/variables across 30 files**
+  - Auth pages: Removed unused `FloatingInput` component, `inputError` state, `Globe2` icon
+  - Learning page: Removed unused `BookOpen`, `Clock`, category labels/colors, `LearningModule` type
+  - Profile page: Removed unused `User`, `CheckCircle2`, `Circle` icons
+  - Admin pages: Removed 12 unused imports (icons, components, variables)
+  - API routes: Removed unused `createClient`, `body`, `jobDescription`
+  - Job features: Removed 8 unused imports/variables across components and actions
+  - Components: Removed unused `Badge`, `DialogTrigger`, `Languages`, `VariantProps`, etc.
+  - Utils: Removed unused `CookieOptions`, `getSupabaseServerClient`, `revalidatePath`
+- ✅ **ESLint: 0 unused import warnings** (down from 47)
+- ✅ **Build: Compiled successfully** with no type errors
+- 📝 **Impact:** Cleaner codebase, reduced bundle size, improved developer experience
+
+### 🐛 Bug Fixes
+
+#### Learning Module Page
+- ✅ **Fixed module resolution error** - "Module not found: Can't resolve './learning-client'"
+  - Cleared stale `.next` cache
+  - Verified `learning-client.tsx` exists and is properly imported
+- ✅ **Updated documentation** to reflect current implementation status:
+  - Module list page: ✅ Complete with Supabase integration
+  - Individual module pages: ⚠️ Partial (uses hardcoded content, needs Supabase)
+
+---
+
 ## [v1.2.0] - April 10, 2026 (Afternoon)
 
 ### 🎉 New Features

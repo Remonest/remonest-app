@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { Menu, X, LayoutDashboard, Briefcase, Settings, LogOut, Shield, FileText, Languages } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { logoutAction } from "@/features/auth/actions/session"
@@ -18,6 +19,11 @@ export default function MobileMenu({ roleInfo, role }: MobileMenuProps) {
   const [isVisible, setIsVisible] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const { language, setLanguage, t } = useTranslations()
+  const pathname = usePathname()
+
+  const isActive = (path: string) => {
+    return pathname === path || pathname?.startsWith(`${path}/`)
+  }
 
   // Handle visibility for animation
   useEffect(() => {
@@ -84,7 +90,11 @@ export default function MobileMenu({ roleInfo, role }: MobileMenuProps) {
 
             <Link
               href="/dashboard"
-              className="h-10 px-3 flex items-center gap-2 rounded-md text-muted-foreground text-sm font-medium no-underline transition-colors hover:text-foreground hover:bg-muted"
+              className={`h-10 px-3 flex items-center gap-2 rounded-md text-sm font-medium no-underline transition-colors hover:text-foreground ${
+                isActive("/dashboard") && !isActive("/dashboard/jobs") && !isActive("/dashboard/applications") && !isActive("/dashboard/settings")
+                  ? "bg-accent text-foreground"
+                  : "text-muted-foreground hover:bg-muted"
+              }`}
               onClick={() => setOpen(false)}
             >
               <LayoutDashboard className="size-4" /> {t.dashboard.nav.overview}
@@ -94,7 +104,11 @@ export default function MobileMenu({ roleInfo, role }: MobileMenuProps) {
             {role === "client" && (
               <Link
                 href="/dashboard/jobs"
-                className="h-10 px-3 flex items-center gap-2 rounded-md text-muted-foreground text-sm font-medium no-underline transition-colors hover:text-foreground hover:bg-muted"
+                className={`h-10 px-3 flex items-center gap-2 rounded-md text-sm font-medium no-underline transition-colors hover:text-foreground ${
+                  isActive("/dashboard/jobs")
+                    ? "bg-accent text-foreground"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
                 onClick={() => setOpen(false)}
               >
                 <FileText className="size-4" /> {t.dashboard.nav.jobPostings}
@@ -103,14 +117,22 @@ export default function MobileMenu({ roleInfo, role }: MobileMenuProps) {
 
             <Link
               href="/dashboard/applications"
-              className="h-10 px-3 flex items-center gap-2 rounded-md text-muted-foreground text-sm font-medium no-underline transition-colors hover:text-foreground hover:bg-muted"
+              className={`h-10 px-3 flex items-center gap-2 rounded-md text-sm font-medium no-underline transition-colors hover:text-foreground ${
+                isActive("/dashboard/applications")
+                  ? "bg-accent text-foreground"
+                  : "text-muted-foreground hover:bg-muted"
+              }`}
               onClick={() => setOpen(false)}
             >
               <Briefcase className="size-4" /> {t.dashboard.nav.applications}
             </Link>
             <Link
               href="/dashboard/settings"
-              className="h-10 px-3 flex items-center gap-2 rounded-md text-muted-foreground text-sm font-medium no-underline transition-colors hover:text-foreground hover:bg-muted"
+              className={`h-10 px-3 flex items-center gap-2 rounded-md text-sm font-medium no-underline transition-colors hover:text-foreground ${
+                isActive("/dashboard/settings")
+                  ? "bg-accent text-foreground"
+                  : "text-muted-foreground hover:bg-muted"
+              }`}
               onClick={() => setOpen(false)}
             >
               <Settings className="size-4" /> {t.dashboard.nav.settings}
@@ -120,7 +142,11 @@ export default function MobileMenu({ roleInfo, role }: MobileMenuProps) {
             {role === "admin" && (
               <Link
                 href="/admin/jobs"
-                className="h-10 px-3 flex items-center gap-2 rounded-md text-red-600 dark:text-red-400 text-sm font-medium no-underline transition-colors hover:bg-red-50 dark:hover:bg-red-950"
+                className={`h-10 px-3 flex items-center gap-2 rounded-md text-sm font-medium no-underline transition-colors ${
+                  isActive("/admin/jobs") || isActive("/admin/learning") || isActive("/admin/settings") || isActive("/admin/activity-log")
+                    ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+                    : "text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950"
+                }`}
                 onClick={() => setOpen(false)}
               >
                 <Shield className="size-4" /> {t.dashboard.nav.admin}

@@ -7,7 +7,6 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { JobTypeBadge } from "@/features/jobs/components/JobTypeBadge";
 import { VerificationBadge } from "@/features/jobs/components/VerificationBadge";
 import { StatusBadge } from "@/features/jobs/components/StatusBadge";
@@ -15,7 +14,6 @@ import { CalendarDays, MapPin, ExternalLink } from "lucide-react";
 import {
   formatSalary,
   formatDeadline,
-  getJobTypeLabel,
 } from "@/features/jobs/utils/formatters";
 import type { JobType, JobStatus } from "@/features/jobs/types/job";
 
@@ -37,7 +35,6 @@ interface JobCardProps {
 }
 
 export function JobCard({
-  id,
   title,
   company,
   job_type,

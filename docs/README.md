@@ -2,7 +2,7 @@
 
 Comprehensive documentation for the Remonest platform — a remote work hub for Indonesian professionals with learning modules, job board, CV/portfolio builder, and admin management.
 
-**Current Version:** v1.2.0 | [View Changelog](./CHANGELOG.md)
+**Current Version:** v1.2.1 | [View Changelog](./CHANGELOG.md)
 
 ---
 

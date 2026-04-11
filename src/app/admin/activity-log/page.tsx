@@ -3,8 +3,8 @@ import { getRecentAdminActions, getAdminActionStats, type AdminActionRecord, typ
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Activity, Filter, Calendar, User, Clock } from "lucide-react";
-import { formatDistanceToNow, format } from "date-fns";
+import { Activity, Calendar, User, Clock } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
 import { id as localeID } from "date-fns/locale";
 
 function LoadingSkeleton() {

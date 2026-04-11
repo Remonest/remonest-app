@@ -8,14 +8,8 @@ import { getAllJobs } from "@/features/jobs/actions/fetch-jobs";
 import {
   Loader2,
   Plus,
-  FileText,
-  Clock,
-  CheckCircle2,
-  XCircle,
-  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 function LoadingState() {
   return (

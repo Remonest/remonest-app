@@ -7,21 +7,292 @@ Complete guide to all database migrations in the Remonest App.
 ## 📋 Table of Contents
 
 1. [Migration Overview](#migration-overview)
-2. [Migration List](#migration-list)
-3. [Detailed Migration Descriptions](#detailed-migration-descriptions)
-4. [Migration Dependencies](#migration-dependencies)
-5. [How to Apply Migrations](#how-to-apply-migrations)
-6. [Rollback Instructions](#rollback-instructions)
-7. [Troubleshooting](#troubleshooting)
+2. [Naming Conventions](#naming-conventions) ⭐ **NEW**
+3. [Migration List](#migration-list)
+4. [Detailed Migration Descriptions](#detailed-migration-descriptions)
+5. [Migration Dependencies](#migration-dependencies)
+6. [How to Apply Migrations](#how-to-apply-migrations)
+7. [Rollback Instructions](#rollback-instructions)
+8. [Troubleshooting](#troubleshooting)
 
 ---
 
 ## 📊 Migration Overview
 
-**Total Migrations:** 12  
-**Database:** PostgreSQL (Supabase)  
-**Migration Tool:** Supabase CLI  
-**Latest Migration:** 012 (fix_rls_recursion)
+**Total Migrations:** 13
+**Database:** PostgreSQL (Supabase)
+**Migration Tool:** Supabase CLI
+**Latest Migration:** 013 (add_quiz_system)
+**Naming Convention:** `{number}_{action}_{subject}.sql`
+
+---
+
+## 🏷️ Naming Conventions
+
+### Standard Format
+
+```
+{number}_{action}_{subject}.sql
+```
+
+**Example:** `013_add_quiz_system.sql`
+
+### Components Explained
+
+#### 1. **Number** (3 digits, zero-padded)
+- **Format:** `001`, `002`, `003`, ..., `010`, `011`, ..., `999`
+- **Purpose:** Ensures correct alphabetical sorting = execution order
+- **Rule:** Must be sequential, no gaps, no duplicates
+
+✅ **Good:**
+```
+001_create_user_profiles.sql
+002_create_dashboard_tables.sql
+012_fix_rls_recursion.sql
+013_add_quiz_system.sql
+```
+
+❌ **Bad:**
+```
+1_create_users.sql          # Not zero-padded
+01_create_users.sql         # Not 3 digits
+002_create_users.sql        # Duplicate number!
+003_create_jobs.sql         # Gap in sequence (skipped 002)
+```
+
+#### 2. **Action** (lowercase, descriptive verb)
+Describes **what** the migration does. Use these standard actions:
+
+| Action | When to Use | Example |
+|--------|-------------|---------|
+| `create` | Create new table/enum/type | `001_create_user_profiles.sql` |
+| `add` | Add new feature/table/column | `013_add_quiz_system.sql` |
+| `alter` | Modify existing structure | `alter_users_add_avatar.sql` |
+| `drop` | Remove table/column | `drop_unused_temp_table.sql` |
+| `fix` | Fix bug/issue/recursion | `012_fix_rls_recursion.sql` |
+| `update` | Update data/policies | `update_admin_permissions.sql` |
+| `seed` | Insert sample/initial data | `004_seed_admin_users.sql` |
+| `remove` | Remove feature/column | `remove_deprecated_fields.sql` |
+| `rename` | Rename table/column | `rename_user_id_to_id.sql` |
+| `complete` | Finalize/complete feature | `011_complete_rls_policies.sql` |
+| `make` | Make field optional/nullable | `008_make_apply_fields_optional.sql` |
+| `disable` | Disable feature | `005_disable_email_verification.sql` |
+
+#### 3. **Subject** (lowercase, snake_case)
+Describes **what is being modified**. Be specific but concise.
+
+✅ **Good:**
+```
+001_create_user_profiles.sql        # Clear: creating user_profiles table
+003_create_jobs_table.sql           # Clear: creating jobs table
+009_add_client_role.sql             # Clear: adding client role
+012_fix_rls_recursion.sql           # Clear: fixing RLS recursion issue
+```
+
+❌ **Bad:**
+```
+001_users.sql                       # Missing action verb
+002_dashboard.sql                   # Too vague
+003_jobs.sql                        # What about jobs?
+012_fix.sql                         # Fix what?
+013_add_stuff.sql                   # Too generic
+```
+
+### Naming Rules
+
+#### ✅ DO:
+
+1. **Use 3-digit zero-padded numbers**
+   ```
+   001_, 002_, ..., 010_, 011_, ..., 100_
+   ```
+
+2. **Use lowercase with underscores**
+   ```
+   create_user_profiles.sql
+   add_quiz_system.sql
+   ```
+
+3. **Be descriptive but concise (max 40 chars)**
+   ```
+   013_add_quiz_system.sql           # ✅ Good
+   013_add_quiz_system_with_questions_and_attempts.sql  # ❌ Too long
+   ```
+
+4. **Include the table/feature name**
+   ```
+   003_create_jobs_table.sql         # ✅ Clear
+   003_create_table.sql              # ❌ Vague
+   ```
+
+5. **Check for existing numbers before creating**
+   ```bash
+   # List existing migrations
+   ls supabase/migrations/
+   
+   # Find highest number
+   ls supabase/migrations/ | sort | tail -n 1
+   ```
+
+6. **Add header comment in file**
+   ```sql
+   -- ============================================================
+   -- Migration: 013_add_quiz_system
+   -- Created: April 11, 2026
+   -- Description: Add quiz/assessment functionality
+   -- Dependencies: 012 (requires previous migrations)
+   -- ============================================================
+   ```
+
+#### ❌ DON'T:
+
+1. **Never reuse migration numbers**
+   ```
+   012_fix_rls_recursion.sql     # Already exists!
+   012_add_quiz_system.sql       # ❌ CONFLICT! Use 013 instead
+   ```
+
+2. **Don't skip numbers**
+   ```
+   010_something.sql
+   012_something.sql             # ❌ Skipped 011!
+   ```
+
+3. **Don't use camelCase or spaces**
+   ```
+   013_createQuizSystem.sql      # ❌ camelCase
+   013 create quiz system.sql    # ❌ spaces
+   013-create-quiz-system.sql    # ❌ hyphens
+   ```
+
+4. **Don't use uppercase**
+   ```
+   013_Create_Quiz_System.sql    # ❌ uppercase
+   ```
+
+5. **Don't use dates in filename** (use in header comment instead)
+   ```
+   013_20260411_add_quiz.sql    # ❌ date in filename
+   ```
+
+6. **Don't rename migration files after applying**
+   ```
+   # If migration is already applied in Supabase, DON'T rename it!
+   # This will break migration tracking
+   ```
+
+### Common Mistakes & Solutions
+
+#### Mistake 1: Duplicate Numbers
+
+**Problem:**
+```
+012_fix_rls_recursion.sql
+012_quiz_system.sql           # ❌ Duplicate!
+```
+
+**Solution:**
+```bash
+# Rename to next available number
+mv 012_quiz_system.sql 013_add_quiz_system.sql
+```
+
+#### Mistake 2: Wrong Order
+
+**Problem:**
+```
+003_create_jobs.sql
+002_create_users.sql        # ❌ Out of order!
+```
+
+**Solution:**
+```bash
+# Rename to correct sequence
+mv 002_create_users.sql 001_create_users.sql
+mv 003_create_jobs.sql 002_create_jobs.sql
+```
+
+#### Mistake 3: Vague Names
+
+**Problem:**
+```
+013_update.sql              # ❌ Update what?
+014_fix.sql                 # ❌ Fix what?
+```
+
+**Solution:**
+```sql
+013_update_user_permissions.sql   # ✅ Specific
+014_fix_rls_policy.sql            # ✅ Specific
+```
+
+### Migration Header Template
+
+Every migration file should start with this header:
+
+```sql
+-- ============================================================
+-- Migration: {number}_{action}_{subject}
+-- Created: {Month Day, Year}
+-- Description: {Brief description of what this migration does}
+-- Dependencies: {List any migrations this depends on, or "None"}
+-- Rollback: {Brief rollback instructions}
+-- ============================================================
+
+-- Migration SQL goes here
+
+-- ============================================================
+-- ROLLBACK INSTRUCTIONS
+-- ============================================================
+-- To rollback this migration:
+-- DROP TABLE IF EXISTS public.table_name CASCADE;
+-- DROP FUNCTION IF EXISTS public.function_name() CASCADE;
+-- DELETE FROM supabase_migrations.schema_migrations WHERE version = '{number}';
+```
+
+### Checklist Before Creating Migration
+
+Before creating a new migration file, verify:
+
+- [ ] **Check highest existing number**
+  ```bash
+  ls supabase/migrations/ | sort | tail -n 1
+  ```
+
+- [ ] **Increment by 1** (no gaps)
+  ```
+  If highest is 013 → new migration is 014
+  ```
+
+- [ ] **Follow naming format**
+  ```
+  {number}_{action}_{subject}.sql
+  ```
+
+- [ ] **Use lowercase only**
+  ```
+  014_add_user_notifications.sql
+  ```
+
+- [ ] **Add header comment**
+  ```sql
+  -- Migration: 014_add_user_notifications
+  -- Created: April 11, 2026
+  -- Description: ...
+  ```
+
+- [ ] **Include rollback instructions**
+  ```sql
+  -- Rollback: DROP TABLE IF EXISTS public.user_notifications CASCADE;
+  ```
+
+- [ ] **Test locally first**
+  ```bash
+  supabase start
+  supabase db push
+  ```
+
+---
 
 ---
 
@@ -41,6 +312,7 @@ Complete guide to all database migrations in the Remonest App.
 | 010 | `make_is_verified_by_admin_nullable` | Apr 8, 2026 | Make verification field nullable | ✅ Applied |
 | 011 | `complete_rls_policies` | Apr 10, 2026 | Complete RLS + admin audit trail | ✅ Applied |
 | 012 | `fix_rls_recursion` | Apr 10, 2026 | Fix final RLS recursion with SECURITY DEFINER | ✅ Applied |
+| 013 | `add_quiz_system` | Apr 11, 2026 | Quiz/assessment system for learning modules | ⏳ Pending |
 
 ---
 
@@ -453,14 +725,14 @@ ALTER TYPE your_enum_type ADD VALUE 'new_value';
 
 | Metric | Value |
 |--------|-------|
-| Total Migrations | 12 |
-| Tables Created | 8 |
+| Total Migrations | 13 |
+| Tables Created | 11 |
 | Enum Types | 6 |
-| RLS Policies | 35+ |
-| Triggers | 6 |
-| Functions | 10+ |
+| RLS Policies | 50+ |
+| Triggers | 10 |
+| Functions | 12+ |
 | Views | 2 |
-| Indexes | 15+ |
+| Indexes | 20+ |
 
 ---
 
@@ -469,6 +741,7 @@ ALTER TYPE your_enum_type ADD VALUE 'new_value';
 - **[Database Architecture](../architecture/database.md)** - Complete schema reference
 - **[RLS Policies Guide](../guides/rls-policies.md)** - Complete RLS reference
 - **[RLS Recursion Fix](../guides/rls-recursion-fix.md)** - Migration 012 details
+- **[Quiz Builder Guide](../features/learning-module/quiz-builder.md)** - Migration 013 details
 - **[Migration Guide](../scripts/MIGRATION_GUIDE.md)** - Step-by-step instructions
 - **[Admin Action Logging](../guides/admin-action-logging.md)** - Audit trail details
 
@@ -480,9 +753,10 @@ When creating new migrations, follow this template:
 
 ```sql
 -- ============================================================
--- Migration: {number}_{descriptive_name}
+-- Migration: {number}_{action}_{subject}
 -- Created: {date}
 -- Description: {what this migration does}
+-- Dependencies: {list dependencies or "None"}
 -- ============================================================
 
 -- ↑ Migration steps above
@@ -496,6 +770,7 @@ When creating new migrations, follow this template:
 
 ---
 
-**Last Updated:** April 10, 2026  
-**Migration Version:** 012  
+**Last Updated:** April 11, 2026  
+**Migration Version:** 013  
+**Naming Convention:** `{number}_{action}_{subject}.sql`
 **Status:** ✅ All migrations applied successfully

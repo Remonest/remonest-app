@@ -24,7 +24,6 @@ import {
 } from "lucide-react";
 import { publishDraftJobAction } from "@/features/jobs/actions/approve-job";
 import { deleteJobAction } from "@/features/jobs/actions/manage-job";
-import { updateJobAction } from "@/features/jobs/actions/manage-job";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 

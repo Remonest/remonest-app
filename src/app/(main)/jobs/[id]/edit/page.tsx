@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Briefcase, MapPin, Banknote } from "lucide-react";
 import { Button } from "@/components/ui/button";

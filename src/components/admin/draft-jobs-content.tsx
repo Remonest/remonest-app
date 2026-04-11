@@ -12,7 +12,6 @@ interface DraftJobsContentClientProps {
 
 export function DraftJobsContentClient({ initialData }: DraftJobsContentClientProps) {
   const router = useRouter();
-  const [jobs, setJobs] = useState(initialData);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,7 +41,7 @@ export function DraftJobsContentClient({ initialData }: DraftJobsContentClientPr
         </div>
       )}
       <DraftJobsTable
-        data={jobs}
+        data={initialData}
         columns={dynamicColumns}
         onRefresh={handleRefresh}
       />

@@ -6,7 +6,6 @@ import Link from "next/link";
 import { Plus } from "lucide-react";
 import { DashboardJobCard } from "@/features/jobs/components/DashboardJobCard";
 import { JobsHero } from "@/features/jobs/components/JobsHero";
-import { JobsEmptyState } from "@/features/jobs/components/JobsEmptyState";
 
 export default async function DashboardJobsPage() {
   await requireAuth();
