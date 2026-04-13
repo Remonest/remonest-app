@@ -224,6 +224,7 @@ interface Translations {
       overview: string;
       jobPostings: string;
       applications: string;
+      certificates: string;
       settings: string;
       admin: string;
     };
@@ -297,6 +298,42 @@ interface Translations {
       updating: string;
       updated: string;
     };
+    certificates: {
+      title: string;
+      noCertificates: string;
+      noCertificatesDesc: string;
+      viewAll: string;
+      certificateOfCompletion: string;
+      thisCertifiesThat: string;
+      hasSuccessfullyCompleted: string;
+      issued: string;
+      issuedOn: string;
+      level: string;
+      score: string;
+      viewCertificate: string;
+      share: string;
+      download: string;
+      downloadPDF: string;
+      print: string;
+      addToPortfolio: string;
+      shareToLinkedIn: string;
+      certificateDetails: string;
+      issuedTo: string;
+      module: string;
+      issueDate: string;
+      certificateId: string;
+      verificationStatus: string;
+      verifiedValid: string;
+      verifiedDesc: string;
+      anyoneCanVerify: string;
+      copy: string;
+      copied: string;
+      viewPublicPage: string;
+    };
+    support: {
+      title: string;
+      description: string;
+    };
   };
   notFound: {
     badge: string;
@@ -320,6 +357,10 @@ interface Translations {
         description: string;
       };
       portfolio: {
+        title: string;
+        description: string;
+      };
+      certificates: {
         title: string;
         description: string;
       };
@@ -566,6 +607,7 @@ const translations: Record<Language, Translations> = {
         overview: "Overview",
         jobPostings: "Job Postings",
         applications: "Applications",
+        certificates: "Certificates",
         settings: "Settings",
         admin: "Admin",
       },
@@ -641,12 +683,51 @@ const translations: Record<Language, Translations> = {
         updating: "Updating...",
         updated: "Password updated successfully",
       },
+      certificates: {
+        title: "Certificates",
+        noCertificates: "No Certificates Yet",
+        noCertificatesDesc:
+          "Complete a learning module to earn your certificate. Visit the Learning Modules page to get started.",
+        viewAll: "View All Certificates",
+        certificateOfCompletion: "Certificate of Completion",
+        thisCertifiesThat: "This certifies that",
+        hasSuccessfullyCompleted: "has successfully completed",
+        issued: "Issued",
+        issuedOn: "Issue Date",
+        score: "Score",
+        level: "Level",
+        viewCertificate: "View Certificate",
+        share: "Share",
+        download: "Download",
+        downloadPDF: "Download",
+        shareToLinkedIn: "Share to LinkedIn",
+        addToPortfolio: "Add to Portfolio",
+        print: "Print",
+        certificateDetails: "Certificate Details",
+        issuedTo: "Issued To",
+        module: "Module",
+        issueDate: "Issue Date",
+        certificateId: "Certificate ID",
+        verificationStatus: "Verification Status",
+        verifiedValid: "Verified & Valid",
+        verifiedDesc: "This certificate was issued by Remonest.",
+        anyoneCanVerify:
+          "Anyone with the public link can verify the authenticity of this certificate directly on the Remonest platform.",
+        copy: "Copy",
+        copied: "Copied to clipboard",
+        viewPublicPage: "View Public Page",
+      },
+      support: {
+        title: "Need help?",
+        description: "Contact our support team for assistance.",
+      },
     },
     notFound: {
       badge: "Navigation error",
       kicker: "404 · page unavailable",
       code: "404",
-      title: "This destination is unavailable, but your dashboard is still within reach",
+      title:
+        "This destination is unavailable, but your dashboard is still within reach",
       description:
         "The page may have moved or no longer exist. Continue from your dashboard, jump into a key workspace, or review the most useful routes below.",
       returnDashboard: "Return to Dashboard",
@@ -670,6 +751,10 @@ const translations: Record<Language, Translations> = {
           title: "Open portfolio builder",
           description:
             "Continue refining your profile and application materials.",
+        },
+        certificates: {
+          title: "View certificates",
+          description: "Browse your earned certificates and credentials.",
         },
         support: {
           title: "Contact support",
@@ -915,6 +1000,7 @@ const translations: Record<Language, Translations> = {
         overview: "Ringkasan",
         jobPostings: "Lowongan Kerja",
         applications: "Lamaran",
+        certificates: "Sertifikat",
         settings: "Pengaturan",
         admin: "Admin",
       },
@@ -992,12 +1078,51 @@ const translations: Record<Language, Translations> = {
         updating: "Memperbarui...",
         updated: "Kata sandi berhasil diperbarui",
       },
+      certificates: {
+        title: "Sertifikat",
+        noCertificates: "Belum Ada Sertifikat",
+        noCertificatesDesc:
+          "Selesaikan modul pembelajaran untuk mendapatkan sertifikat Anda. Kunjungi halaman Modul Pembelajaran untuk memulai.",
+        viewAll: "Lihat Semua Sertifikat",
+        certificateOfCompletion: "Sertifikat Penyelesaian",
+        thisCertifiesThat: "Ini menyatakan bahwa",
+        hasSuccessfullyCompleted: "telah berhasil menyelesaikan",
+        issued: "Diterbitkan",
+        issuedOn: "Tanggal Terbit",
+        score: "Skor",
+        level: "Level",
+        viewCertificate: "Lihat Sertifikat",
+        share: "Bagikan",
+        download: "Unduh",
+        downloadPDF: "Unduh PDF",
+        shareToLinkedIn: "Bagikan ke LinkedIn",
+        addToPortfolio: "Tambah ke Portofolio",
+        print: "Cetak",
+        certificateDetails: "Detail Sertifikat",
+        issuedTo: "Diterbitkan Untuk",
+        module: "Modul",
+        issueDate: "Tanggal Terbit",
+        certificateId: "ID Sertifikat",
+        verificationStatus: "Status Verifikasi",
+        verifiedValid: "Terverifikasi & Valid",
+        verifiedDesc: "Sertifikat ini diterbitkan oleh Remonest.",
+        anyoneCanVerify:
+          "Siapa pun dengan tautan publik dapat memverifikasi keaslian sertifikat ini langsung di platform Remonest.",
+        copy: "Salin",
+        copied: "Disalin ke clipboard",
+        viewPublicPage: "Lihat Halaman Publik",
+      },
+      support: {
+        title: "Butuh bantuan?",
+        description: "Hubungi tim dukungan kami untuk bantuan.",
+      },
     },
     notFound: {
       badge: "Kesalahan navigasi",
       kicker: "404 · halaman tidak tersedia",
       code: "404",
-      title: "Halaman ini tidak tersedia, tetapi dasbor Anda masih dapat dijangkau",
+      title:
+        "Halaman ini tidak tersedia, tetapi dasbor Anda masih dapat dijangkau",
       description:
         "Halaman mungkin telah berpindah atau tidak ada lagi. Lanjutkan dari dasbor Anda, masuk ke ruang kerja utama, atau tinjau rute paling berguna di bawah ini.",
       returnDashboard: "Kembali ke Dasbor",
@@ -1021,6 +1146,11 @@ const translations: Record<Language, Translations> = {
           title: "Buka pembuat portofolio",
           description:
             "Lanjutkan menyempurnakan profil dan materi lamaran Anda.",
+        },
+        certificates: {
+          title: "Lihat sertifikat",
+          description:
+            "Telusuri sertifikat dan kredensial yang telah Anda peroleh.",
         },
         support: {
           title: "Hubungi dukungan",

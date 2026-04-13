@@ -2,7 +2,7 @@
 
 Comprehensive documentation for the Remonest platform — a remote work hub for Indonesian professionals with learning modules, job board, CV/portfolio builder, and admin management.
 
-**Current Version:** v1.6.0 | [View Changelog](./CHANGELOG.md)
+**Current Version:** v1.8.0 | [View Changelog](./CHANGELOG.md)
 
 ---
 
@@ -35,15 +35,20 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
   - [Quiz Builder](./features/learning-module/quiz-builder.md) — Quiz creation with multiple-choice questions
   - [Materials & Resources](./features/learning-module/materials.md) — Articles, videos, tools, templates, PDFs
   - [Enrollment](./features/learning-module/enrollment.md) — 🆕 Module enrollment system: auto-enroll, progress tracking, completion
+- **[Certificate System](./guides/certificate-download.md)** — 🆕 Certificate rendering, PNG download, print, zoom, public verification
+- **[Demo Learning Module](./guides/demo-learning-module.md)** — 🆕 End-to-end demo module: seed, test full flow, cleanup
 - **[Public Module Detail](./features/learning-module/overview.md#admin-routes)** — `/learning/[slug]` with Markdown rendering and materials
 - **[Language Switcher](./features/language-switcher/implementation.md)** — EN/ID language system
 - **[Admin Activity Logging](./features/admin/activity-logging.md)** — 🆕 Admin action tracking with UI flows
 
 ### Guides & How-Tos
 - **[Design Guidelines](./guides/design-guidelines.md)** — Complete design system, colors, components, patterns
+- **[Learning Module Revamp v1.7.0](./guides/learning-module-revamp.md)** — 🆕 Complete guide: module/lesson architecture, admin flow, public detail page, database schema, how-tos
+- **[Certificate System](./guides/certificate-download.md)** — 🆕 Certificate rendering, PNG download, print, zoom, public verification
+- **[Demo Learning Module](./guides/demo-learning-module.md)** — 🆕 Seed, test full flow, cleanup
 - **[Social Media Icons](./guides/social-media-icons.md)** — Custom SVG icons for footer (Twitter, LinkedIn, Instagram)
-- **[Git Workflow](./guides/git-workflow.md)** — 🆕 Commit messages, branching, PR guidelines
-- **[Database Migrations](./guides/database-migrations.md)** — 🆕 Complete guide to all 17 migrations
+- **[Git Workflow](./guides/git-workflow.md)** — Commit messages, branching, PR guidelines
+- **[Database Migrations](./guides/database-migrations.md)** — Complete guide to all 18 migrations
 - **[Admin Access Guide](./guides/admin-access.md)** — Step-by-step admin panel access instructions
 - **[Quick Admin Reference](./guides/quick-admin-access.md)** — Quick admin access steps
 - **[Adding New Features](./guides/new-feature.md)** — How to add features step-by-step
@@ -55,7 +60,7 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
 ```
 docs/
 ├── README.md                          # This file - Main documentation index
-├── CHANGELOG.md                       # Version history (v1.0.0 - v1.6.0)
+├── CHANGELOG.md                       # Version history (v1.0.0 - v1.8.0)
 ├── getting-started/                   # 🚀 Onboarding & overview
 │   ├── project-overview.md           # Tech stack, structure, conventions
 │   ├── implementation-guide.md       # Comprehensive implementation details
@@ -72,7 +77,7 @@ docs/
 │   ├── client-role/
 │   │   └── implementation.md         # Client role system v0.3.0
 │   ├── learning-module/
-│   │   ├── overview.md               # Learning module system v1.3.0
+│   │   ├── overview.md               # Learning module system (certificates updated v1.8.0)
 │   │   ├── quiz-builder.md           # Quiz creation system v1.0.0
 │   │   ├── materials.md              # Materials & resources v1.1.0
 │   │   └── enrollment.md             # 🆕 Enrollment & progress tracking v1.7.0
@@ -82,9 +87,12 @@ docs/
 │       └── activity-logging.md       # Admin action tracking UI
 └── guides/                            # 📖 How-to guides
     ├── design-guidelines.md          # 🎨 Design system & component patterns
+    ├── learning-module-revamp.md     # 🆕 Complete v1.7.0 guide: architecture, admin flow, public pages, how-tos
+    ├── certificate-download.md       # 🆕 v1.8.0: render, download, print, zoom, verify
+    ├── demo-learning-module.md       # 🆕 v1.8.0: seed demo module, full flow, cleanup
     ├── social-media-icons.md         # 🐦 Custom SVG icons (Twitter, LinkedIn, Instagram)
     ├── git-workflow.md               # 🔄 Commit messages, branching, PR guidelines
-    ├── database-migrations.md        # 🗄️ Complete guide to all 14 migrations
+    ├── database-migrations.md        # 🗄️ Complete guide to all 18 migrations
     ├── rls-policies.md               # 🔒 Complete RLS policy reference
     ├── rls-recursion-fix.md          # 🛠️ Fix for infinite recursion error
     ├── admin-action-logging.md       # 📊 Admin audit trail system
@@ -166,15 +174,25 @@ docs/
 
 #### Learning & Content
 - **Learning Module System** (admin CRUD, progress tracking, quiz builder, materials)
-- **Learning Module Enrollment** (🆕 auto-enroll, progress tracking, completion)
+- **Learning Module Detail Page** (v1.7.0 — hero, curriculum stepper, quiz/certificate preview, related modules)
+- **Learning Module Lessons** (ordered steps: video/article/exercise/quiz/resource)
+- **Learning Module Reviews** (user ratings 1-5 with comments)
+- **Learning Module Enrollment** (auto-enroll, progress tracking, completion)
   - Auto-enrollment on first visit to module detail page
   - Manual "Mark as complete" button for users
   - Progress bar and status badges on listing page
   - Activity logging (module_started, module_completed)
+- **Certificate System** (🆕 v1.8.0 — complete overhaul)
+  - Shared `CertificateTemplate` component (single source of truth, fixed px, hex colors)
+  - PNG download via `html2canvas` (client-side, no Puppeteer)
+  - Print support (`@media print` hides UI, landscape A4)
+  - Responsive zoom overlay (dynamic scale from viewport)
+  - Public verification page (`/verify/[id]` — no auth required)
+  - Demo learning module seed (`scripts/seed-demo-module.sql`)
 - **Language Switcher** (EN/ID translation system)
-- **Quiz Builder** (🆕 admin assessment system with multiple-choice questions)
-- **Learning Materials** (🆕 articles, videos, documentation per module)
-- **Learning Resources** (🆕 tools, templates, ebooks, PDFs, external links)
+- **Quiz Builder** (admin assessment system with multiple-choice questions)
+- **Learning Materials** (articles, videos, documentation per module)
+- **Learning Resources** (tools, templates, ebooks, PDFs, external links)
 
 ### ⚠️ In Progress (Hardcoded/Mock Data)
 - Public portfolio (1 hardcoded portfolio)
@@ -233,6 +251,11 @@ pnpm lint         # Run ESLint
 - ~~Public job detail page hardcoded~~ - ✅ Fixed (April 11, 2026 - connected to Supabase)
 - ~~JobCard not clickable~~ - ✅ Fixed (April 11, 2026 - clickable cards)
 - ~~404 page with header/footer~~ - ✅ Fixed (April 11, 2026 - clean centered layout)
+- ~~Certificate download via Puppeteer (complex, error-prone)~~ - ✅ Fixed (v1.8.0 - html2canvas client-side)
+- ~~Certificate verification page missing~~ - ✅ Fixed (v1.8.0 - `/verify/[id]`)
+- ~~Zoom overlay not responsive on mobile~~ - ✅ Fixed (v1.8.0 - dynamic scale calculation)
+- ~~`oklch` color crash in html2canvas~~ - ✅ Fixed (v1.8.0 - explicit hex colors in CertificateTemplate)
+- ~~Mobile download produces wrong font sizes~~ - ✅ Fixed (v1.8.0 - fixed px, no clamp/vw)
 
 ### Remaining Issues
 - `@types/react-pdf` type definition warning (pre-existing, harmless)
@@ -243,17 +266,24 @@ pnpm lint         # Run ESLint
 
 ### ⚠️ Migration Required
 
-You must apply these migrations for the app to work correctly:
+You must apply all migrations for the app to work correctly:
 
 ```bash
 supabase db push
 ```
 
-**Migrations to Apply:**
-- **Migration 011**: Complete RLS policies & admin action logging
-- **Migration 012**: Fix RLS infinite recursion error (critical!)
+**All Migrations (001–018):**
+- **001–002**: Core tables (`learning_modules`, `user_learning_progress`, etc.)
+- **003–010**: Job board, auth, activity logging
+- **011**: Complete RLS policies & admin action logging
+- **012**: Fix RLS infinite recursion (critical!)
+- **013**: Quiz system (`quiz_configs`, `questions`, `user_quiz_attempts`)
+- **014**: Learning materials & resources
+- **015–016**: Learning activity triggers
+- **017**: User profiles enhancements
+- **018**: Learning module revamp (`module_lessons`, `module_reviews`, enrollment/rating triggers)
 
-See [Migration Guide](../scripts/MIGRATION_GUIDE.md) for detailed instructions.
+See [Migration Guide](./guides/database-migrations.md) for details.
 
 ---
 
@@ -266,5 +296,5 @@ See [Migration Guide](../scripts/MIGRATION_GUIDE.md) for detailed instructions.
 
 ---
 
-**Last Updated:** April 10, 2026  
+**Last Updated:** April 13, 2026
 **Maintained By:** Development Team

@@ -15,6 +15,26 @@ export interface LearningMaterial {
   reading_time_minutes: number | null;
   difficulty: MaterialDifficulty;
   tags: string[] | null;
+  orderIndex: number;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface LearningMaterialRow {
+  id: string;
+  module_id: string;
+  title: string;
+  content: string | null;
+  summary: string | null;
+  source_url: string | null;
+  source_type: SourceType | null;
+  file_url: string | null;
+  language: string;
+  reading_time_minutes: number | null;
+  difficulty: MaterialDifficulty;
+  tags: string[] | null;
+  order_index: number;
   is_published: boolean;
   created_at: string;
   updated_at: string;

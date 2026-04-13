@@ -292,22 +292,33 @@ const CONTENT_TYPES = ["article", "video", "exercise", "quiz"];
 
 ---
 
-## Sistem Sertifikat (Planned)
+## Sistem Sertifikat (Implemented)
 
 ### Syarat Kelulusan
-- Tes akhir modul minimum skor **70%**
-- Boleh diulang maksimal **3 kali**
+- Modul selesai 100% (`progress = 100` AND `completed_at IS NOT NULL`)
+- Sertifikat dihasilkan otomatis saat modul selesai
 
 ### Fitur Sertifikat Digital
-- **ID Unik & Verifikasi** — Setiap sertifikat punya ID unik, bisa dicek keasliannya via link publik
-- **Download & Share** — Unduh sebagai PDF siap cetak, bagikan ke LinkedIn & portofolio
-- **Masa Berlaku** — Berlaku seumur hidup, tanggal terbit tercantum jelas
+- **ID Unik & Verifikasi** — Setiap sertifikat punya ID unik, bisa dicek keasliannya via `/verify/[id]` (publik, tanpa login)
+- **Download PNG** — Unduh sebagai gambar via `html2canvas` (bukan Puppeteer)
+- **Print** — Browser native print dialog, `@media print` hides UI
+- **Zoom** — Klik sertifikat untuk zoom fullscreen, responsive scale
 
 ### Format ID Sertifikat
 ```
-RMN-{YEAR}-{SEQUENTIAL_NUMBER}
-Contoh: RMN-2026-00142
+RMN-{YEAR}-{HASH}
+Contoh: RMN-2026-12345
 ```
+Hash = 5-digit zero-padded hash dari `(userId + moduleId)`.
+
+### Routes
+| Route | Auth Required | Purpose |
+|-------|--------------|---------|
+| `/certificates/[id]` | Yes (user) | View, download, print own certificate |
+| `/verify/[id]` | No (public) | Verify certificate authenticity |
+
+### Implementation Details
+See [Certificate System Guide](../../guides/certificate-download.md)
 
 ---
 

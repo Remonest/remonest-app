@@ -14,13 +14,36 @@ import {
   Image as ImageIcon,
   CheckCircle2,
   PlayCircle,
+  Star,
+  Users,
 } from "lucide-react";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
-import { getLearningModuleBySlug, getPublishedMaterialsForModule } from "@/features/learning-module/actions/fetch-learning";
-import { enrollUserInModule, getUserModuleProgress } from "@/features/learning-module/actions/enrollment";
-import { LEARNING_CATEGORY_LABELS, LEARNING_CATEGORY_COLORS } from "@/features/learning-module/types/learning";
+import {
+  getLearningModuleBySlug,
+  getPublishedMaterialsForModule,
+  getLessonsForModule,
+  getRelatedModules,
+} from "@/features/learning-module/actions/fetch-learning";
+import {
+  enrollUserInModule,
+  getUserModuleProgress,
+  getUserEnrollments,
+} from "@/features/learning-module/actions/enrollment";
+import { getModuleReviews, submitReview, getUserReview } from "@/features/learning-module/actions/reviews";
+import {
+  LEARNING_CATEGORY_LABELS,
+  LEARNING_CATEGORY_COLORS,
+  DIFFICULTY_LABELS,
+  DIFFICULTY_COLORS,
+} from "@/features/learning-module/types/learning";
+import { SAMPLE_QUIZ_DATA } from "@/features/learning-module/components/QuizPreview";
 import PDFCanvasViewer from "@/features/learning-module/components/PDFCanvasViewer";
 import EnrollButton from "@/features/learning-module/components/EnrollButton";
+import ModuleHero from "@/features/learning-module/components/ModuleHero";
+import CurriculumStepper from "@/features/learning-module/components/CurriculumStepper";
+import { QuizPreview } from "@/features/learning-module/components/QuizPreview";
+import { CertificatePreview } from "@/features/learning-module/components/CertificatePreview";
+import ModuleCatalog from "@/features/learning-module/components/ModuleCatalog";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -82,7 +105,15 @@ export default async function ModuleDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const materials = mod ? await getPublishedMaterialsForModule(mod.id) : [];
+  // Fetch all data in parallel
+  const [materials, lessons, relatedMods, enrollments, reviews, userReview] = await Promise.all([
+    getPublishedMaterialsForModule(mod.id),
+    getLessonsForModule(mod.id),
+    getRelatedModules(mod.id, mod.category, 6),
+    getUserEnrollments(),
+    getModuleReviews(mod.id),
+    getUserReview(mod.id),
+  ]);
 
   // Auto-enroll on first visit
   await enrollUserInModule(mod.id);
@@ -93,115 +124,277 @@ export default async function ModuleDetailPage({ params }: PageProps) {
   const isCompleted = progressRecord?.completedAt != null;
   const isInProgress = progress > 0 && !isCompleted;
 
+  // Enrollment state
+  const userEnrollment = enrollments.find((e) => e.moduleId === mod.id);
+  const enrollmentState: "not_enrolled" | "enrolled" | "completed" = isCompleted
+    ? "completed"
+    : userEnrollment
+    ? "enrolled"
+    : "not_enrolled";
+
   const categoryLabel = LEARNING_CATEGORY_LABELS[mod.category] || mod.category;
   const categoryColor = LEARNING_CATEGORY_COLORS[mod.category] || "bg-gray-100 text-gray-700";
+  const difficultyLabel = DIFFICULTY_LABELS[mod.difficultyLevel] || mod.difficultyLevel;
+  const difficultyColor = DIFFICULTY_COLORS[mod.difficultyLevel] || "bg-gray-100 text-gray-700";
+
+  // Format enrollment count
+  const formatEnrollment = (count: number) => {
+    if (count >= 1000) return `${(count / 1000).toFixed(1).replace(/\.0$/, "")}rb+ Terdaftar`;
+    return `${count}+ Terdaftar`;
+  };
+
+  // Format rating
+  const ratingDisplay = mod.averageRating > 0
+    ? `${mod.averageRating.toFixed(1)} (${reviews.length} ulasan)`
+    : "Belum ada ulasan";
+
+  // Build learning outcomes from module description
+  const outcomes = [
+    "Memahami prinsip dasar komunikasi remote yang efektif",
+    "Menerapkan praktik terbaik async di tim Anda",
+    "Mengurangi ketergantungan pada meeting sinkron",
+    "Membangun dokumentasi yang jelas dan terstruktur",
+  ];
+
+  // Build includes list
+  const includes = [
+    { icon: "monitor-play", text: `${mod.durationMin} jam video on-demand` },
+    { icon: "file-text", text: `${materials.length} artikel & template detail` },
+    { icon: "award", text: "Sertifikat penyelesaian" },
+    { icon: "infinity", text: "Akses seumur hidup" },
+  ];
+
+  // Completed lesson IDs (for now, all enrolled users have progress)
+  const completedLessonIds: string[] = isInProgress || isCompleted
+    ? lessons.slice(0, Math.floor((progress / 100) * lessons.length)).map((l) => l.id)
+    : [];
+
+  // User progress map for catalog
+  const userProgressMap: Record<string, number> = {};
+  enrollments.forEach((e) => {
+    userProgressMap[e.moduleId] = e.progress;
+  });
+
+  // Extract video lessons for curriculum
+  const videoLessons = lessons.filter((l) => l.lessonType === "video");
+  const totalVideoHours = videoLessons.reduce((acc, l) => acc + l.durationMinutes, 0);
 
   return (
-    <div className="py-8">
-      <div className="w-full max-w-[1200px] mx-auto px-4 md:px-8">
-        {/* Back link */}
-        <Link
-          href="/learning"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-8 no-underline transition-colors"
-        >
-          <ChevronLeft className="size-4" />
-          Kembali ke Katalog
-        </Link>
+    <div className="min-h-screen bg-background">
+      {/* Hero Section */}
+      <section id="module-hero" className="border-b bg-gradient-to-b from-card to-background">
+        <div className="mx-auto w-full max-w-[1200px] px-4 md:px-8">
+          <div className="grid grid-cols-1 gap-8 py-12 lg:grid-cols-[1fr_400px] lg:items-start lg:gap-16">
+            {/* Left Content */}
+            <div>
+              {/* Breadcrumb */}
+              <nav className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
+                <Link href="/learning" className="hover:text-foreground">
+                  Learning
+                </Link>
+                <ChevronLeft className="h-4 w-4 rotate-180" />
+                <Link href="/learning" className="hover:text-foreground">
+                  {categoryLabel}
+                </Link>
+                <ChevronLeft className="h-4 w-4 rotate-180" />
+                <span className="text-foreground">{mod.title}</span>
+              </nav>
 
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-              <BookOpen className="size-5" />
+              {/* Badges */}
+              <div className="mb-4 flex items-center gap-3">
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${categoryColor}`}>
+                  {categoryLabel}
+                </span>
+                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${difficultyColor}`}>
+                  {difficultyLabel}
+                </span>
+              </div>
+
+              {/* Title */}
+              <h1 className="text-3xl font-extrabold leading-tight tracking-tight text-foreground md:text-4xl">
+                {mod.title}
+              </h1>
+
+              {/* Meta */}
+              <div className="mt-4 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+                <span className="flex items-center gap-2">
+                  <Clock className="h-[18px] w-[18px]" />
+                  {mod.durationMin > 0 ? `${mod.durationMin} Menit` : "—"}
+                </span>
+                <span className="flex items-center gap-2">
+                  <FileText className="h-[18px] w-[18px]" />
+                  {lessons.length > 0 ? `${lessons.length} Pelajaran` : `${materials.length} Materi`}
+                </span>
+                <span className="flex items-center gap-2">
+                  <Star className="h-[18px] w-[18px]" style={{ color: "#eab308" }} />
+                  {ratingDisplay}
+                </span>
+                <Link href={`/learning/${mod.slug}/enrolled`} className="flex items-center gap-2 hover:text-foreground transition-colors">
+                  <Users className="h-[18px] w-[18px]" />
+                  {formatEnrollment(mod.enrollmentCount)}
+                </Link>
+              </div>
+
+              {/* Description */}
+              {mod.description && (
+                <p className="mt-6 text-base leading-relaxed text-muted-foreground">
+                  {mod.description}
+                </p>
+              )}
+
+              {/* Learning Outcomes */}
+              <div className="mt-8 rounded-xl border bg-card p-6">
+                <h3 className="mb-5 text-lg font-bold">Yang Akan Anda Pelajari</h3>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  {outcomes.map((outcome, i) => (
+                    <div key={i} className="flex items-start gap-3">
+                      <CheckCircle2 className="mt-0.5 h-[18px] w-[18px] shrink-0 text-emerald-500" />
+                      <span className="text-sm text-card-foreground">{outcome}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
-            <span
-              className={`text-xs font-medium px-2.5 py-1 rounded-full ${categoryColor}`}
-            >
-              {categoryLabel}
-            </span>
-          </div>
 
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-            {mod.title}
-          </h1>
+            {/* Right Sticky Card - Enrollment */}
+            <div className="lg:sticky lg:top-28">
+              <div className="overflow-hidden rounded-xl border bg-card shadow-lg">
+                {/* Thumbnail */}
+                {mod.thumbnailUrl ? (
+                  <img
+                    src={mod.thumbnailUrl}
+                    alt={mod.title}
+                    className="aspect-video w-full border-b object-cover"
+                  />
+                ) : (
+                  <div className="flex aspect-video w-full items-center justify-center border-b bg-muted">
+                    <BookOpen className="h-12 w-12 text-muted-foreground/50" />
+                  </div>
+                )}
 
-          {mod.description && (
-            <p className="mt-3 text-muted-foreground leading-relaxed">
-              {mod.description}
-            </p>
-          )}
+                <div className="flex flex-col gap-6 p-6">
+                  {/* Price */}
+                  <div>
+                    <span className="text-2xl font-extrabold text-foreground">
+                      Free
+                    </span>
+                    <span className="ml-2 text-sm text-muted-foreground">
+                      untuk member Remonest
+                    </span>
+                  </div>
 
-          {/* Meta info */}
-          <div className="flex items-center gap-6 mt-5 text-sm text-muted-foreground flex-wrap">
-            <span className="flex items-center gap-1.5">
-              <Clock className="size-4" />
-              {mod.durationMin > 0 ? `${mod.durationMin} menit` : "—"}
-            </span>
-            {materials.length > 0 && (
-              <span className="flex items-center gap-1.5">
-                <FileText className="size-4" />
-                {materials.length} materi
-              </span>
-            )}
-            {/* Progress status badge */}
-            {isCompleted && (
-              <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
-                <CheckCircle2 className="size-4" />
-                Selesai
-              </span>
-            )}
-            {isInProgress && (
-              <span className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-medium">
-                <PlayCircle className="size-4" />
-                Sedang dipelajari ({progress}%)
-              </span>
-            )}
-          </div>
+                  {/* Enroll Button */}
+                  <EnrollButton
+                    moduleId={mod.id}
+                    moduleTitle={mod.title}
+                    progress={progress}
+                    isCompleted={isCompleted}
+                    materialsCount={materials.length}
+                  />
 
-          {/* Enroll / Complete button */}
-          <div className="mt-5">
-            <EnrollButton
-              moduleId={mod.id}
-              moduleTitle={mod.title}
-              progress={progress}
-              isCompleted={isCompleted}
-              materialsCount={materials.length}
-            />
+                  {/* Includes */}
+                  <div className="text-sm font-semibold">Modul ini mencakup:</div>
+                  <div className="flex flex-col gap-3 text-sm text-muted-foreground">
+                    {includes.map((item, i) => (
+                      <div key={i} className="flex items-center gap-3">
+                        <FileText className="h-4 w-4 shrink-0" />
+                        <span>{item.text}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+      </section>
 
-        {/* Module content */}
-        {mod.content && (
-          <div className="prose prose-neutral dark:prose-invert max-w-none mb-12">
-            <div
-              dangerouslySetInnerHTML={{
-                __html: wrapLists(renderMarkdown(mod.content)),
-              }}
-            />
-          </div>
-        )}
+      {/* Curriculum & Features Section */}
+      <section id="module-content" className="py-16">
+        <div className="mx-auto w-full max-w-[1200px] px-4 md:px-8">
+          <div className="grid grid-cols-1 gap-12 lg:grid-cols-[1fr_400px] lg:items-start">
+            {/* Left Col: Curriculum Timeline */}
+            <div>
+              <h2 className="mb-6 text-2xl font-bold">Kurikulum & Timeline</h2>
 
-        {/* Materials section */}
-        {materials.length > 0 && (
-          <div data-materials className="mt-12 border-t pt-8">
-            <h2 className="text-xl font-semibold mb-6 text-foreground flex items-center gap-2">
-              <FileText className="size-5" />
-              Materi Pembelajaran
-            </h2>
+              {lessons.length > 0 ? (
+                <CurriculumStepper
+                  lessons={lessons}
+                  activeLessonId={undefined}
+                  completedLessonIds={completedLessonIds}
+                />
+              ) : (
+                <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
+                  <FileText className="mx-auto mb-3 h-10 w-10 opacity-50" />
+                  <p className="text-sm">Materi pembelajaran akan segera tersedia</p>
+                </div>
+              )}
 
-            <div className="space-y-6">
-              {materials.map((m) => (
-                <MaterialCard key={m.id} material={m} />
-              ))}
+              {/* Module Content (Markdown) */}
+              {mod.content && (
+                <div className="prose prose-neutral dark:prose-invert mt-12 max-w-none">
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: wrapLists(renderMarkdown(mod.content)),
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Materials Section */}
+              {materials.length > 0 && (
+                <div data-materials className="mt-12 border-t pt-8">
+                  <h2 className="mb-6 flex items-center gap-2 text-xl font-semibold text-foreground">
+                    <FileText className="h-5 w-5" />
+                    Materi Pembelajaran
+                  </h2>
+                  <div className="space-y-6">
+                    {materials.map((m) => (
+                      <MaterialCard key={m.id} material={m} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Right Col: Quiz & Certificate Preview */}
+            <div className="flex flex-col gap-6">
+              {/* Quiz Preview */}
+              <QuizPreview
+                question={SAMPLE_QUIZ_DATA.question}
+                options={SAMPLE_QUIZ_DATA.options}
+                passingGrade={70}
+                totalQuestions={10}
+              />
+
+              {/* Certificate Preview */}
+              <CertificatePreview
+                userName={user.email?.split("@")[0] || "Peserta"}
+                moduleTitle={mod.title}
+              />
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      </section>
+
+      {/* Related Modules Catalog */}
+      {relatedMods.length > 0 && (
+        <section id="catalog-section" className="border-t bg-secondary">
+          <div className="mx-auto w-full max-w-[1200px] px-4 md:px-8 py-16">
+            <ModuleCatalog
+              modules={relatedMods}
+              userProgress={userProgressMap}
+              category={categoryLabel}
+              viewAllHref="/learning"
+            />
+          </div>
+        </section>
+      )}
     </div>
   );
 }
 
-// ─── Material Card with Read / Video / Download ──────────────
+// ─── Material Card (reused from original) ─────────────────────
 
 function MaterialCard({
   material,
@@ -224,46 +417,43 @@ function MaterialCard({
   const hasContent = !!material.content;
   const hasFile = !!material.file_url;
 
-  // Detect file type from proxy URL
   const isImageFile =
     hasFile && /\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(material.file_url!);
   const isPdfFile =
     hasFile && /\.(pdf)(\?.*)?$/i.test(material.file_url!);
 
-  // Extract video embed URL
   const embedUrl = isVideo
     ? extractVideoEmbedUrl(material.source_url)
     : null;
 
-  // Primary display: uploaded file takes priority over markdown content
   const showFile = hasFile && !isVideo;
 
   return (
-    <article className="rounded-lg border bg-card overflow-hidden">
+    <article className="overflow-hidden rounded-lg border bg-card">
       {/* Header */}
       <div className="p-5 pb-4">
         <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="min-w-0 flex-1">
+            <div className="mb-2 flex items-center gap-2">
               {isVideo ? (
-                <Video className="size-4 text-red-500 shrink-0" />
+                <Video className="size-4 shrink-0 text-red-500" />
               ) : isPdfFile ? (
-                <FileText className="size-4 text-red-500 shrink-0" />
+                <FileText className="size-4 shrink-0 text-red-500" />
               ) : isImageFile ? (
-                <ImageIcon className="size-4 text-blue-500 shrink-0" />
+                <ImageIcon className="size-4 shrink-0 text-blue-500" />
               ) : (
-                <File className="size-4 text-blue-500 shrink-0" />
+                <File className="size-4 shrink-0 text-blue-500" />
               )}
               <h3 className="font-medium text-foreground">{material.title}</h3>
             </div>
 
             {material.summary && (
-              <p className="text-sm text-muted-foreground line-clamp-2">
+              <p className="line-clamp-2 text-sm text-muted-foreground">
                 {material.summary}
               </p>
             )}
 
-            <div className="flex items-center gap-3 mt-3 text-xs text-muted-foreground flex-wrap">
+            <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
               {material.source_type && (
                 <span className="capitalize">
                   {material.source_type === "article"
@@ -278,12 +468,12 @@ function MaterialCard({
                 </span>
               )}
               {isPdfFile && (
-                <span className="px-1.5 py-0.5 rounded bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 text-[10px] font-medium">
+                <span className="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
                   PDF
                 </span>
               )}
               {isImageFile && (
-                <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] font-medium">
+                <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
                   Gambar
                 </span>
               )}
@@ -301,14 +491,13 @@ function MaterialCard({
             </div>
           </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex shrink-0 items-center gap-2">
             {material.source_url && (
               <a
                 href={material.source_url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 no-underline"
+                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground no-underline transition-opacity hover:opacity-90"
               >
                 {isVideo ? (
                   <>
@@ -332,19 +521,20 @@ function MaterialCard({
         </div>
       </div>
 
-      {/* ===== FILE PREVIEW ===== */}
+      {/* File Preview */}
       {showFile && (
         <div className="border-t border-border/50">
-          {/* Image display with download protection */}
           {isImageFile && (
-            <div className="relative p-4 bg-muted/20 select-none" onContextMenu={(e) => e.preventDefault()}>
+            <div
+              className="relative select-none bg-muted/20 p-4"
+              onContextMenu={(e) => e.preventDefault()}
+            >
               <img
                 src={material.file_url!}
                 alt={material.title}
-                className="w-full rounded-lg max-h-[600px] object-contain mx-auto pointer-events-none"
+                className="mx-auto max-h-[600px] w-full rounded-lg object-contain"
                 draggable={false}
               />
-              {/* Transparent overlay to block right-click */}
               <div
                 className="absolute inset-0 cursor-default"
                 onContextMenu={(e) => e.preventDefault()}
@@ -354,7 +544,6 @@ function MaterialCard({
             </div>
           )}
 
-          {/* PDF viewer - canvas-based rendering (no iframe, no download) */}
           {isPdfFile && (
             <div className="border-t border-border/50">
               <PDFCanvasViewer
@@ -364,13 +553,12 @@ function MaterialCard({
             </div>
           )}
 
-          {/* Generic file (no preview, no download) */}
           {!isImageFile && !isPdfFile && (
-            <div className="flex items-center justify-center p-8 text-muted-foreground">
-              <div className="text-center">
-                <File className="size-12 mx-auto mb-3 opacity-50" />
+            <div className="flex items-center justify-center p-8 text-center text-muted-foreground">
+              <div>
+                <File className="mx-auto mb-3 size-12 opacity-50" />
                 <p className="text-sm">Preview tidak tersedia</p>
-                <p className="text-xs mt-1 text-muted-foreground/60">
+                <p className="mt-1 text-xs text-muted-foreground/60">
                   File hanya dapat dilihat oleh admin
                 </p>
               </div>
@@ -379,13 +567,13 @@ function MaterialCard({
         </div>
       )}
 
-      {/* ===== VIDEO EMBED ===== */}
+      {/* Video Embed */}
       {isVideo && embedUrl && (
         <div className="border-t border-border/50">
           <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
             <iframe
               src={embedUrl}
-              className="absolute inset-0 w-full h-full"
+              className="absolute inset-0 h-full w-full"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
@@ -393,11 +581,11 @@ function MaterialCard({
         </div>
       )}
 
-      {/* ===== MARKDOWN CONTENT ===== */}
+      {/* Markdown Content */}
       {hasContent && !isVideo && (
         <div className="border-t border-border/50 p-5 pt-4">
           <div
-            className="text-sm text-muted-foreground space-y-2"
+            className="space-y-2 text-sm text-muted-foreground"
             dangerouslySetInnerHTML={{
               __html: wrapLists(renderMarkdown(material.content!)),
             }}
@@ -408,11 +596,9 @@ function MaterialCard({
   );
 }
 
-// Extract embeddable video URL from source
 function extractVideoEmbedUrl(url: string | null): string | null {
   if (!url) return null;
 
-  // YouTube
   const ytMatch = url.match(
     /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/
   );
@@ -420,13 +606,11 @@ function extractVideoEmbedUrl(url: string | null): string | null {
     return `https://www.youtube.com/embed/${ytMatch[1]}`;
   }
 
-  // Vimeo
   const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
   if (vimeoMatch) {
     return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
   }
 
-  // Google Drive
   const gdriveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
   if (gdriveMatch) {
     return `https://drive.google.com/file/d/${gdriveMatch[1]}/preview`;
@@ -435,7 +619,6 @@ function extractVideoEmbedUrl(url: string | null): string | null {
   return null;
 }
 
-// Check if URL points to a downloadable file
 function isDownloadable(url: string): boolean {
   return /\.(pdf|docx?|xlsx?|pptx?|zip|rar|png|jpg|jpeg)$/i.test(url);
 }

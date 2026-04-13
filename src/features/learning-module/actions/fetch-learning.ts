@@ -1,7 +1,8 @@
 "use server";
 
-import { getSupabaseServerClient } from "@/lib/supabase/server";
-import type { LearningModule, LearningModuleWithContent, LearningModuleRow } from "@/features/learning-module/types/learning";
+import { getSupabaseServerClient, getSupabaseServiceClient } from "@/lib/supabase/server";
+import type { LearningModule, LearningModuleWithContent, LearningModuleRow, ModuleDifficulty } from "@/features/learning-module/types/learning";
+import type { ModuleLesson } from "@/features/learning-module/types/lesson";
 
 // ============================================================
 // Fetch Published Learning Modules (Public)
@@ -12,11 +13,12 @@ export async function getPublishedLearningModules(): Promise<LearningModule[]> {
 
   const { data, error } = await supabase
     .from("learning_modules")
-    .select("id, slug, title, description, category, thumbnail_url, duration_min, status, created_at, updated_at")
+    .select("*")
     .eq("status", "published")
     .order("created_at", { ascending: false });
 
   if (error) {
+    console.error("[getPublishedLearningModules] Error:", error);
     return [];
   }
 
@@ -32,13 +34,12 @@ export async function getLearningModuleBySlug(slug: string): Promise<LearningMod
 
   const { data, error } = await supabase
     .from("learning_modules")
-    .select("id, slug, title, description, content, category, thumbnail_url, duration_min, status, created_at, updated_at")
+    .select("*")
     .eq("slug", slug)
     .eq("status", "published")
     .single();
 
   if (error || !data) {
-    // Only log actual errors, not "not found" cases
     return null;
   }
 
@@ -64,6 +65,7 @@ export interface LearningMaterial {
   language: string;
   reading_time_minutes: number | null;
   tags: string[] | null;
+  order_index: number;
 }
 
 export async function getPublishedMaterialsForModule(moduleId: string): Promise<LearningMaterial[]> {
@@ -71,23 +73,128 @@ export async function getPublishedMaterialsForModule(moduleId: string): Promise<
 
   const { data, error } = await supabase
     .from("learning_materials")
-    .select("id, title, content, summary, source_url, source_type, file_url, difficulty, language, reading_time_minutes, tags")
+    .select("*")
     .eq("module_id", moduleId)
     .eq("is_published", true)
-    .order("created_at", { ascending: true });
+    .order("order_index", { ascending: true, nullsFirst: false });
 
   if (error) {
-    return [];
+    // Fallback: try without order_index (pre-migration 018)
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from("learning_materials")
+      .select("*")
+      .eq("module_id", moduleId)
+      .eq("is_published", true)
+      .order("created_at", { ascending: true });
+
+    if (fallbackError) {
+      console.error("[getPublishedMaterialsForModule] Error:", fallbackError);
+      return [];
+    }
+
+    return (fallbackData ?? []).map((m: any) => ({
+      ...m,
+      order_index: 0,
+    }));
   }
 
   return (data ?? []) as LearningMaterial[];
 }
 
 // ============================================================
+// Fetch Lessons for a Module (Public)
+// ============================================================
+
+export async function getLessonsForModule(moduleId: string): Promise<ModuleLesson[]> {
+  const supabase = getSupabaseServiceClient();
+
+  const { data, error } = await supabase
+    .from("module_lessons")
+    .select("*")
+    .eq("module_id", moduleId)
+    .order("order_index", { ascending: true });
+
+  if (error) {
+    // Table may not exist yet (pre-migration 018)
+    return [];
+  }
+
+  return (data || []).map(mapRowToLesson);
+}
+
+// ============================================================
+// Fetch Related Modules (Public)
+// ============================================================
+
+export async function getRelatedModules(
+  moduleId: string,
+  category: string,
+  limit: number = 6
+): Promise<LearningModule[]> {
+  const supabase = getSupabaseServerClient();
+
+  const { data, error } = await supabase
+    .from("learning_modules")
+    .select("*")
+    .eq("status", "published")
+    .eq("category", category)
+    .neq("id", moduleId)
+    .limit(limit);
+
+  if (error) {
+    console.error("[getRelatedModules] Error:", error);
+    return [];
+  }
+
+  return (data ?? []).map(mapRowToModule);
+}
+
+// ============================================================
+// Fetch All Modules (Admin)
+// ============================================================
+
+export async function getAllLearningModules(): Promise<LearningModule[]> {
+  const supabase = getSupabaseServiceClient();
+
+  const { data, error } = await supabase
+    .from("learning_modules")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("[getAllLearningModules] Error:", error);
+    return [];
+  }
+
+  return (data ?? []).map(mapRowToModule);
+}
+
+// ============================================================
+// Fetch Modules by Status (Admin)
+// ============================================================
+
+export async function getModulesByStatus(status: string): Promise<LearningModule[]> {
+  const supabase = getSupabaseServiceClient();
+
+  const { data, error } = await supabase
+    .from("learning_modules")
+    .select("*")
+    .eq("status", status)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("[getModulesByStatus] Error:", error);
+    return [];
+  }
+
+  return (data ?? []).map(mapRowToModule);
+}
+
+// ============================================================
 // Helper: Map DB row to LearningModule type
 // ============================================================
 
-function mapRowToModule(row: Partial<LearningModuleRow> & Pick<LearningModuleRow, "id" | "slug" | "title" | "category" | "status" | "created_at" | "updated_at">): LearningModule {
+function mapRowToModule(row: Record<string, any>): LearningModule {
   return {
     id: row.id,
     slug: row.slug,
@@ -95,9 +202,30 @@ function mapRowToModule(row: Partial<LearningModuleRow> & Pick<LearningModuleRow
     description: row.description ?? null,
     content: row.content ?? null,
     category: row.category,
+    difficultyLevel: (row.difficulty_level as ModuleDifficulty) ?? "beginner",
     thumbnailUrl: row.thumbnail_url ?? null,
     durationMin: row.duration_min ?? 0,
+    enrollmentCount: row.enrollment_count ?? 0,
+    averageRating: Number(row.average_rating) ?? 0,
     status: row.status,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+function mapRowToLesson(row: any): ModuleLesson {
+  return {
+    id: row.id,
+    moduleId: row.module_id,
+    title: row.title,
+    description: row.description,
+    orderIndex: row.order_index,
+    lessonType: row.lesson_type,
+    materialId: row.material_id,
+    resourceId: row.resource_id,
+    quizConfigId: row.quiz_config_id,
+    durationMinutes: row.duration_minutes,
+    isPreview: row.is_preview,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };

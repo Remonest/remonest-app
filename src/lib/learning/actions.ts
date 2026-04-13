@@ -14,9 +14,12 @@ export type LearningModuleRow = {
   title: string;
   description: string | null;
   category: string;
+  difficulty_level: "beginner" | "intermediate" | "advanced";
   content: string | null;
   thumbnail_url: string | null;
   duration_min: number;
+  enrollment_count: number;
+  average_rating: number;
   status: "draft" | "published" | "archived";
   created_at: string;
   updated_at: string;
@@ -127,6 +130,9 @@ export async function updateLearningModule(
     parseInt(formData.get("duration_min") as string, 10) || 0;
   const status =
     (formData.get("status") as "draft" | "published" | "archived") || "draft";
+  const difficultyLevel =
+    (formData.get("difficulty_level") as "beginner" | "intermediate" | "advanced") || "beginner";
+  const thumbnailUrl = (formData.get("thumbnail_url") as string)?.trim() || null;
 
   if (!title || title.length < 3) {
     return {
@@ -166,6 +172,8 @@ export async function updateLearningModule(
       content,
       duration_min: durationMin,
       status,
+      difficulty_level: difficultyLevel,
+      thumbnail_url: thumbnailUrl,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);
@@ -183,8 +191,10 @@ export async function updateLearningModule(
     content,
     duration_min: durationMin,
     status,
+    difficulty_level: difficultyLevel,
+    thumbnail_url: thumbnailUrl,
   };
-  
+
   let notes = `Updated module: ${title}`;
   if (oldModule && oldModule.status !== status) {
     notes = `Status changed from ${oldModule.status} to ${status}`;
@@ -345,4 +355,152 @@ export async function deleteLearningModule(
 
   revalidatePath("/admin/learning");
   return { success: true };
+}
+
+// ─── Module Completions ──────────────────────────────────────
+
+export interface ModuleCompletion {
+  userId: string;
+  fullName: string | null;
+  email: string | null;
+  avatarUrl: string | null;
+  startedAt: string;
+  completedAt: string;
+}
+
+/**
+ * Get all users who have completed a specific module
+ */
+export async function getModuleCompletions(
+  moduleId: string
+): Promise<ModuleCompletion[]> {
+  const supabase = getSupabaseServiceClient();
+
+  const { data, error } = await supabase
+    .from("user_learning_progress")
+    .select("user_id, started_at, completed_at")
+    .eq("module_id", moduleId)
+    .eq("progress", 100)
+    .not("completed_at", "is", null)
+    .order("completed_at", { ascending: false });
+
+  if (error?.code) {
+    console.error("[getModuleCompletions] Error:", error);
+    return [];
+  }
+
+  if (!data || data.length === 0) return [];
+
+  // Fetch user profiles separately
+  const userIds = data.map((d) => d.user_id);
+  const { data: profiles } = await supabase
+    .from("user_profiles")
+    .select("id, full_name, email, avatar_url")
+    .in("id", userIds);
+
+  const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+
+  // Fallback: fetch emails from Supabase Auth admin for users without profiles
+  const missingIds = userIds.filter((id) => !profileMap.has(id));
+  const authEmailMap = new Map<string, string>();
+  if (missingIds.length > 0) {
+    for (const uid of missingIds) {
+      try {
+        const { data: authUser } = await supabase.auth.admin.getUserById(uid);
+        if (authUser?.user?.email) {
+          authEmailMap.set(uid, authUser.user.email);
+        }
+      } catch {
+        // ignore auth lookup failures
+      }
+    }
+  }
+
+  return data.map((row) => {
+    const profile = profileMap.get(row.user_id);
+    const authEmail = authEmailMap.get(row.user_id);
+    const displayName = profile?.full_name ?? authEmail?.split("@")[0] ?? "Unknown User";
+    return {
+      userId: row.user_id,
+      fullName: displayName,
+      email: profile?.email ?? authEmail ?? null,
+      avatarUrl: profile?.avatar_url ?? null,
+      startedAt: row.started_at,
+      completedAt: row.completed_at,
+    };
+  });
+}
+
+// ─── Module Enrollments ──────────────────────────────────────
+
+export interface ModuleEnrollment {
+  userId: string;
+  fullName: string | null;
+  email: string | null;
+  avatarUrl: string | null;
+  progress: number;
+  startedAt: string;
+  completedAt: string | null;
+}
+
+/**
+ * Get all users enrolled in a specific module (completed + in-progress)
+ */
+export async function getModuleEnrollments(
+  moduleId: string
+): Promise<ModuleEnrollment[]> {
+  const supabase = getSupabaseServiceClient();
+
+  const { data, error } = await supabase
+    .from("user_learning_progress")
+    .select("user_id, progress, started_at, completed_at")
+    .eq("module_id", moduleId)
+    .order("started_at", { ascending: false });
+
+  if (error?.code) {
+    console.error("[getModuleEnrollments] Error:", error);
+    return [];
+  }
+
+  if (!data || data.length === 0) return [];
+
+  // Fetch user profiles separately (no FK relationship in schema)
+  const userIds = data.map((d) => d.user_id);
+  const { data: profiles } = await supabase
+    .from("user_profiles")
+    .select("id, full_name, email, avatar_url")
+    .in("id", userIds);
+
+  const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p]));
+
+  // Fallback: fetch emails from Supabase Auth admin for users without profiles
+  const missingIds = userIds.filter((id) => !profileMap.has(id));
+  const authEmailMap = new Map<string, string>();
+  if (missingIds.length > 0) {
+    for (const uid of missingIds) {
+      try {
+        const { data: authUser } = await supabase.auth.admin.getUserById(uid);
+        if (authUser?.user?.email) {
+          authEmailMap.set(uid, authUser.user.email);
+        }
+      } catch {
+        // ignore auth lookup failures
+      }
+    }
+  }
+
+  return data.map((row) => {
+    const profile = profileMap.get(row.user_id);
+    const authEmail = authEmailMap.get(row.user_id);
+    const displayName = profile?.full_name ?? authEmail?.split("@")[0] ?? "Unknown User";
+    return {
+      userId: row.user_id,
+      fullName: displayName,
+      email: profile?.email ?? authEmail ?? null,
+      avatarUrl: profile?.avatar_url ?? null,
+      progress: row.progress ?? 0,
+      startedAt: row.started_at,
+      completedAt: row.completed_at,
+    };
+  });
 }

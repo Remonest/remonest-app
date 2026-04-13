@@ -3,7 +3,140 @@
 All notable changes to the Remonest App project.
 
 **Format:** [Semantic Versioning](https://semver.org/)
-**Date Format:** April 10, 2026
+**Date Format:** April 13, 2026
+
+---
+
+## [v1.8.0] - April 13, 2026
+
+### 🎉 New Features
+
+#### Certificate System Overhaul
+
+- ✅ **Shared CertificateTemplate** (`CertificateTemplate.tsx`)
+  - Single source of truth for certificate rendering
+  - Fixed 900px width, fixed pixel typography (no `clamp()`, no `vw`)
+  - Explicit hex colors only (no Tailwind `oklch()` variables)
+  - Inline SVGs with explicit `stroke`/`fill` (no `currentColor`)
+
+- ✅ **Responsive Zoom Overlay**
+  - Dynamic scale calculation from viewport (`min(availW/900, availH/636, 2.0)`)
+  - Responsive on mobile — fits small screens, scrolls if needed
+  - Escape key to close, click-outside to close
+
+- ✅ **PNG Download via html2canvas**
+  - Hidden off-screen template ref (`position: absolute; left: -9999px`)
+  - `html2canvas` renders at 2x scale → crisp 1800×1272px output
+  - `onclone` callback safety net replaces any leaked `oklch` colors with hex
+
+- ✅ **Public Certificate Verification** (`/verify/[id]`)
+  - No authentication required
+  - Verifies certificate ID against all completed enrollments
+  - Shows recipient name, module title, completion date, certificate ID
+  - "Not Found" state for invalid/malformed IDs
+
+- ✅ **Print Support**
+  - `@media print` hides header, actions, metadata
+  - Landscape A4 layout, only certificate canvas renders
+
+### 🔧 Bug Fixes
+
+- **`oklch` color crash** — `html2canvas` cannot parse `oklch()` colors (Tailwind v4). Fixed by using explicit hex colors in `CertificateTemplate` + `onclone` safety net.
+- **Mobile download wrong fonts** — `clamp()` with `vw` units resolved differently on mobile vs desktop. Replaced with fixed `px` values.
+- **Blank download image** — `sr-only` class set `width:1px;height:1px`. Replaced with explicit off-screen positioning.
+- **Zoom overlay overflow on mobile** — hardcoded `scale(1.6)` = 1440px wide. Now calculates scale dynamically from viewport.
+- **`Uint8Array` type error in PDF route** — `Buffer.from()` wrapper needed for `NextResponse` body.
+- **Unsplash thumbnail not rendering** — `images.unsplash.com` not in `next.config.ts` `images.remotePatterns`. Added to config.
+
+### 📁 New Files
+
+| File | Purpose |
+|------|---------|
+| `src/features/learning-module/components/CertificateTemplate.tsx` | Shared certificate template |
+| `src/app/(main)/verify/[id]/page.tsx` | Public verification page |
+| `src/features/learning-module/actions/certificate.ts` → `getPublicCertificateData()` | Public verification action (no auth) |
+
+### 📄 Docs Updated
+
+- `docs/guides/certificate-download.md` — Complete rewrite with new architecture
+- `docs/features/learning-module/overview.md` — Updated certificate section with routes table
+- `docs/guides/demo-learning-module.md` — **New** — Demo module seed instructions, full flow walkthrough, cleanup guide
+
+---
+
+## [v1.7.0] - April 13, 2026
+
+### 🎉 New Features
+
+#### Learning Module Revamp
+
+- ✅ **Database Enhancements (Migration 018)**
+  - `module_lessons` table — ordered steps within modules (video/article/exercise/quiz/resource)
+  - `module_reviews` table — user ratings (1-5) with comments
+  - `order_index` column on `learning_materials` for manual ordering
+  - `difficulty_level`, `enrollment_count`, `average_rating` columns on `learning_modules`
+  - Auto-updating triggers for enrollment count and average rating
+  - Seed: auto-creates lessons from existing published materials
+
+- ✅ **Public Detail Page Rewrite (`/learning/[slug]`)**
+  - Hero section with breadcrumb, category + difficulty badges, meta stats
+  - Sticky enrollment card with thumbnail, price, includes list
+  - Curriculum timeline stepper with lesson states (active/locked/completed/default)
+  - Quiz preview with sample question display
+  - Certificate preview mockup
+  - Related modules catalog grid with progress bars
+  - Files: `src/app/(main)/learning/[slug]/page.tsx` (complete rewrite)
+
+- ✅ **New UI Components**
+  - `ModuleHero` — Hero section with enrollment card
+  - `CurriculumStepper` — Vertical step timeline with status icons
+  - `QuizPreview` — Sample quiz question with radio options
+  - `CertificatePreview` — Certificate mockup with user name
+  - `ModuleCatalog` — Related modules grid with progress
+
+- ✅ **New Server Actions**
+  - `lessons.ts` — CRUD + reorder for lessons
+  - `reviews.ts` — Submit/get/delete reviews, module stats
+  - Updated `fetch-learning.ts` — `getLessonsForModule()`, `getRelatedModules()`, `getAllLearningModules()`, `getModulesByStatus()`
+
+- ✅ **TypeScript Types**
+  - `lesson.ts` — `ModuleLesson`, `ModuleLessonRow`, `ModuleLessonInput`, `LessonType`
+  - `review.ts` — `ModuleReview`, `ModuleReviewWithUser`, `ModuleStats`
+  - Updated `learning.ts` — Added `ModuleDifficulty`, new fields
+  - Updated `materials.ts` — Added `orderIndex`, `LearningMaterialRow`
+
+### 🔧 Bug Fixes
+
+- ✅ **Learning list page not showing modules** — Fixed queries that selected non-existent columns before migration 018 was applied
+- ✅ **QuizPreview crash** — `options.map()` on undefined, added default empty array + early return
+- ✅ **CurriculumStepper crash** — `lessons.map()` on undefined, added default empty array
+- ✅ **ModuleCatalog event handler error** — Server-to-client function prop replaced with `viewAllHref` string + `Link` component
+- ✅ **Migration 018 errors** — Fixed FK constraint violation (wrong `module_id` in seed), invalid `IF NOT EXISTS` trigger syntax, missing table checks in cleanup
+
+#### Admin Learning Revamp
+
+- ✅ **New Admin Learning List Page** (`/admin/learning`)
+  - Replaced old TanStack table with custom metric cards + search/filter toolbar + data table
+  - Metrics grid: Total Modules, Published, In Draft, Active Learners
+  - Thumbnail column with image preview or placeholder icon
+  - Difficulty badge and lesson count in module cell
+  - Status + Learner columns with proper formatting
+  - Pagination with Previous/Next buttons
+  - Status and category filter dropdowns
+  - Search by title/description
+
+- ✅ **New Admin Lessons Manager** (`/admin/learning/[id]/lessons`)
+  - Ordered list of lessons with drag indicators and step numbers
+  - Type icons (Video, Article, Exercise, Quiz, Resource)
+  - Preview toggle per lesson (free preview badge)
+  - Create/Edit/Delete lesson dialog with all fields
+  - Reorder lessons (up/down) with server sync
+  - Link to existing materials and quizzes
+  - Back to module link
+
+- ✅ **Updated Action Dropdowns**
+  - Added "Kelola Pelajaran" (Manage Lessons) link to existing `LearningActions` component
+  - All existing actions preserved (Edit, Materials, Quiz, Publish, Archive, Delete)
 
 ---
 
@@ -643,11 +776,13 @@ supabase db remote --list
 
 | Version | Date | Key Features |
 |---------|------|--------------|
+| v1.7.0 | Apr 13, 2026 | Learning module revamp: lessons, reviews, admin list, public detail page |
+| v1.5.0 | Apr 11, 2026 | Login/logout activity tracking |
 | v1.2.0 | Apr 10, 2026 (PM) | Admin logging, Complete RLS, Bug fixes, Social icons |
 | v1.1.0 | Apr 10, 2026 (AM) | Job detail modal v1.1.0 |
 | v1.0.0 | Apr 7-9, 2026 | Initial feature set |
 
 ---
 
-**Last Updated:** April 10, 2026  
+**Last Updated:** April 13, 2026
 **Maintained By:** Development Team

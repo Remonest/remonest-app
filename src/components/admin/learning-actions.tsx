@@ -29,6 +29,7 @@ import {
   Pencil,
   Layers,
   HelpCircle,
+  BookOpen,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -152,6 +153,12 @@ export function LearningActions({
             <Link href={`/admin/learning/${moduleId}/quiz`}>
               <HelpCircle className="mr-2 h-4 w-4" />
               <span>Kelola Kuis</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={`/admin/learning/${moduleId}/lessons`}>
+              <BookOpen className="mr-2 h-4 w-4" />
+              <span>Kelola Pelajaran</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />

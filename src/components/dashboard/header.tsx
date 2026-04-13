@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LogOut, LayoutDashboard, Briefcase, Settings, Shield, FileText } from "lucide-react"
+import { LogOut, LayoutDashboard, Briefcase, Settings, Shield, FileText, Award } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useTranslations } from "@/lib/translations"
 import { LanguageSwitcher } from "@/components/landing/language-switcher"
@@ -25,7 +25,7 @@ export function DashboardHeader({ role }: DashboardHeaderProps) {
       <Link
         href="/dashboard"
         className={`h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium transition-colors hover:text-foreground ${
-          isActive("/dashboard") && !isActive("/dashboard/jobs") && !isActive("/dashboard/applications") && !isActive("/dashboard/settings")
+          isActive("/dashboard") && !isActive("/dashboard/jobs") && !isActive("/dashboard/applications") && !isActive("/dashboard/certificates") && !isActive("/dashboard/settings")
             ? "bg-accent text-foreground"
             : "text-muted-foreground"
         }`}
@@ -51,22 +51,34 @@ export function DashboardHeader({ role }: DashboardHeaderProps) {
       <Link
         href="/dashboard/applications"
         className={`h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium transition-colors hover:text-foreground ${
-          isActive("/dashboard/applications")
-            ? "bg-accent text-foreground"
-            : "text-muted-foreground"
-        }`}
+            isActive("/dashboard/applications")
+              ? "bg-accent text-foreground"
+              : "text-muted-foreground"
+          }`}
       >
         <Briefcase className="size-4" />
         {t.dashboard.nav.applications}
       </Link>
 
       <Link
+        href="/dashboard/certificates"
+        className={`h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium transition-colors hover:text-foreground ${
+            isActive("/dashboard/certificates")
+              ? "bg-accent text-foreground"
+              : "text-muted-foreground"
+          }`}
+      >
+        <Award className="size-4" />
+        Certificates
+      </Link>
+
+      <Link
         href="/dashboard/settings"
         className={`h-9 px-3 inline-flex items-center gap-1.5 rounded-md text-sm font-medium transition-colors hover:text-foreground ${
-          isActive("/dashboard/settings")
-            ? "bg-accent text-foreground"
-            : "text-muted-foreground"
-        }`}
+            isActive("/dashboard/settings")
+              ? "bg-accent text-foreground"
+              : "text-muted-foreground"
+          }`}
       >
         <Settings className="size-4" />
         {t.dashboard.nav.settings}
