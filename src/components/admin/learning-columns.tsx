@@ -66,7 +66,7 @@ export const learningColumns: ColumnDef<LearningModuleRow>[] = [
     accessorKey: "title",
     header: "Modul",
     cell: ({ row }) => {
-      const module = row.original;
+      const mod = row.original;
       return (
         <div className="flex items-start gap-3">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -75,11 +75,11 @@ export const learningColumns: ColumnDef<LearningModuleRow>[] = [
           <div className="min-w-0 space-y-0.5">
             <div className="flex items-center gap-2">
               <p className="truncate font-medium leading-tight">
-                {module.title}
+                {mod.title}
               </p>
-              {module.status === "published" && (
+              {mod.status === "published" && (
                 <Link
-                  href={`/learning/${module.slug}`}
+                  href={`/learning/${mod.slug}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -94,9 +94,9 @@ export const learningColumns: ColumnDef<LearningModuleRow>[] = [
                 </Link>
               )}
             </div>
-            {module.description && (
+            {mod.description && (
               <p className="truncate text-xs text-muted-foreground max-w-[280px]">
-                {module.description}
+                {mod.description}
               </p>
             )}
           </div>
@@ -176,12 +176,12 @@ export const learningColumns: ColumnDef<LearningModuleRow>[] = [
     id: "actions",
     header: "",
     cell: ({ row }) => {
-      const module = row.original;
+      const mod = row.original;
       return (
         <LearningActions
-          moduleId={module.id}
-          moduleTitle={module.title}
-          currentStatus={module.status}
+          moduleId={mod.id}
+          moduleTitle={mod.title}
+          currentStatus={mod.status}
         />
       );
     },

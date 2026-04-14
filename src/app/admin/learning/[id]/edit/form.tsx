@@ -2,7 +2,7 @@
 
 import { useActionState, useEffect } from "react";
 import Link from "next/link";
-import { Loader2, Save } from "lucide-react";
+import { Loader2, Save, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import { updateLearningModule } from "@/lib/learning/actions";
 import type { LearningModuleRow } from "@/lib/learning/actions";
@@ -52,7 +52,7 @@ export function EditLearningModuleForm({
 }: EditLearningModuleFormProps) {
   const [state, formAction, pending] = useActionState(
     updateLearningModule,
-    initialState
+    initialState,
   );
 
   useEffect(() => {
@@ -144,6 +144,30 @@ export function EditLearningModuleForm({
             </p>
           </div>
 
+          {/* Cover Image */}
+          <div className="space-y-2">
+            <Label htmlFor="thumbnail_url">Cover Image URL</Label>
+            <Input
+              id="thumbnail_url"
+              name="thumbnail_url"
+              type="url"
+              defaultValue={module.thumbnail_url ?? ""}
+              placeholder="https://images.unsplash.com/photo-..."
+            />
+            <p className="text-xs text-muted-foreground">
+              Optional. URL for the module cover image (shown in catalog and hero section).
+            </p>
+            {module.thumbnail_url && (
+              <div className="mt-3 overflow-hidden rounded-lg border border-border">
+                <img
+                  src={module.thumbnail_url}
+                  alt="Current cover"
+                  className="h-32 w-full object-cover"
+                />
+              </div>
+            )}
+          </div>
+
           {/* Content */}
           <div className="space-y-2">
             <Label htmlFor="content">Konten (Markdown)</Label>
@@ -155,8 +179,8 @@ export function EditLearningModuleForm({
               className="min-h-[200px] resize-y font-mono text-sm"
             />
             <p className="text-xs text-muted-foreground">
-              Konten utama modul. Gunakan format Markdown untuk heading,
-              list, bold, dll.
+              Konten utama modul. Gunakan format Markdown untuk heading, list,
+              bold, dll.
             </p>
           </div>
 

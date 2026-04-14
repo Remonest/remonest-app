@@ -2,7 +2,7 @@
 
 Comprehensive documentation for the Remonest platform — a remote work hub for Indonesian professionals with learning modules, job board, CV/portfolio builder, and admin management.
 
-**Current Version:** v1.8.0 | [View Changelog](./CHANGELOG.md)
+**Current Version:** v1.9.4 | [View Changelog](./CHANGELOG.md)
 
 ---
 
@@ -35,6 +35,7 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
   - [Quiz Builder](./features/learning-module/quiz-builder.md) — Quiz creation with multiple-choice questions
   - [Materials & Resources](./features/learning-module/materials.md) — Articles, videos, tools, templates, PDFs
   - [Enrollment](./features/learning-module/enrollment.md) — 🆕 Module enrollment system: auto-enroll, progress tracking, completion
+  - [**Flow Builder**](./guides/learning-module-flow-builder.md) — 🆕 v1.9.0: Three-panel lesson editor with auto-save
 - **[Certificate System](./guides/certificate-download.md)** — 🆕 Certificate rendering, PNG download, print, zoom, public verification
 - **[Demo Learning Module](./guides/demo-learning-module.md)** — 🆕 End-to-end demo module: seed, test full flow, cleanup
 - **[Public Module Detail](./features/learning-module/overview.md#admin-routes)** — `/learning/[slug]` with Markdown rendering and materials
@@ -44,6 +45,12 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
 ### Guides & How-Tos
 - **[Design Guidelines](./guides/design-guidelines.md)** — Complete design system, colors, components, patterns
 - **[Learning Module Revamp v1.7.0](./guides/learning-module-revamp.md)** — 🆕 Complete guide: module/lesson architecture, admin flow, public detail page, database schema, how-tos
+- **[Learning Module Flow Builder v1.9.0](./guides/learning-module-flow-builder.md)** — 🆕 Three-panel lesson editor with auto-save, drag-and-drop, and WYSIWYG editing
+- **[Admin Learning List Audit](./guides/admin-learning-list-audit.md)** — 🆕 Button cleanup report after Flow Builder implementation
+- **[Admin Learning Breadcrumb Standardization v1.9.1](./guides/admin-learning-breadcrumb-standardization.md)** — 🆕 Unified breadcrumb navigation across all admin learning pages
+- **[Flow Builder Bug Fixes v1.9.2](./guides/flow-builder-bug-fixes.md)** — 🆕 All 9 critical bugs fixed and working implementation
+- **[Admin Learning Architecture v1.9.3](./guides/admin-learning-architecture.md)** — 🆕 Why pages are kept separate (Flow Builder vs Materials vs Quiz)
+- **[Admin File Manager v1.9.4](./guides/admin-file-manager.md)** — 🆕 File upload page with drag-and-drop, image preview, and URL management
 - **[Certificate System](./guides/certificate-download.md)** — 🆕 Certificate rendering, PNG download, print, zoom, public verification
 - **[Demo Learning Module](./guides/demo-learning-module.md)** — 🆕 Seed, test full flow, cleanup
 - **[Social Media Icons](./guides/social-media-icons.md)** — Custom SVG icons for footer (Twitter, LinkedIn, Instagram)

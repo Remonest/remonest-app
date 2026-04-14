@@ -22,6 +22,7 @@ import {
   ChevronLeft,
   ChevronRight,
   GraduationCap,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,7 +49,10 @@ import {
   deleteLearningModule,
   type LearningModuleRow,
 } from "@/lib/learning/actions";
-import type { ModuleCompletion, ModuleEnrollment } from "@/lib/learning/actions";
+import type {
+  ModuleCompletion,
+  ModuleEnrollment,
+} from "@/lib/learning/actions";
 import {
   DIFFICULTY_LABELS,
   DIFFICULTY_COLORS,
@@ -104,8 +108,12 @@ export default function AdminLearningList({ modules }: AdminLearningListProps) {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [completionsModuleId, setCompletionsModuleId] = useState<string | null>(null);
-  const [enrollmentsModuleId, setEnrollmentsModuleId] = useState<string | null>(null);
+  const [completionsModuleId, setCompletionsModuleId] = useState<string | null>(
+    null,
+  );
+  const [enrollmentsModuleId, setEnrollmentsModuleId] = useState<string | null>(
+    null,
+  );
   const [isPending, setIsPending] = useState(false);
 
   // Stats
@@ -113,14 +121,8 @@ export default function AdminLearningList({ modules }: AdminLearningListProps) {
     total: modules.length,
     published: modules.filter((m) => m.status === "published").length,
     draft: modules.filter((m) => m.status === "draft").length,
-    learners: modules.reduce(
-      (sum, m) => sum + (m.enrollment_count ?? 0),
-      0
-    ),
-    completed: modules.reduce(
-      (sum, m) => sum + (m.completionCount ?? 0),
-      0
-    ),
+    learners: modules.reduce((sum, m) => sum + (m.enrollment_count ?? 0), 0),
+    completed: modules.reduce((sum, m) => sum + (m.completionCount ?? 0), 0),
   };
 
   // Filter
@@ -128,8 +130,7 @@ export default function AdminLearningList({ modules }: AdminLearningListProps) {
     const matchSearch =
       m.title.toLowerCase().includes(search.toLowerCase()) ||
       (m.description?.toLowerCase().includes(search.toLowerCase()) ?? false);
-    const matchStatus =
-      statusFilter === "all" || m.status === statusFilter;
+    const matchStatus = statusFilter === "all" || m.status === statusFilter;
     const matchCategory =
       categoryFilter === "all" || m.category === categoryFilter;
     return matchSearch && matchStatus && matchCategory;
@@ -145,7 +146,7 @@ export default function AdminLearningList({ modules }: AdminLearningListProps) {
   const handleStatusChange = async (
     id: string,
     title: string,
-    status: "draft" | "published" | "archived"
+    status: "draft" | "published" | "archived",
   ) => {
     setIsPending(true);
     const result = await updateLearningModuleStatus(id, status);
@@ -254,7 +255,10 @@ export default function AdminLearningList({ modules }: AdminLearningListProps) {
                 { value: "all", label: "All Categories" },
                 ...categories.map((c) => ({
                   value: c,
-                  label: LEARNING_CATEGORY_LABELS[c as keyof typeof LEARNING_CATEGORY_LABELS],
+                  label:
+                    LEARNING_CATEGORY_LABELS[
+                      c as keyof typeof LEARNING_CATEGORY_LABELS
+                    ],
                 })),
               ]}
             />
@@ -323,12 +327,14 @@ export default function AdminLearningList({ modules }: AdminLearningListProps) {
                             <span
                               className={`inline-flex rounded px-1.5 py-0.5 text-[11px] font-medium ${
                                 DIFFICULTY_COLORS[
-                                  ((mod as any).difficulty_level ?? "beginner") as ModuleDifficulty
+                                  ((mod as any).difficulty_level ??
+                                    "beginner") as ModuleDifficulty
                                 ] ?? "bg-muted text-muted-foreground"
                               }`}
                             >
                               {DIFFICULTY_LABELS[
-                                ((mod as any).difficulty_level ?? "beginner") as ModuleDifficulty
+                                ((mod as any).difficulty_level ??
+                                  "beginner") as ModuleDifficulty
                               ] ?? "Beginner"}
                             </span>
                             <span>•</span>
@@ -377,7 +383,9 @@ export default function AdminLearningList({ modules }: AdminLearningListProps) {
                         </div>
                       ) : (
                         <div className="flex flex-col">
-                          <span className="text-sm text-muted-foreground">—</span>
+                          <span className="text-sm text-muted-foreground">
+                            —
+                          </span>
                           <span className="text-[11px] text-muted-foreground">
                             Not published
                           </span>
@@ -388,22 +396,22 @@ export default function AdminLearningList({ modules }: AdminLearningListProps) {
                     {/* Actions */}
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-1">
-                        <Link
+                        {/*<Link
                           href={`/admin/learning/${mod.id}/edit`}
-                          title="Edit"
+                          title="Edit Module Metadata"
                         >
                           <Button variant="ghost" size="icon" className="h-8 w-8">
                             <Pencil className="h-4 w-4" />
                           </Button>
                         </Link>
                         <Link
-                          href={`/admin/learning/${mod.id}/lessons`}
-                          title="Edit Lessons"
+                          href={`/admin/learning/${mod.id}/builder`}
+                          title="Open Flow Builder (Lessons & Content)"
                         >
                           <Button variant="ghost" size="icon" className="h-8 w-8">
-                            <Layers className="h-4 w-4" />
+                            <BookOpen className="h-4 w-4" />
                           </Button>
-                        </Link>
+                        </Link>*/}
                         <RowActions
                           module={mod}
                           onStatusChange={handleStatusChange}
@@ -488,7 +496,8 @@ export default function AdminLearningList({ modules }: AdminLearningListProps) {
               return (
                 <div className="space-y-3">
                   <div className="text-sm text-muted-foreground mb-2">
-                    {mod.completions.length} user{mod.completions.length !== 1 ? "s" : ""} completed
+                    {mod.completions.length} user
+                    {mod.completions.length !== 1 ? "s" : ""} completed
                   </div>
                   <div className="rounded-lg border divide-y">
                     {mod.completions.map((c) => (
@@ -519,11 +528,14 @@ export default function AdminLearningList({ modules }: AdminLearningListProps) {
                         </div>
                         <div className="text-right flex-shrink-0">
                           <p className="text-xs text-muted-foreground">
-                            {new Date(c.completedAt).toLocaleDateString("id-ID", {
-                              day: "numeric",
-                              month: "short",
-                              year: "numeric",
-                            })}
+                            {new Date(c.completedAt).toLocaleDateString(
+                              "id-ID",
+                              {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              },
+                            )}
                           </p>
                         </div>
                       </div>
@@ -623,7 +635,8 @@ export default function AdminLearningList({ modules }: AdminLearningListProps) {
               return (
                 <div className="space-y-3">
                   <div className="text-sm text-muted-foreground mb-2">
-                    {mod.enrollments.length} user{mod.enrollments.length !== 1 ? "s" : ""} enrolled
+                    {mod.enrollments.length} user
+                    {mod.enrollments.length !== 1 ? "s" : ""} enrolled
                     {" · "}
                     {mod.completions.length} completed
                   </div>
@@ -669,11 +682,14 @@ export default function AdminLearningList({ modules }: AdminLearningListProps) {
                               </span>
                             </div>
                             <p className="text-[11px] text-muted-foreground mt-0.5">
-                              {new Date(e.startedAt).toLocaleDateString("id-ID", {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              })}
+                              {new Date(e.startedAt).toLocaleDateString(
+                                "id-ID",
+                                {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                },
+                              )}
                             </p>
                           </div>
                         </div>
@@ -774,7 +790,7 @@ function RowActions({
   onStatusChange: (
     id: string,
     title: string,
-    status: "draft" | "published" | "archived"
+    status: "draft" | "published" | "archived",
   ) => void;
   onDelete: () => void;
   disabled: boolean;
@@ -782,7 +798,12 @@ function RowActions({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="h-8 w-8" disabled={disabled}>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          disabled={disabled}
+        >
           <MoreVertical className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
@@ -790,7 +811,13 @@ function RowActions({
         <DropdownMenuItem asChild>
           <Link href={`/admin/learning/${module.id}/edit`}>
             <Pencil className="mr-2 h-4 w-4" />
-            Edit Builder
+            Edit Metadata
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href={`/admin/learning/${module.id}/builder`}>
+            <BookOpen className="mr-2 h-4 w-4" />
+            Flow Builder
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
@@ -805,18 +832,10 @@ function RowActions({
             Kelola Kuis
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href={`/admin/learning/${module.id}/lessons`}>
-            <FileText className="mr-2 h-4 w-4" />
-            Kelola Pelajaran
-          </Link>
-        </DropdownMenuItem>
         <DropdownMenuSeparator />
         {module.status !== "published" && (
           <DropdownMenuItem
-            onClick={() =>
-              onStatusChange(module.id, module.title, "published")
-            }
+            onClick={() => onStatusChange(module.id, module.title, "published")}
           >
             <Eye className="mr-2 h-4 w-4 text-emerald-600" />
             Publish
@@ -832,9 +851,7 @@ function RowActions({
         )}
         {module.status !== "archived" && (
           <DropdownMenuItem
-            onClick={() =>
-              onStatusChange(module.id, module.title, "archived")
-            }
+            onClick={() => onStatusChange(module.id, module.title, "archived")}
           >
             <Archive className="mr-2 h-4 w-4 text-amber-600" />
             Archive

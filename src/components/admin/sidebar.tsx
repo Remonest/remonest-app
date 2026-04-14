@@ -13,12 +13,14 @@ import {
   LayoutDashboard,
   Menu,
   Activity,
+  Upload,
 } from "lucide-react";
 import { SignOutButton } from "@/components/admin/sign-out-button";
 
 const navItems = [
   { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
   { href: "/admin/learning", label: "Learning", icon: BookOpen },
+  { href: "/admin/upload", label: "File Manager", icon: Upload },
   { href: "/admin/activity-log", label: "Activity Log", icon: Activity },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];

@@ -125,25 +125,8 @@ export function MaterialListClient({
   };
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/admin/learning">
-            <Button variant="ghost" size="sm">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <div>
-            <h1 className="text-2xl font-bold">{module.title}</h1>
-            <p className="text-muted-foreground">
-              Kelola materi dan resource pembelajaran
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats */}
+    <div className="space-y-6">
+      {/* Stats Cards */}
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
         <Card>
           <CardHeader>

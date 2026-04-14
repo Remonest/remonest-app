@@ -4,6 +4,7 @@ import { getLearningModuleById } from "@/lib/learning/actions";
 import { getLessonsByModuleId } from "@/features/learning-module/actions/lessons";
 import AdminLessonsPage from "./lessons-client";
 import { getSupabaseServiceClient } from "@/lib/supabase/server";
+import { LearningBreadcrumb } from "@/components/admin/learning-breadcrumb";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -35,13 +36,22 @@ export default async function AdminLessonsServerPage({ params }: PageProps) {
   ]);
 
   return (
-    <AdminLessonsPage
-      moduleId={id}
-      moduleTitle={mod.title}
-      lessons={lessons}
-      admin={admin}
-      materials={materials ?? []}
-      quizzes={quizzes ?? []}
-    />
+    <div className="space-y-6">
+      {/* Breadcrumb */}
+      <LearningBreadcrumb
+        moduleId={id}
+        moduleTitle={mod.title}
+        currentPage="Lessons (Legacy)"
+      />
+      
+      <AdminLessonsPage
+        moduleId={id}
+        moduleTitle={mod.title}
+        lessons={lessons}
+        admin={admin}
+        materials={materials ?? []}
+        quizzes={quizzes ?? []}
+      />
+    </div>
   );
 }

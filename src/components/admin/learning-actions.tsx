@@ -140,7 +140,13 @@ export function LearningActions({
           <DropdownMenuItem asChild>
             <Link href={`/admin/learning/${moduleId}/edit`}>
               <Pencil className="mr-2 h-4 w-4" />
-              <span>Edit</span>
+              <span>Edit Metadata</span>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={`/admin/learning/${moduleId}/builder`}>
+              <BookOpen className="mr-2 h-4 w-4" />
+              <span>Flow Builder</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
@@ -153,12 +159,6 @@ export function LearningActions({
             <Link href={`/admin/learning/${moduleId}/quiz`}>
               <HelpCircle className="mr-2 h-4 w-4" />
               <span>Kelola Kuis</span>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem asChild>
-            <Link href={`/admin/learning/${moduleId}/lessons`}>
-              <BookOpen className="mr-2 h-4 w-4" />
-              <span>Kelola Pelajaran</span>
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />

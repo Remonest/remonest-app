@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { MaterialListClient } from "./material-list-client";
+import { LearningBreadcrumb } from "@/components/admin/learning-breadcrumb";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -36,10 +37,19 @@ export default async function MaterialsPage({ params }: PageProps) {
     .order("created_at", { ascending: true });
 
   return (
-    <MaterialListClient
-      module={module}
-      materials={materials || []}
-      resources={resources || []}
-    />
+    <div className="space-y-6">
+      {/* Breadcrumb */}
+      <LearningBreadcrumb
+        moduleId={id}
+        moduleTitle={module.title}
+        currentPage="Materials & Resources"
+      />
+      
+      <MaterialListClient
+        module={module}
+        materials={materials || []}
+        resources={resources || []}
+      />
+    </div>
   );
 }

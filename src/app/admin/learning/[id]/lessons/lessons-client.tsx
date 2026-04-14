@@ -224,30 +224,21 @@ export default function AdminLessonsPage({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-2">
-        <Link
-          href={`/admin/learning/${moduleId}/edit`}
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Back to Module
-        </Link>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              Lessons — {moduleTitle}
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Order and manage the learning steps for this module.
-            </p>
-          </div>
-          <Button onClick={openCreate} className="gap-2">
-            <Plus className="h-4 w-4" />
-            Add Lesson
-          </Button>
+    <div>
+      {/* Header without breadcrumb */}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-xl font-semibold tracking-tight">
+            Lessons Management
+          </h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            Order and manage the learning steps for this module.
+          </p>
         </div>
+        <Button onClick={openCreate} className="gap-2">
+          <Plus className="h-4 w-4" />
+          Add Lesson
+        </Button>
       </div>
 
       {/* Lessons List */}
