@@ -90,9 +90,7 @@ export function PropertiesPanel({
   };
 
   const handleDelete = () => {
-    if (confirm(`Are you sure you want to delete "${lesson.title}"?`)) {
-      onDelete?.(lesson.id);
-    }
+    onDelete?.(lesson.id);
   };
 
   return (

@@ -22,6 +22,7 @@ const lessonSchema = z.object({
   description: z.string().optional(),
   orderIndex: z.number().int().min(0).default(0),
   lessonType: z.enum(["video", "article", "exercise", "quiz", "resource"]),
+  sectionId: z.string().uuid().nullable().optional(),
   materialId: z.string().uuid().nullable().optional(),
   resourceId: z.string().uuid().nullable().optional(),
   quizConfigId: z.string().uuid().nullable().optional(),
@@ -37,6 +38,7 @@ function mapRowToLesson(row: ModuleLessonRow): ModuleLesson {
   return {
     id: row.id,
     moduleId: row.module_id,
+    sectionId: row.section_id,
     title: row.title,
     description: row.description,
     orderIndex: row.order_index,
@@ -184,6 +186,7 @@ export async function createLesson(
         title: validated.title,
         description: validated.description || null,
         order_index: orderIndex,
+        section_id: validated.sectionId || null,
         lesson_type: validated.lessonType,
         material_id: validated.materialId || null,
         resource_id: validated.resourceId || null,

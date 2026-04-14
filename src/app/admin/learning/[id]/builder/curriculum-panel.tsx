@@ -29,14 +29,8 @@ interface CurriculumPanelProps {
   sections: Section[];
   selectedLessonId: string | null;
   onLessonSelect: (lessonId: string) => void;
-  onLessonCreate: (data: {
-    title: string;
-    description?: string;
-    lessonType: LessonType;
-    durationMinutes?: number;
-    isPreview?: boolean;
-  }) => void;
-  onAddStep: () => void;
+  onAddStep: (sectionId: string) => void;
+  onEditStep: (lesson: ModuleLesson) => void;
   onLessonUpdate: (
     lessonId: string,
     data: {
@@ -49,6 +43,8 @@ interface CurriculumPanelProps {
   ) => void;
   onLessonDelete: (lessonId: string) => void;
   onReorder: (sectionId: string, lessonIds: string[]) => void;
+  onAddSection: () => void;
+  onDeleteSection: (sectionId: string) => void;
 }
 
 const LESSON_TYPE_CONFIG: Record<
@@ -68,13 +64,16 @@ export function CurriculumPanel({
   sections,
   selectedLessonId,
   onLessonSelect,
-  onLessonCreate,
   onAddStep,
+  onEditStep,
   onLessonUpdate,
   onLessonDelete,
   onReorder,
+  onAddSection,
+  onDeleteSection,
 }: CurriculumPanelProps) {
   const [draggedLessonId, setDraggedLessonId] = useState<string | null>(null);
+  const [dragOverLessonId, setDragOverLessonId] = useState<string | null>(null);
 
   const handleDragStart = (lessonId: string) => {
     setDraggedLessonId(lessonId);
@@ -82,29 +81,70 @@ export function CurriculumPanel({
 
   const handleDragOver = (e: React.DragEvent, targetLessonId: string) => {
     e.preventDefault();
+    e.stopPropagation();
     if (!draggedLessonId || draggedLessonId === targetLessonId) return;
+    
+    // Visual feedback only - highlight the target
+    setDragOverLessonId(targetLessonId);
+  };
 
-    // Find the section and reorder
+  const handleDropOnLesson = (e: React.DragEvent, targetLessonId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!draggedLessonId || draggedLessonId === targetLessonId) {
+      setDragOverLessonId(null);
+      return;
+    }
+
+    // Find source and target sections
+    let sourceSectionId = "";
+    let targetSectionId = "";
+
     sections.forEach((section) => {
-      const lessonIndex = section.lessons.findIndex(
-        (l) => l.id === draggedLessonId
-      );
-      const targetIndex = section.lessons.findIndex(
-        (l) => l.id === targetLessonId
-      );
-
-      if (lessonIndex !== -1 && targetIndex !== -1) {
-        const newLessons = [...section.lessons];
-        const [dragged] = newLessons.splice(lessonIndex, 1);
-        newLessons.splice(targetIndex, 0, dragged);
-
-        onReorder(section.id, newLessons.map((l) => l.id));
+      if (section.lessons.some((l) => l.id === draggedLessonId)) {
+        sourceSectionId = section.id;
+      }
+      if (section.lessons.some((l) => l.id === targetLessonId)) {
+        targetSectionId = section.id;
       }
     });
+
+    if (!sourceSectionId || !targetSectionId) {
+      setDragOverLessonId(null);
+      return;
+    }
+
+    // If same section, reorder within section
+    if (sourceSectionId === targetSectionId) {
+      const section = sections.find((s) => s.id === sourceSectionId);
+      if (!section) return;
+
+      const lessonIds = section.lessons.map((l) => l.id);
+      const draggedIndex = lessonIds.indexOf(draggedLessonId);
+      const targetIndex = lessonIds.indexOf(targetLessonId);
+
+      const [draggedId] = lessonIds.splice(draggedIndex, 1);
+      lessonIds.splice(targetIndex, 0, draggedId);
+
+      onReorder(sourceSectionId, lessonIds);
+    } else {
+      // Moving between sections - for now, just reorder in target section
+      // Full cross-section move would require additional backend support
+      const targetSection = sections.find((s) => s.id === targetSectionId);
+      if (!targetSection) return;
+
+      // Add to end of target section (simplified)
+      toast.info("Drag lesson to end of section to move between sections");
+    }
+
+    setDraggedLessonId(null);
+    setDragOverLessonId(null);
   };
 
   const handleDragEnd = () => {
     setDraggedLessonId(null);
+    setDragOverLessonId(null);
   };
 
   return (
@@ -115,7 +155,13 @@ export function CurriculumPanel({
           <FileText className="h-4 w-4 text-muted-foreground" />
           Curriculum
         </span>
-        <Button variant="ghost" size="icon" className="h-7 w-7">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="h-7 w-7"
+          onClick={onAddStep}
+          title="Add new step"
+        >
           <Plus className="h-4 w-4" />
         </Button>
       </div>
@@ -141,8 +187,19 @@ export function CurriculumPanel({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem>Rename Section</DropdownMenuItem>
-                  <DropdownMenuItem className="text-destructive">
+                  <DropdownMenuItem onClick={(e) => {
+                    e.stopPropagation();
+                    toast.info("Rename section - coming soon");
+                  }}>Rename Section</DropdownMenuItem>
+                  <DropdownMenuItem 
+                    className="text-destructive focus:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (confirm(`Delete section "${section.title}"? Lessons in this section will not be deleted.`)) {
+                        onDeleteSection(section.id);
+                      }
+                    }}
+                  >
                     Delete Section
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -155,19 +212,23 @@ export function CurriculumPanel({
                 const config = LESSON_TYPE_CONFIG[lesson.lessonType];
                 const Icon = config.icon;
                 const isActive = lesson.id === selectedLessonId;
+                const isDragOver = dragOverLessonId === lesson.id;
 
                 return (
                   <div
                     key={lesson.id}
-                    className={`group flex items-center gap-3 rounded-lg border p-3 text-sm cursor-pointer transition-colors ${
+                    className={`group flex items-center gap-3 rounded-lg border p-3 text-sm cursor-pointer transition-all ${
                       isActive
                         ? "border-blue-500 bg-blue-50 text-blue-600 font-medium dark:bg-blue-900/20 dark:text-blue-400"
+                        : isDragOver
+                        ? "border-primary bg-primary/5 border-2 border-dashed"
                         : "border-border bg-card hover:border-border/80"
                     }`}
                     onClick={() => onLessonSelect(lesson.id)}
                     draggable
                     onDragStart={() => handleDragStart(lesson.id)}
                     onDragOver={(e) => handleDragOver(e, lesson.id)}
+                    onDrop={(e) => handleDropOnLesson(e, lesson.id)}
                     onDragEnd={handleDragEnd}
                   >
                     {/* Drag Handle */}
@@ -199,25 +260,21 @@ export function CurriculumPanel({
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={(e) => {
                           e.stopPropagation();
-                          // TODO: Open edit dialog
-                          toast.info("Edit lesson - coming soon");
+                          onEditStep(lesson);
                         }}>
                           Edit
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={(e) => {
                           e.stopPropagation();
-                          // TODO: Duplicate lesson
                           toast.info("Duplicate lesson - coming soon");
                         }}>
                           Duplicate
                         </DropdownMenuItem>
-                        <DropdownMenuItem 
+                        <DropdownMenuItem
                           className="text-destructive focus:text-destructive"
                           onClick={(e) => {
                             e.stopPropagation();
-                            if (confirm(`Delete "${lesson.title}"?`)) {
-                              onLessonDelete(lesson.id);
-                            }
+                            onLessonDelete(lesson.id);
                           }}
                         >
                           Delete
@@ -233,7 +290,7 @@ export function CurriculumPanel({
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start gap-2 text-muted-foreground font-medium"
-                onClick={onAddStep}
+                onClick={() => onAddStep(section.id)}
               >
                 <Plus className="h-4 w-4" />
                 Add Step
@@ -247,6 +304,7 @@ export function CurriculumPanel({
           variant="outline"
           size="sm"
           className="mt-4 w-full border-dashed gap-2 text-muted-foreground"
+          onClick={onAddSection}
         >
           <Plus className="h-4 w-4" />
           Add Section

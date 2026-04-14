@@ -7,6 +7,7 @@ export type LessonType = "video" | "article" | "exercise" | "quiz" | "resource";
 export interface ModuleLesson {
   id: string;
   moduleId: string;
+  sectionId: string | null;
   title: string;
   description: string | null;
   orderIndex: number;
@@ -23,6 +24,7 @@ export interface ModuleLesson {
 export interface ModuleLessonRow {
   id: string;
   module_id: string;
+  section_id: string | null;
   title: string;
   description: string | null;
   order_index: number;
@@ -42,6 +44,7 @@ export interface ModuleLessonInput {
   description?: string;
   orderIndex?: number;
   lessonType: LessonType;
+  sectionId?: string | null;
   materialId?: string | null;
   resourceId?: string | null;
   quizConfigId?: string | null;

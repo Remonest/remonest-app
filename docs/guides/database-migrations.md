@@ -19,10 +19,10 @@ Complete guide to all database migrations in the Remonest App.
 
 ## 📊 Migration Overview
 
-**Total Migrations:** 17
+**Total Migrations:** 22
 **Database:** PostgreSQL (Supabase)
 **Migration Tool:** Supabase CLI
-**Latest Migration:** 017 (add_login_logout_activity_tracking)
+**Latest Migration:** 022 (add_module_sections)
 **Naming Convention:** `{number}_{action}_{subject}.sql`
 
 ---
@@ -311,9 +311,17 @@ Before creating a new migration file, verify:
 | 009 | `add_client_role` | Apr 8, 2026 | Add client role for employers | ✅ Applied |
 | 010 | `make_is_verified_by_admin_nullable` | Apr 8, 2026 | Make verification field nullable | ✅ Applied |
 | 011 | `complete_rls_policies` | Apr 10, 2026 | Complete RLS + admin audit trail | ✅ Applied |
-| 012 | `fix_rls_recursion` | Apr 10, 2026 | Fix final RLS recursion with SECURITY DEFINER | ✅ Applied |
+| 012 | `add_settings_and_profile_triggers` | Apr 10, 2026 | Fix final RLS recursion with SECURITY DEFINER | ✅ Applied |
 | 013 | `add_quiz_system` | Apr 11, 2026 | Quiz/assessment system for learning modules | ✅ Applied |
-| 014 | `add_learning_materials_and_resources` | Apr 11, 2026 | Learning materials & resources tables | ⏳ Pending |
+| 014 | `add_learning_materials_and_resources` | Apr 11, 2026 | Learning materials & resources tables | ✅ Applied |
+| 015 | `add_learning_files_storage` | Apr 11, 2026 | File storage bucket for learning files | ✅ Applied |
+| 016 | `add_learning_activity_triggers` | Apr 11, 2026 | Auto-track learning activity | ✅ Applied |
+| 017 | `add_login_logout_activity_tracking` | Apr 11, 2026 | Track user login/logout events | ✅ Applied |
+| 018 | `learning_revamp` | Apr 13, 2026 | Module lessons, reviews, enrollment improvements | ✅ Applied |
+| 019 | `portfolio_items` | Apr 13, 2026 | Portfolio items table | ✅ Applied |
+| 020 | `portfolio_public_read` | Apr 13, 2026 | Public read access for portfolios | ✅ Applied |
+| 021 | `portfolio_user_profiles_read` | Apr 13, 2026 | User profile access for portfolios | ✅ Applied |
+| 022 | `add_module_sections` | Apr 14, 2026 | Group lessons into sections for Flow Builder | ✅ Applied |
 
 ---
 

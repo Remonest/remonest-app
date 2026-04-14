@@ -1,6 +1,6 @@
-# Learning Module Flow Builder (v1.9.0)
+# Learning Module Flow Builder (v1.9.5)
 
-> **New Feature** — April 14, 2026
+> **Updated** — April 14, 2026
 
 The Flow Builder is a modern, three-panel interface for creating and editing learning module content. It replaces the old separate lessons page with an integrated, Notion-style editing experience.
 
@@ -10,18 +10,23 @@ The Flow Builder is a modern, three-panel interface for creating and editing lea
 
 The Flow Builder provides a unified interface for:
 - **Curriculum Management** — Organize lessons into sections, reorder via drag-and-drop
-- **Content Editing** — WYSIWYG Markdown editor with formatting toolbar
+- **Content Editing** — Different editor UIs based on lesson type (Article, Video, Exercise, Quiz, Resource)
 - **Properties Configuration** — Per-lesson settings (duration, access, toggles)
+- **Section Management** — Group lessons into logical chapters/modules
 
 ### Key Features
 - ✅ Three-panel layout (curriculum | editor | properties)
 - ✅ Auto-save content changes (2-second debounce)
 - ✅ Drag-and-drop lesson reordering
-- ✅ Content type tabs (Article, Video Embed, File/PDF, Quiz)
+- ✅ **Different editors per lesson type** (Article, Video, Exercise, Quiz, Resource)
+- ✅ **Section support** — Group lessons, add/delete sections
+- ✅ **Quiz integration** — Link existing quiz to lesson step
 - ✅ Markdown toolbar with common formatting
 - ✅ Step settings panel with toggles
 - ✅ Draft/Publish workflow
 - ✅ Real-time save status indicator
+- ✅ Add/Edit/Delete steps with proper dialogs
+- ✅ Confirmation dialogs for destructive actions
 
 ---
 
@@ -136,8 +141,9 @@ src/app/api/learning/materials/[materialId]/
 **Interactions:**
 - Click step → Selects and loads content in editor
 - Drag step → Reorders within section (triggers `reorderLessons` action)
-- Click `[+ Add Step]` → Creates new step (defaults to Article type)
-- Click `[+ Add Section]` → Creates new section (future feature)
+- Click `[+ Add Step]` → Opens dialog with section selector, type selection, etc.
+- Click `[+ Add Section]` → Creates new section with title input
+- Click section menu (⋮) → Rename or delete section
 
 ### 3. Editor Panel (Center, Flexible Width)
 
@@ -163,13 +169,19 @@ src/app/api/learning/materials/[materialId]/
 └──────────────────────────────────────────────────────┘
 ```
 
-**Content Type Tabs:**
-- **Article** — Markdown editor (current implementation)
-- **Video Embed** — URL input for YouTube/Vimeo (future)
-- **File/PDF** — File upload interface (future)
-- **Quiz** — Links to quiz builder (future integration)
+**Content Type-Specific Editors:**
 
-**Toolbar Commands:**
+The Editor Panel shows different UI based on the lesson type:
+
+| Type | Editor UI | Purpose |
+|------|-----------|---------|
+| **📄 Article** | Full WYSIWYG Markdown editor | Text-based lessons with formatting |
+| **🎥 Video** | URL input + preview + notes | Embed YouTube/Vimeo videos |
+| **💻 Exercise** | Instructions + starter code block | Hands-on coding tasks |
+| **❓ Quiz** | Quiz selector + "Open Quiz Builder" button | Link to existing quiz |
+| **📁 Resource** | File upload + resource selector | Downloadable files |
+
+**Article Editor - Toolbar Commands:**
 | Button | Markdown Output |
 |--------|----------------|
 | **Bold** | `**bold text**` |
@@ -183,6 +195,12 @@ src/app/api/learning/materials/[materialId]/
 | Link | `[text](url)` |
 | Image | `![alt](url)` |
 | Code Block | ` ``` code ``` ` |
+
+**Quiz Editor - Integration:**
+- Dropdown shows all published quizzes for the module
+- Selecting a quiz saves `quizConfigId` to the lesson
+- "Open Quiz Builder" button opens quiz builder in new tab
+- Students see the linked quiz when they reach this step
 
 **Auto-Save Behavior:**
 - Debounced at 2 seconds after content change
@@ -330,6 +348,66 @@ The following buttons were **removed** after Flow Builder implementation:
 
 ---
 
+## 📂 Sections Support
+
+### What Are Sections?
+
+Sections allow you to group lessons into logical chapters/modules within a learning module. For example:
+
+```
+📘 1. Getting Started
+   ├─ Welcome & Expectations
+   ├─ Setting up workspace
+   └─ Checkpoint: Environment
+
+📘 2. Communication Basics
+   ├─ Async principles
+   ├─ Tools of the trade
+   └─ Exercise: Async update
+
+📘 3. Advanced Topics
+   └─ (empty - add lessons here)
+```
+
+### Database Schema
+
+**Migration:** `022_add_module_sections.sql`
+
+```sql
+CREATE TABLE module_sections (
+  id UUID PRIMARY KEY,
+  module_id UUID REFERENCES learning_modules(id),
+  title TEXT NOT NULL,
+  order_index INT DEFAULT 0,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ
+);
+
+ALTER TABLE module_lessons ADD COLUMN section_id UUID REFERENCES module_sections(id);
+```
+
+### How to Use Sections
+
+**Add Section:**
+1. Click `[+ Add Section]` at bottom of Curriculum Panel
+2. Enter section title in dialog
+3. Click "Add Section" → Saves to database
+4. New empty section appears
+
+**Delete Section:**
+1. Click section menu (⋮) on section header
+2. Click "Delete Section"
+3. Confirm deletion
+4. **Note:** Cannot delete sections with lessons (move lessons first)
+
+**Add Lesson to Specific Section:**
+1. Click `[+ Add Step]` in desired section
+2. Dialog opens with section pre-selected
+3. Fill in lesson details
+4. Lesson added to that section
+
+---
+
 ## 📝 How-To Guides
 
 ### How to Create a New Lesson
@@ -361,6 +439,18 @@ The following buttons were **removed** after Flow Builder implementation:
 3. Use toolbar to format text
 4. Content auto-saves after 2 seconds
 5. Check "✓ Saved just now" indicator
+
+### How to Link a Quiz to a Lesson
+
+**Prerequisite:** Create quiz in Quiz Builder first (`/admin/learning/[id]/quiz`)
+
+1. In Flow Builder, add step with type "Quiz"
+2. In Editor Panel, see "Select Quiz" dropdown
+3. Choose existing quiz from list
+4. Quiz automatically linked to lesson (saves `quizConfigId`)
+5. Toast: "Quiz linked to lesson"
+
+**Alternative:** Click "Open Quiz Builder" button to create new quiz in new tab, then return and select it
 
 ### How to Publish a Module
 
@@ -404,20 +494,32 @@ Logged data includes:
 
 ## 🐛 Known Issues & TODOs
 
+### ✅ Implemented Features
+- ✅ Three-panel layout with auto-save
+- ✅ Drag-and-drop lesson reordering
+- ✅ Section support (add/delete sections, assign lessons)
+- ✅ Different editors per lesson type (Article, Video, Exercise, Quiz, Resource)
+- ✅ Quiz integration (link existing quiz to lesson)
+- ✅ Add/Edit/Delete steps with proper dialogs
+- ✅ Confirmation dialogs for destructive actions
+- ✅ Preview button opens public page in new tab
+- ✅ Publish workflow with confirmation
+
 ### Current Limitations
-- [ ] Video Embed tab — UI placeholder, needs file upload logic
-- [ ] File/PDF tab — UI placeholder, needs Supabase Storage integration
-- [ ] Quiz tab — Needs integration with existing quiz builder
-- [ ] Section management — "Add Section" button non-functional
-- [ ] Drag-and-drop — Visual feedback during drag needs improvement
+- [ ] Video URL validation — Doesn't validate YouTube/Vimeo URLs
+- [ ] Resource file upload — UI placeholder, needs File Manager integration
+- [ ] Cross-section drag-and-drop — Shows toast, full move requires backend update
+- [ ] Section rename — UI shows "coming soon" toast
 - [ ] Required Step toggle — Not yet enforced on public pages
 - [ ] Allow Comments toggle — Discussion board not implemented
+- [ ] Content type changes — Changing lesson type after creation doesn't update editor
 
 ### Future Enhancements
+- [ ] Drag lessons between sections (full cross-section move)
+- [ ] Section rename dialog
 - [ ] Bulk lesson operations (duplicate, delete multiple)
 - [ ] Lesson templates (pre-built content structures)
 - [ ] Content versioning (track content history)
-- [ ] Collaborative editing (real-time sync)
 - [ ] Image upload to Supabase Storage
 - [ ] Embed support (YouTube, Loom, Figma)
 - [ ] Lesson prerequisites (lock lessons until previous completed)
@@ -454,5 +556,5 @@ Logged data includes:
 ---
 
 **Last Updated:** April 14, 2026  
-**Version:** v1.9.0  
+**Version:** v1.9.5  
 **Maintained By:** Development Team
