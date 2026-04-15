@@ -11,6 +11,7 @@ interface Experience {
   id: string;
   title: string;
   company: string;
+  years: string;
   description: string;
 }
 
@@ -41,6 +42,7 @@ export default function CVBuilderPage() {
         id: "1",
         title: "",
         company: "",
+        years: "",
         description: "",
       },
     ],
@@ -133,6 +135,14 @@ export default function CVBuilderPage() {
             const expTitle = `${exp.title || "Position"}${exp.company ? ` at ${exp.company}` : ""}`;
             doc.text(expTitle, 20, yPosition);
             yPosition += 6;
+
+            // Add years if available
+            if (exp.years) {
+              doc.setFontSize(10);
+              doc.setFont("helvetica", "normal");
+              doc.text(` · ${exp.years}`, 20, yPosition, { align: "right" });
+              yPosition += 6;
+            }
 
             doc.setFontSize(10);
             doc.setFont("helvetica", "normal");
@@ -390,6 +400,16 @@ export default function CVBuilderPage() {
                           className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         />
                       </div>
+                      <div className="flex flex-col gap-2">
+                        <label className="text-sm font-medium">Years</label>
+                        <input
+                          type="text"
+                          value={exp.years}
+                          onChange={(e) => handleExperienceChange(exp.id, "years", e.target.value)}
+                          placeholder="e.g., 2020 - 2023"
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        />
+                      </div>
                     </div>
                     <div className="flex flex-col gap-2 mt-4">
                       <label className="text-sm font-medium">Description</label>
@@ -488,6 +508,8 @@ export default function CVBuilderPage() {
                                 {exp.title && <span>{exp.title}</span>}
                                 {exp.title && exp.company && <span> · </span>}
                                 {exp.company && <span className="font-normal text-muted-foreground">{exp.company}</span>}
+                                {exp.years && <span> · </span>}
+                                {exp.years && <span className="font-normal text-muted-foreground">{exp.years}</span>}
                               </div>
                               {exp.description && (
                                 <p className="text-muted-foreground mt-1">
