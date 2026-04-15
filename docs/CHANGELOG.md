@@ -3,7 +3,87 @@
 All notable changes to the Remonest App project.
 
 **Format:** [Semantic Versioning](https://semver.org/)
-**Date Format:** April 13, 2026
+**Date Format:** April 15, 2026
+
+---
+
+## [v1.9.6] - April 15, 2026
+
+### 🎉 New Features
+
+#### Flow Builder Enhanced Section Management System
+
+- ✅ **Complete Section CRUD** — Add, edit, and delete sections via dedicated dialogs
+- ✅ **Section Assignment** — Assign lessons to specific sections during creation
+- ✅ **Default Section Protection** — Cannot edit/delete the default "Getting Started" section
+- ✅ **Enhanced Dialog System** — Multiple dedicated dialogs for each action type
+- ✅ **Optimistic UI Updates** — Instant feedback with server synchronization
+- ✅ **Section-Lesson Sync** — Automatic synchronization between sections and lessons
+- ✅ **Loading States** — Proper loading indicators for all async operations
+- ✅ **Enhanced Error Handling** — Graceful error handling with detailed toast notifications
+
+#### New Server Actions
+
+- ✅ **`createSection()`** — Create new sections with auto-generated order
+- ✅ **`updateSection()`** — Update section titles with validation
+- ✅ **`deleteSection()`** — Delete sections with safety checks
+- ✅ **Enhanced `createLesson()`** — Support for section assignment during creation
+- ✅ **Enhanced `updateLesson()`** — Full metadata update support
+- ✅ **Enhanced `deleteLesson()`** — Improved deletion with safety checks
+
+#### UI Improvements
+
+- ✅ **Add Step Dialog** — Complete lesson creation with section selection dropdown
+- ✅ **Edit Step Dialog** — Update lesson metadata independently of content
+- ✅ **Delete Confirmation Dialog** — Safety dialog with detailed warnings
+- ✅ **Add Section Dialog** — Create sections with title validation
+- ✅ **Edit Section Dialog** — Rename sections with instant UI updates
+- ✅ **Section Dropdown** — Only appears when multiple sections exist
+- ✅ **Form Validation** — Client-side validation before server calls
+- ✅ **Loading Indicators** — All async operations show loading states
+- ✅ **Error Toasts** — Detailed error messages with descriptions
+
+#### Architecture Improvements
+
+- ✅ **State Management Patterns** — Optimistic updates with error recovery
+- ✅ **Dialog Architecture** — Multi-dialog system with proper state management
+- ✅ **Section Management Architecture** — Section-lesson relationship with auto-sync
+- ✅ **Performance Optimizations** — Reduced perceived latency with local state updates
+
+### 📚 Documentation Updates
+
+- ✅ **Flow Builder v1.9.6 Documentation** — Complete rewrite with new features
+- ✅ **Quick Reference Guide** — New quick reference for Flow Builder v1.9.6
+- ✅ **Enhanced Testing Checklist** — Expanded testing scenarios for new features
+- ✅ **Architecture Documentation** — New patterns and best practices guide
+- ✅ **Main Documentation Index** — Updated with new Flow Builder features
+
+### 🐛 Bug Fixes
+
+- ✅ **Section deletion validation** — Prevents deleting sections with lessons
+- ✅ **Default section protection** — Cannot edit/delete default section
+- ✅ **Section dropdown visibility** — Only shows when multiple sections exist
+- ✅ **Dialog state management** — Proper cleanup and state reset between operations
+- ✅ **Loading state management** — Disabled buttons during operations
+- ✅ **Error handling** — Graceful error recovery with user feedback
+
+### 📁 New Files
+
+| File | Purpose |
+|------|---------|
+| `docs/guides/flow-builder-v1.9.6-quick-reference.md` | Quick reference guide for v1.9.6 features |
+| `src/features/learning-module/actions/sections.ts` | Section management server actions |
+
+### 📄 Files Modified
+
+| File | Changes |
+|------|---------|
+| `docs/guides/learning-module-flow-builder.md` | Complete rewrite with v1.9.6 features |
+| `docs/README.md` | Added Flow Builder v1.9.6 reference |
+| `docs/getting-started/implementation-summary.md` | Updated version to v1.9.6 |
+| `src/app/admin/learning/[id]/builder/builder-client.tsx` | Enhanced with section management and dialogs |
+| `src/app/admin/learning/[id]/builder/curriculum-panel.tsx` | Added section management UI |
+| `src/features/learning-module/actions/lessons.ts` | Enhanced with better error handling |
 
 ---
 

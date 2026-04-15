@@ -44,6 +44,7 @@ interface CurriculumPanelProps {
   onLessonDelete: (lessonId: string) => void;
   onReorder: (sectionId: string, lessonIds: string[]) => void;
   onAddSection: () => void;
+  onEditSection: (sectionId: string, currentTitle: string) => void;
   onDeleteSection: (sectionId: string) => void;
 }
 
@@ -70,6 +71,7 @@ export function CurriculumPanel({
   onLessonDelete,
   onReorder,
   onAddSection,
+  onEditSection,
   onDeleteSection,
 }: CurriculumPanelProps) {
   const [draggedLessonId, setDraggedLessonId] = useState<string | null>(null);
@@ -189,7 +191,7 @@ export function CurriculumPanel({
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={(e) => {
                     e.stopPropagation();
-                    toast.info("Rename section - coming soon");
+                    onEditSection(section.id, section.title);
                   }}>Rename Section</DropdownMenuItem>
                   <DropdownMenuItem 
                     className="text-destructive focus:text-destructive"

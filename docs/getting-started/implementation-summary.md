@@ -4,8 +4,8 @@
 
 This document summarizes all features implemented in the Remonest App as of April 11, 2026.
 
-**Version:** v1.2.1 (Latest)
-**Last Updated:** April 11, 2026
+**Version:** v1.9.6 (Latest)
+**Last Updated:** April 15, 2026
 
 ---
 
@@ -382,6 +382,15 @@ Table auto-refreshes (job removed from list)
 - **Features:**
   - Admin CRUD for learning modules (create, edit, publish, archive, delete)
   - Module management dashboard with stats, search, pagination
+  - **Flow Builder v1.9.6** — Three-panel lesson editor with enhanced features
+    - Complete section management (add, edit, delete sections)
+    - Enhanced dialog system (add/edit steps, section management, delete confirmation)
+    - Optimistic UI updates for instant feedback
+    - Multiple dedicated dialogs with proper state management
+    - Section assignment during lesson creation
+    - Default section protection
+    - Automatic section-lesson synchronization
+    - Improved error handling and loading states
   - **Quiz Builder** (v1.0.0) — admin assessment system
     - Dynamic question builder with unlimited questions
     - 5-option multiple choice (A-E) with radio button selection
@@ -397,7 +406,7 @@ Table auto-refreshes (job removed from list)
     - Tools, templates, ebooks, checklists, cheatsheets, PDFs
     - URL + description, free/paid toggle
   - User progress tracking (`user_learning_progress` table)
-- **Database:** Migrations 002, 011, 013 (quiz), 014 (materials & resources)
+- **Database:** Migrations 002, 011, 013 (quiz), 014 (materials & resources), 022 (sections)
 - **Status:** ✅ Complete
 
 #### 9. Database Architecture

@@ -57,7 +57,7 @@ import {
   createLesson,
   deleteLesson,
 } from "@/features/learning-module/actions/lessons";
-import { createSection, deleteSection } from "@/features/learning-module/actions/sections";
+import { createSection, deleteSection, updateSection } from "@/features/learning-module/actions/sections";
 import { saveStepContent, publishModule } from "./flow-builder-actions";
 import { LearningBreadcrumb } from "@/components/admin/learning-breadcrumb";
 
@@ -161,6 +161,57 @@ export default function LearningFlowBuilder({
       setIsCreatingSection(false);
     }
   }, [admin, moduleId, newSectionTitle]);
+
+  // Edit Section Dialog state
+  const [editSectionOpen, setEditSectionOpen] = useState(false);
+  const [editingSectionId, setEditingSectionId] = useState<string>("");
+  const [editSectionTitle, setEditSectionTitle] = useState("");
+  const [isUpdatingSection, setIsUpdatingSection] = useState(false);
+
+  const openEditSection = useCallback((sectionId: string, currentTitle: string) => {
+    if (sectionId === "default") {
+      toast.error("Cannot edit the default section");
+      return;
+    }
+    setEditingSectionId(sectionId);
+    setEditSectionTitle(currentTitle);
+    setEditSectionOpen(true);
+  }, []);
+
+  const handleEditSection = useCallback(async () => {
+    if (!editSectionTitle.trim()) {
+      toast.error("Section title is required");
+      return;
+    }
+
+    setIsUpdatingSection(true);
+    try {
+      const result = await updateSection(admin, editingSectionId, {
+        title: editSectionTitle.trim(),
+      });
+
+      if (result.success) {
+        // Update local state immediately
+        setSections((prev) =>
+          prev.map((s) =>
+            s.id === editingSectionId
+              ? { ...s, title: editSectionTitle.trim() }
+              : s
+          )
+        );
+
+        toast.success("Section updated");
+        setEditSectionOpen(false);
+        setEditingSectionId("");
+        setEditSectionTitle("");
+        router.refresh();
+      } else {
+        toast.error("Failed to update section", { description: result.error });
+      }
+    } finally {
+      setIsUpdatingSection(false);
+    }
+  }, [admin, editingSectionId, editSectionTitle, router]);
 
   // Group lessons into sections (from server data)
   const [sections, setSections] = useState<Section[]>(initialSections);
@@ -382,17 +433,22 @@ export default function LearningFlowBuilder({
         lessonType: newStepType,
         durationMinutes: newStepDuration,
         isPreview: false,
-        sectionId: newStepSectionId || null,
+        sectionId: (newStepSectionId && newStepSectionId !== "default") ? newStepSectionId : null,
       });
 
       if (result.success) {
         // Fetch the newly created lesson to get full data
-        const { getLessonById } = await import("@/features/learning-module/actions/lessons");
-        const newLesson = await getLessonById(result.id!);
+        try {
+          const { getLessonById } = await import("@/features/learning-module/actions/lessons");
+          const newLesson = await getLessonById(result.id!);
 
-        if (newLesson) {
-          // Update local state immediately
-          setLessons((prev) => [...prev, newLesson]);
+          if (newLesson) {
+            // Update local state immediately
+            setLessons((prev) => [...prev, newLesson]);
+          }
+        } catch (fetchError) {
+          console.error("[handleAddStep] Failed to fetch new lesson:", fetchError);
+          // Still show success toast, router.refresh() will sync data
         }
 
         toast.success("Step created successfully");
@@ -402,8 +458,14 @@ export default function LearningFlowBuilder({
         // Also refresh to ensure server data is in sync
         router.refresh();
       } else {
+        console.error("[handleAddStep] createLesson failed:", result.error);
         toast.error("Failed to create step", { description: result.error });
       }
+    } catch (error) {
+      console.error("[handleAddStep] Unexpected error:", error);
+      toast.error("Failed to create step", {
+        description: error instanceof Error ? error.message : "Unknown error occurred",
+      });
     } finally {
       setIsCreating(false);
     }
@@ -590,6 +652,7 @@ export default function LearningFlowBuilder({
           onLessonDelete={openDeleteConfirm}
           onReorder={handleReorderLessons}
           onAddSection={openAddSection}
+          onEditSection={openEditSection}
           onDeleteSection={handleDeleteSection}
         />
 
@@ -999,6 +1062,58 @@ export default function LearningFlowBuilder({
                 <>
                   <Plus className="mr-2 h-4 w-4" />
                   Add Section
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Section Dialog */}
+      <Dialog open={editSectionOpen} onOpenChange={setEditSectionOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Edit Section</DialogTitle>
+            <DialogDescription>
+              Rename this section to better organize your lessons.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid gap-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-section-title">Section Title</Label>
+              <Input
+                id="edit-section-title"
+                value={editSectionTitle}
+                onChange={(e) => setEditSectionTitle(e.target.value)}
+                placeholder="e.g., Advanced Topics"
+                autoFocus
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEditSectionOpen(false);
+                setEditingSectionId("");
+                setEditSectionTitle("");
+              }}
+              disabled={isUpdatingSection}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleEditSection} disabled={isUpdatingSection || !editSectionTitle.trim()}>
+              {isUpdatingSection ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="mr-2 h-4 w-4" />
+                  Save Changes
                 </>
               )}
             </Button>

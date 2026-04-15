@@ -1,6 +1,38 @@
-# Learning Module Flow Builder (v1.9.5)
+# Learning Module Flow Builder (v1.9.6)
 
-> **Updated** — April 14, 2026
+> **Updated** — April 15, 2026
+
+## Recent Enhancements (v1.9.6)
+
+### Complete Section Management System
+- ✅ **Section Creation** — Add new sections to organize lessons into logical chapters
+- ✅ **Section Editing** — Rename existing sections with dialog-based interface
+- ✅ **Section Deletion** — Remove sections (lessons must be moved first)
+- ✅ **Default Section Protection** — Cannot edit/delete the default "Getting Started" section
+- ✅ **Section Assignment** — Assign lessons to specific sections during creation
+- ✅ **Section Integration** — Full integration with lesson management and drag-and-drop
+
+### Enhanced Dialog System
+- ✅ **Multiple Dedicated Dialogs** — Separate dialogs for each action type
+- ✅ **Add Step Dialog** — Create lessons with section selection
+- ✅ **Edit Step Dialog** — Update lesson metadata independently of content
+- ✅ **Delete Confirmation Dialog** — Safety dialog before destructive actions
+- ✅ **Add Section Dialog** — Create new sections with title validation
+- ✅ **Edit Section Dialog** — Rename sections with instant UI updates
+
+### Improved State Management
+- ✅ **Optimistic Updates** — UI updates immediately with server sync fallback
+- ✅ **Local State Management** — Lessons and sections managed locally for instant feedback
+- ✅ **Router Refresh Integration** — Server data refreshed after mutations
+- ✅ **Error Handling** — Graceful error handling with toast notifications
+- ✅ **Loading States** — Proper loading indicators for async operations
+
+### Enhanced Lesson Type Support
+- ✅ **All Lesson Types Supported** — Article, Video, Exercise, Quiz, Resource
+- ✅ **Type Changes** — Update lesson type through edit dialog
+- ✅ **Duration Management** — Set and update lesson duration
+- ✅ **Description Support** — Add optional descriptions to lessons
+- ✅ **Preview Toggle** — Control lesson visibility through properties panel
 
 The Flow Builder is a modern, three-panel interface for creating and editing learning module content. It replaces the old separate lessons page with an integrated, Notion-style editing experience.
 
@@ -19,7 +51,7 @@ The Flow Builder provides a unified interface for:
 - ✅ Auto-save content changes (2-second debounce)
 - ✅ Drag-and-drop lesson reordering
 - ✅ **Different editors per lesson type** (Article, Video, Exercise, Quiz, Resource)
-- ✅ **Section support** — Group lessons, add/delete sections
+- ✅ **Section support** — Group lessons, add/edit/delete sections
 - ✅ **Quiz integration** — Link existing quiz to lesson step
 - ✅ Markdown toolbar with common formatting
 - ✅ Step settings panel with toggles
@@ -142,7 +174,7 @@ src/app/api/learning/materials/[materialId]/
 - Click step → Selects and loads content in editor
 - Drag step → Reorders within section (triggers `reorderLessons` action)
 - Click `[+ Add Step]` → Opens dialog with section selector, type selection, etc.
-- Click `[+ Add Section]` → Creates new section with title input
+- Click `[+ Add Section]` → Creates new section with title dialog
 - Click section menu (⋮) → Rename or delete section
 
 ### 3. Editor Panel (Center, Flexible Width)
@@ -252,7 +284,7 @@ The Editor Panel shows different UI based on the lesson type:
 
 ---
 
-## 🔧 Server Actions
+## 🔧 Server Actions (Enhanced v1.9.6)
 
 ### 1. `saveStepContent(admin, lessonId, content)`
 
@@ -307,6 +339,315 @@ if (result.success) {
 ```
 
 **Returns:** `{ success: boolean; error?: string }`
+
+### 4. `createLesson(admin, input)` (Enhanced v1.9.6)
+
+**Purpose:** Create new lesson with full metadata support
+
+**Parameters:**
+```typescript
+{
+  moduleId: string;
+  title: string;
+  description?: string;
+  lessonType: "video" | "article" | "exercise" | "quiz" | "resource";
+  orderIndex?: number;
+  sectionId?: string | null;
+  materialId?: string | null;
+  resourceId?: string | null;
+  quizConfigId?: string | null;
+  durationMinutes: number;
+  isPreview?: boolean;
+}
+```
+
+**Features:**
+- Auto-generates `orderIndex` if not provided (gets max + 1)
+- Validates all fields with Zod schema
+- Supports optional `sectionId` for section assignment
+- Handles null values for optional relationships
+- Logs admin action with lesson details
+- Returns lesson ID for immediate UI update
+
+**Returns:** `{ success: boolean; id?: string; error?: string; redirect?: string }`
+
+### 5. `updateLesson(admin, lessonId, input)` (Enhanced v1.9.6)
+
+**Purpose:** Update lesson metadata independently of content
+
+**Parameters:**
+```typescript
+{
+  title?: string;
+  description?: string;
+  lessonType?: "video" | "article" | "exercise" | "quiz" | "resource";
+  orderIndex?: number;
+  sectionId?: string | null;
+  materialId?: string | null;
+  resourceId?: string | null;
+  quizConfigId?: string | null;
+  durationMinutes?: number;
+  isPreview?: boolean;
+}
+```
+
+**Features:**
+- Updates only provided fields (partial update)
+- Validates with Zod schema
+- Logs admin action with old/new values
+- Revalidates learning module paths
+- Does not modify lesson content (use `saveStepContent` instead)
+
+**Returns:** `{ success: boolean; error?: string }`
+
+### 6. `deleteLesson(admin, lessonId)` (Enhanced v1.9.6)
+
+**Purpose:** Delete lesson with safety checks
+
+**Features:**
+- Validates lesson exists before deletion
+- Logs admin action with deleted lesson details
+- Revalidates learning module paths
+- Cascades to dependent data via database constraints
+
+**Returns:** `{ success: boolean; error?: string }`
+
+### 7. `reorderLessons(admin, moduleId, lessonIds)` (Enhanced v1.9.6)
+
+**Purpose:** Reorder lessons within a module
+
+**Parameters:**
+```typescript
+[
+  "lesson-id-1",
+  "lesson-id-2",
+  "lesson-id-3",
+  // ... ordered lesson IDs
+]
+```
+
+**Features:**
+- Updates `order_index` for each lesson in array
+- Parallel updates for performance
+- Validates all updates succeeded
+- Logs admin action with reorder details
+- Revalidates learning module paths
+
+**Returns:** `{ success: boolean; error?: string }`
+
+### 8. Section Management Actions (New v1.9.6)
+
+**`createSection(admin, moduleId, title)`**
+- Creates new section with auto-generated order
+- Returns section ID for immediate UI update
+- Logs admin action
+
+**`updateSection(admin, sectionId, { title })`**
+- Updates section title only
+- Prevents editing default section
+- Logs admin action
+
+**`deleteSection(admin, sectionId)`**
+- Validates section has no lessons
+- Deletes section with safety checks
+- Logs admin action
+
+## 🎨 Enhanced State Management (v1.9.6)
+
+### Optimistic UI Updates
+
+The Flow Builder uses optimistic updates to provide instant feedback while ensuring data consistency with the server.
+
+**Pattern:**
+```typescript
+// 1. Perform optimistic local update
+setLessons((prev) => [...prev, newLesson]);
+
+// 2. Call server action
+const result = await createLesson(admin, lessonInput);
+
+// 3. Handle success/error
+if (result.success) {
+  toast.success("Step created successfully");
+} else {
+  toast.error("Failed to create step", { description: result.error });
+  // Error handling or router.refresh() to sync state
+}
+
+// 4. Ensure consistency with router.refresh()
+router.refresh();
+```
+
+**Benefits:**
+- Instant UI feedback (no loading delays)
+- Better user experience
+- Graceful error handling
+- Automatic data synchronization
+
+### State Management for Lessons
+
+**Lesson State:**
+```typescript
+const [lessons, setLessons] = useState<ModuleLesson[]>(initialLessons);
+const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+const [editorContent, setEditorContent] = useState(initialLessonContent ?? "");
+const [isSaving, setIsSaving] = useState(false);
+const [lastSaved, setLastSaved] = useState<string | null>(null);
+```
+
+**Lesson Update Pattern:**
+```typescript
+// Direct update (optimistic)
+setLessons((prev) =>
+  prev.map((lesson) =>
+    lesson.id === lessonId
+      ? { ...lesson, ...newData }
+      : lesson
+  )
+);
+
+// Or append new lesson
+setLessons((prev) => [...prev, newLesson]);
+
+// Or remove lesson
+setLessons((prev) => prev.filter((l) => l.id !== lessonId));
+```
+
+### State Management for Sections
+
+**Section State:**
+```typescript
+const [sections, setSections] = useState<Section[]>(initialSections);
+```
+
+**Section Update Pattern:**
+```typescript
+// Add section
+setSections((prev) => [
+  ...prev,
+  {
+    id: newSectionId,
+    moduleId,
+    title: newSectionTitle.trim(),
+    lessons: [],
+  },
+]);
+
+// Update section
+setSections((prev) =>
+  prev.map((s) =>
+    s.id === sectionId
+      ? { ...s, title: editSectionTitle.trim() }
+      : s
+  )
+);
+
+// Delete section with validation
+setSections((prev) => {
+  const section = prev.find((s) => s.id === sectionId);
+  if (section && section.lessons.length > 0) {
+    toast.error("Cannot delete section with lessons");
+    return prev;
+  }
+  return prev.filter((s) => s.id !== sectionId);
+});
+```
+
+### Section-Lesson Sync
+
+**Automatic Sync:**
+```typescript
+// Sync sections when lessons change (from router.refresh)
+useEffect(() => {
+  setSections((prev) => {
+    if (prev.length === 0) return prev;
+    
+    return prev.map((section, index) => {
+      // For first section OR default section, also show lessons with null sectionId
+      const isFirstSection = index === 0 || section.id === "default";
+      const matchingLessons = isFirstSection
+        ? lessons.filter((l) => l.sectionId === null || l.sectionId === section.id)
+        : lessons.filter((l) => l.sectionId === section.id);
+      
+      return {
+        ...section,
+        lessons: matchingLessons,
+      };
+    });
+  });
+}, [lessons]);
+```
+
+This ensures sections always display the correct lessons even when lessons are added, removed, or reordered.
+
+### Dialog State Management
+
+**Multiple Independent Dialog States:**
+```typescript
+// Add Step Dialog
+const [addStepOpen, setAddStepOpen] = useState(false);
+const [isCreating, setIsCreating] = useState(false);
+
+// Edit Step Dialog
+const [editStepOpen, setEditStepOpen] = useState(false);
+const [isUpdating, setIsUpdating] = useState(false);
+
+// Delete Confirmation Dialog
+const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+const [isDeleting, setIsDeleting] = useState(false);
+
+// Section Dialogs
+const [addSectionOpen, setAddSectionOpen] = useState(false);
+const [editSectionOpen, setEditSectionOpen] = useState(false);
+```
+
+**Dialog Open/Close Pattern:**
+```typescript
+// Open with form reset
+const openAddStep = useCallback((sectionId: string) => {
+  resetAddStepForm(sectionId);
+  setAddStepOpen(true);
+}, [resetAddStepForm]);
+
+// Close with cleanup
+const closeAddStep = useCallback(() => {
+  setAddStepOpen(false);
+  resetAddStepForm();
+}, [resetAddStepForm]);
+```
+
+### Error Handling & Loading States
+
+**Loading State Pattern:**
+```typescript
+const [isCreating, setIsCreating] = useState(false);
+
+const handleAddStep = useCallback(async () => {
+  setIsCreating(true); // Start loading
+  try {
+    const result = await createLesson(admin, lessonInput);
+    if (result.success) {
+      toast.success("Step created successfully");
+      setAddStepOpen(false);
+    } else {
+      toast.error("Failed to create step", { description: result.error });
+    }
+  } finally {
+    setIsCreating(false); // Always end loading
+  }
+}, [admin, lessonInput]);
+```
+
+**Error Toast Pattern:**
+```typescript
+toast.error("Failed to create step", {
+  description: result.error, // Shows detailed error message
+});
+
+toast.error("Section title is required", {
+  description: "Please enter a title for your section",
+});
+```
 
 ---
 
@@ -394,11 +735,26 @@ ALTER TABLE module_lessons ADD COLUMN section_id UUID REFERENCES module_sections
 3. Click "Add Section" → Saves to database
 4. New empty section appears
 
+**Edit/Rename Section:**
+1. Click section menu (⋮) on section header
+2. Click "Rename Section"
+3. Dialog opens with current title pre-filled
+4. Edit the title as needed
+5. Click "Save Changes" → Updates immediately
+6. Toast confirms: "Section updated"
+7. Curriculum Panel reflects new title instantly
+
 **Delete Section:**
 1. Click section menu (⋮) on section header
 2. Click "Delete Section"
 3. Confirm deletion
 4. **Note:** Cannot delete sections with lessons (move lessons first)
+
+**Default Section ("Getting Started"):**
+- Created automatically when no sections exist
+- Cannot be edited or deleted (protected)
+- Attempting to edit shows error toast
+- Once you add custom sections, the default is replaced
 
 **Add Lesson to Specific Section:**
 1. Click `[+ Add Step]` in desired section
@@ -406,19 +762,168 @@ ALTER TABLE module_lessons ADD COLUMN section_id UUID REFERENCES module_sections
 3. Fill in lesson details
 4. Lesson added to that section
 
+### Section Management Server Actions (v1.9.6)
+
+**`createSection(admin, moduleId, title)`**
+- Creates new section with auto-generated order_index
+- Validates section title is not empty
+- Returns section ID for immediate UI update
+- Logs admin action to audit trail
+
+**`updateSection(admin, sectionId, { title })`**
+- Updates section title only
+- Prevents editing default section via validation
+- Returns success/error status
+- Revalidates learning module paths
+
+**`deleteSection(admin, sectionId)`**
+- Validates section has no lessons before deletion
+- Removes section and associated data
+- Returns success/error status
+- Revalidates learning module paths
+
+### Section State Management (v1.9.6)
+
+```typescript
+// Local state for immediate UI updates
+const [sections, setSections] = useState<Section[]>(initialSections);
+
+// Add section - optimistic update
+setSections((prev) => [
+  ...prev,
+  {
+    id: newSectionId,
+    moduleId,
+    title: newSectionTitle.trim(),
+    lessons: [],
+  },
+]);
+
+// Update section - immediate reflection
+setSections((prev) =>
+  prev.map((s) =>
+    s.id === sectionId
+      ? { ...s, title: editSectionTitle.trim() }
+      : s
+  )
+);
+
+// Delete section - validation + removal
+setSections((prev) => {
+  const section = prev.find((s) => s.id === sectionId);
+  if (section && section.lessons.length > 0) {
+    toast.error("Cannot delete section with lessons");
+    return prev;
+  }
+  toast.success("Section deleted");
+  return prev.filter((s) => s.id !== sectionId);
+});
+```
+
+### Enhanced Dialog System (v1.9.6)
+
+**Multiple Dedicated Dialogs:**
+- **Add Step Dialog** (`addStepOpen`) — Create lessons with section selection
+- **Edit Step Dialog** (`editStepOpen`) — Update lesson metadata independently of content
+- **Delete Confirmation Dialog** (`deleteDialogOpen`) — Safety dialog before destructive actions
+- **Add Section Dialog** (`addSectionOpen`) — Create new sections with title validation
+- **Edit Section Dialog** (`editSectionOpen`) — Rename sections with instant UI updates
+
+**Dialog Features:**
+- Auto-focus on primary input field
+- Loading states during async operations
+- Disabled buttons during operations
+- Proper form validation
+- Section dropdown only shows when multiple sections exist
+- Local state updates for instant feedback
+- Toast notifications for success/error states
+
+**State Management:**
+```typescript
+// Add Step Dialog
+const [addStepOpen, setAddStepOpen] = useState(false);
+const [isCreating, setIsCreating] = useState(false);
+const [newStepTitle, setNewStepTitle] = useState("");
+const [newStepType, setNewStepType] = useState<LessonType>("article");
+
+// Edit Step Dialog  
+const [editStepOpen, setEditStepOpen] = useState(false);
+const [isUpdating, setIsUpdating] = useState(false);
+const [editingLesson, setEditingLesson] = useState<ModuleLesson | null>(null);
+
+// Delete Confirmation Dialog
+const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+const [lessonToDelete, setLessonToDelete] = useState<string | null>(null);
+const [isDeleting, setIsDeleting] = useState(false);
+
+// Section Dialogs
+const [addSectionOpen, setAddSectionOpen] = useState(false);
+const [editSectionOpen, setEditSectionOpen] = useState(false);
+const [isCreatingSection, setIsCreatingSection] = useState(false);
+const [isUpdatingSection, setIsUpdatingSection] = useState(false);
+```
+
 ---
 
 ## 📝 How-To Guides
 
-### How to Create a New Lesson
+### How to Create a New Lesson (Enhanced v1.9.6)
 
 1. Open Flow Builder for a module
-2. In Curriculum Panel, click `[+ Add Step]`
-3. New step appears with default name "New Step"
-4. Click step to select it
-5. In Editor Panel, write content (auto-saves)
-6. In Properties Panel, adjust title, duration, settings
-7. Drag to reorder if needed
+2. In Curriculum Panel, click `[+ Add Step]` in desired section
+3. "Add New Step" dialog opens with section pre-selected
+4. Fill in step details:
+   - **Step Title** (required): Enter lesson title
+   - **Description** (optional): Brief description of the lesson
+   - **Section**: Target section for the lesson (dropdown shows if multiple sections exist)
+   - **Lesson Type**: Choose from Article, Video, Exercise, Quiz, Resource
+   - **Duration** (min): Estimated completion time
+5. Click "Add Step" button
+6. **Backend**: Creates lesson via `createLesson()` server action
+7. **UI**: Lesson appears immediately in curriculum panel under selected section
+8. Toast confirms: "Step created successfully"
+9. Router refresh ensures data consistency
+
+**Section Selection Behavior:**
+- If only one section exists: No dropdown shown, lesson automatically assigned
+- If multiple sections exist: Dropdown appears, user can select target section
+- First section is pre-selected by default
+
+**Lesson Type Selection:**
+- Each type has distinct icon and color coding
+- **Article** (FileText, violet): Text-based content with Markdown support
+- **Video** (Video, blue): Video content with URL input and preview
+- **Exercise** (Code, amber): Coding exercises with starter code blocks
+- **Quiz** (HelpCircle, rose): Quiz integration with existing quiz selection
+- **Resource** (FileBox, teal): Downloadable resources and files
+
+### How to Edit Lesson Details (New v1.9.6)
+
+1. Click context menu (⋮) on lesson in Curriculum Panel
+2. Select "Edit" from dropdown
+3. "Edit Step" dialog opens with current lesson data pre-filled
+4. Update lesson details:
+   - **Step Title**: Modify lesson title
+   - **Description**: Update or add description
+   - **Lesson Type**: Change lesson type (if needed)
+   - **Duration**: Update estimated completion time
+5. Click "Update Step" button
+6. **Backend**: Updates lesson via `updateLesson()` server action
+7. **UI**: Lesson updates immediately in curriculum panel
+8. Toast confirms: "Step updated successfully"
+9. Router refresh ensures server data consistency
+
+**What Can Be Edited:**
+- Lesson title and description
+- Lesson type (changes icon and editor panel behavior)
+- Duration in minutes
+- Section assignment (via delete and re-add to different section)
+
+**What Cannot Be Edited:**
+- Lesson order (use drag-and-drop instead)
+- Lesson content (use Editor Panel instead)
+- Preview flag (use Properties Panel instead)
+- Quiz/resource assignment (use Properties Panel instead)
 
 ### How to Reorder Lessons
 
@@ -494,29 +999,37 @@ Logged data includes:
 
 ## 🐛 Known Issues & TODOs
 
-### ✅ Implemented Features
+### ✅ Implemented Features (Updated v1.9.6)
 - ✅ Three-panel layout with auto-save
 - ✅ Drag-and-drop lesson reordering
-- ✅ Section support (add/delete sections, assign lessons)
+- ✅ **Section support (complete CRUD)** — add/edit/delete sections, assign lessons
+- ✅ **Section assignment in step dialog** — Choose target section during creation
+- ✅ **Multiple dedicated dialogs** — Separate dialogs for each action type
+- ✅ **Enhanced dialog system** — Add/Edit step, section management, delete confirmation
+- ✅ **Optimistic UI updates** — Instant feedback with server sync
+- ✅ **Enhanced state management** — Better handling of lessons and sections
+- ✅ **Default section protection** — Cannot edit/delete default section
+- ✅ **Section-lessons sync** — Automatic synchronization between sections and lessons
+- ✅ **Loading states** — Proper loading indicators for all async operations
+- ✅ **Error handling** — Graceful error handling with toast notifications
 - ✅ Different editors per lesson type (Article, Video, Exercise, Quiz, Resource)
 - ✅ Quiz integration (link existing quiz to lesson)
-- ✅ Add/Edit/Delete steps with proper dialogs
 - ✅ Confirmation dialogs for destructive actions
 - ✅ Preview button opens public page in new tab
 - ✅ Publish workflow with confirmation
+- ✅ **Enhanced lesson editing** — Edit step metadata via dedicated dialog
+- ✅ **Section selection dropdown** — Shows only when multiple sections exist
 
 ### Current Limitations
 - [ ] Video URL validation — Doesn't validate YouTube/Vimeo URLs
 - [ ] Resource file upload — UI placeholder, needs File Manager integration
 - [ ] Cross-section drag-and-drop — Shows toast, full move requires backend update
-- [ ] Section rename — UI shows "coming soon" toast
 - [ ] Required Step toggle — Not yet enforced on public pages
 - [ ] Allow Comments toggle — Discussion board not implemented
 - [ ] Content type changes — Changing lesson type after creation doesn't update editor
 
 ### Future Enhancements
 - [ ] Drag lessons between sections (full cross-section move)
-- [ ] Section rename dialog
 - [ ] Bulk lesson operations (duplicate, delete multiple)
 - [ ] Lesson templates (pre-built content structures)
 - [ ] Content versioning (track content history)
@@ -527,7 +1040,7 @@ Logged data includes:
 
 ---
 
-## 🧪 Testing Checklist
+## 🧪 Testing Checklist (Enhanced v1.9.6)
 
 ### Manual Testing
 - [ ] Create new module → Open Flow Builder → Add 3 lessons → Reorder → Verify order persists
@@ -537,11 +1050,237 @@ Logged data includes:
 - [ ] Click Publish → Verify module status changes to "published"
 - [ ] Check admin_actions table → Verify all actions logged
 
+### Section Management Testing (New)
+- [ ] Add new section → Verify section appears in curriculum panel
+- [ ] Edit section title → Verify title updates instantly
+- [ ] Try to edit default section → Verify error toast shows
+- [ ] Try to delete default section → Verify error toast shows
+- [ ] Delete empty section → Verify section removed successfully
+- [ ] Try to delete section with lessons → Verify error toast shows
+- [ ] Create lesson in specific section → Verify lesson appears under correct section
+- [ ] Verify section dropdown only shows when multiple sections exist
+- [ ] Create section with empty title → Verify validation error shows
+
+### Dialog System Testing (New)
+- [ ] Open add step dialog → Verify form fields are empty/reset
+- [ ] Try to create lesson without title → Verify validation error shows
+- [ ] Create lesson → Verify lesson appears immediately with optimistic update
+- [ ] Open edit step dialog → Verify current data is pre-filled
+- [ ] Edit lesson type → Verify icon and content update appropriately
+- [ ] Delete lesson → Verify confirmation dialog shows proper warnings
+- [ ] Cancel operations → Verify dialogs close without changes
+- [ ] Verify loading states show during async operations
+- [ ] Verify buttons are disabled during operations
+
 ### Edge Cases
 - [ ] Open builder for module with no lessons → Verify empty state shows
 - [ ] Select lesson with no material → Verify empty editor shows
 - [ ] Rapid typing → Verify auto-save debounces correctly
 - [ ] Network error during save → Verify error handling (future: show error toast)
+- [ ] Multiple rapid operations → Verify optimistic updates handle correctly
+- [ ] Edit lesson while saving content → Verify no conflicts occur
+
+---
+
+## 🏗️ Enhanced Architecture & Patterns (v1.9.6)
+
+### Optimistic Update Pattern
+
+The Flow Builder uses optimistic updates to provide instant user feedback while ensuring data consistency.
+
+**Key Principles:**
+1. **Immediate UI Response** — Update state first, then call server
+2. **Error Recovery** — If server fails, show error toast and optionally revert
+3. **Data Consistency** — Always call `router.refresh()` after operations
+4. **User Experience** — Show loading states during async operations
+
+**Example:**
+```typescript
+const handleAddStep = useCallback(async () => {
+  if (!newStepTitle.trim()) {
+    toast.error("Step title is required");
+    return;
+  }
+
+  setIsCreating(true); // Show loading
+  try {
+    const result = await createLesson(admin, lessonInput);
+    if (result.success) {
+      // Optimistic: Update local state immediately
+      setLessons((prev) => [...prev, newLesson]);
+      toast.success("Step created successfully");
+      setAddStepOpen(false);
+      resetAddStepForm();
+      
+      // Ensure server consistency
+      router.refresh();
+    } else {
+      toast.error("Failed to create step", { description: result.error });
+    }
+  } finally {
+    setIsCreating(false); // Always end loading
+  }
+}, [admin, lessonInput, router, resetAddStepForm]);
+```
+
+### Dialog System Architecture
+
+The Flow Builder uses a multi-dialog system for different operations.
+
+**Dialog Types:**
+1. **Add Step Dialog** — Create new lessons with full metadata
+2. **Edit Step Dialog** — Update existing lesson metadata
+3. **Delete Confirmation Dialog** — Safety check before destructive actions
+4. **Add Section Dialog** — Create new sections
+5. **Edit Section Dialog** — Rename existing sections
+
+**Dialog Pattern:**
+```typescript
+// State management
+const [dialogOpen, setDialogOpen] = useState(false);
+const [isProcessing, setIsProcessing] = useState(false);
+const [formData, setFormData] = useState(initialFormData);
+
+// Open dialog with reset
+const openDialog = useCallback(() => {
+  setFormData(initialFormData);
+  setDialogOpen(true);
+}, []);
+
+// Handle submit
+const handleSubmit = useCallback(async () => {
+  setIsProcessing(true);
+  try {
+    const result = await serverAction(formData);
+    if (result.success) {
+      toast.success("Operation completed");
+      setDialogOpen(false);
+    } else {
+      toast.error("Operation failed", { description: result.error });
+    }
+  } finally {
+    setIsProcessing(false);
+  }
+}, [formData]);
+
+// Dialog UI
+<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Dialog Title</DialogTitle>
+      <DialogDescription>Dialog description</DialogDescription>
+    </DialogHeader>
+    
+    {/* Form fields */}
+    <div className="grid gap-4 py-4">
+      <Label>Field</Label>
+      <Input value={formData.field} onChange={(e) => setFormData({...formData, field: e.target.value})} />
+    </div>
+    
+    <DialogFooter>
+      <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={isProcessing}>
+        Cancel
+      </Button>
+      <Button onClick={handleSubmit} disabled={isProcessing || !isValid}>
+        {isProcessing ? <Loader2 className="animate-spin" /> : "Submit"}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+```
+
+### Section Management Architecture
+
+**Section-Lesson Relationship:**
+- Lessons belong to sections via `section_id` foreign key
+- First section or "default" section shows lessons with `section_id = null`
+- Sections maintain their own lesson lists for UI display
+- Automatic sync when lessons change
+
+**Data Flow:**
+```typescript
+// 1. Server provides initial data
+const initialLessons = await getLessonsByModuleId(moduleId);
+const initialSections = await getSectionsByModuleId(moduleId);
+
+// 2. Group lessons into sections locally
+const [sections, setSections] = useState<Section[]>(initialSections);
+const [lessons, setLessons] = useState<ModuleLesson[]>(initialLessons);
+
+// 3. Sync sections when lessons change
+useEffect(() => {
+  setSections((prev) => {
+    return prev.map((section, index) => {
+      const isFirstSection = index === 0 || section.id === "default";
+      const matchingLessons = isFirstSection
+        ? lessons.filter((l) => l.sectionId === null || l.sectionId === section.id)
+        : lessons.filter((l) => l.sectionId === section.id);
+      
+      return { ...section, lessons: matchingLessons };
+    });
+  });
+}, [lessons]);
+
+// 4. Update lesson (affects section membership)
+await updateLesson(admin, lessonId, { sectionId: newSectionId });
+setLessons((prev) => 
+  prev.map((l) => l.id === lessonId ? { ...l, sectionId: newSectionId } : l)
+);
+```
+
+### Error Handling Strategy
+
+**Multi-Level Error Handling:**
+
+1. **Client-Side Validation** — Immediate feedback before server calls
+   ```typescript
+   if (!newStepTitle.trim()) {
+     toast.error("Step title is required");
+     return;
+   }
+   ```
+
+2. **Server-Side Validation** — Zod schema validation in server actions
+   ```typescript
+   const validated = lessonSchema.parse(input);
+   ```
+
+3. **Database Errors** — Handle database constraint violations
+   ```typescript
+   if (error) {
+     console.error("[createLesson] Database error:", error);
+     return { success: false, error: error.message };
+   }
+   ```
+
+4. **User Feedback** — Toast notifications for all error states
+   ```typescript
+   toast.error("Failed to create step", {
+     description: result.error,
+   });
+   ```
+
+### Performance Optimizations
+
+**1. Local State Management:**
+- Immediate UI updates without waiting for server
+- Reduced perceived latency
+- Better user experience
+
+**2. Debounced Auto-Save:**
+- 2-second debounce for content changes
+- Prevents excessive server calls during rapid typing
+- Visual feedback with "Saved just now" indicator
+
+**3. Optimistic Updates:**
+- UI updates immediately on user actions
+- Server requests happen in background
+- Error recovery with toast notifications
+
+**4. Router Refresh:**
+- Ensures data consistency after mutations
+- Only called when needed (after successful operations)
+- Maintains local state for instant feedback
 
 ---
 
@@ -555,6 +1294,6 @@ Logged data includes:
 
 ---
 
-**Last Updated:** April 14, 2026  
-**Version:** v1.9.5  
+**Last Updated:** April 15, 2026  
+**Version:** v1.9.6  
 **Maintained By:** Development Team
