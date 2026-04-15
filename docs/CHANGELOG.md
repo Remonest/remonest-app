@@ -7,6 +7,26 @@ All notable changes to the Remonest App project.
 
 ---
 
+## [v1.0.1] - April 15, 2026
+
+### 🎉 New Features
+
+#### CV Builder Enhancement
+
+- ✅ **Years Field** — Added years input to work experience section
+- ✅ **Duration Display** — Shows employment duration in preview (e.g., "2020 - 2023")
+- ✅ **PDF Export** — Enhanced PDF generation with years information
+- ✅ **Form Validation** — Placeholder text for years field with format guidance
+
+#### Technical Implementation
+
+- ✅ **Interface Update** — Added `years` property to Experience interface
+- ✅ **Form Field** — Years input with placeholder and validation
+- ✅ **Preview Display** — Years shown in CV preview with proper formatting
+- ✅ **PDF Generation** — Years included in PDF export with right alignment
+
+---
+
 ## [v1.0.0] - April 15, 2026
 
 ### 🎉 New Features

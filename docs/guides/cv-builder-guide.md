@@ -52,6 +52,7 @@ interface Experience {
   id: string;
   title: string;
   company: string;
+  years: string;
   description: string;
 }
 ```
