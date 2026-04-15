@@ -7,6 +7,53 @@ All notable changes to the Remonest App project.
 
 ---
 
+## [v1.0.0] - April 15, 2026
+
+### 🎉 New Features
+
+#### CV Builder Implementation
+
+- ✅ **Complete CV Builder** — Fully functional resume creation tool
+- ✅ **Real-time Preview** — All changes instantly reflect in preview panel
+- ✅ **Local Storage Persistence** — CV data auto-saves to browser storage
+- ✅ **Work Experience Management** — Add and remove multiple positions
+- ✅ **PDF Export** — Professional PDF generation using jsPDF
+- ✅ **Responsive Design** — Split view on desktop, tab switcher on mobile
+- ✅ **Form Validation** — User-friendly error handling with toast notifications
+- ✅ **Complete State Management** — Instant updates with local state
+
+#### UI Improvements
+
+- ✅ **Professional Interface** — Clean, modern design with proper spacing
+- ✅ **Form Elements** — Personal info, experience, skills sections
+- ✅ **Preview Layout** — ATS-friendly format with A4 aspect ratio
+- ✅ **Mobile Responsive** — Tab-based navigation for mobile devices
+- ✅ **Error Handling** — Graceful validation and user feedback
+
+#### Technical Implementation
+
+- ✅ **State Management** — Local state with optimistic updates
+- ✅ **Data Persistence** — localStorage with auto-save functionality
+- ✅ **PDF Generation** — Client-side PDF creation using jsPDF library
+- ✅ **Component Architecture** — Server/client component pattern
+- ✅ **TypeScript Types** — Complete type definitions for CV data
+
+### 📚 Documentation Updates
+
+- ✅ **CV Builder Guide** — Comprehensive documentation with user workflows
+- ✅ **Architecture Documentation** — Technical implementation details
+- ✅ **Testing Checklist** — Manual testing scenarios and edge cases
+- ✅ **Known Issues & Future Enhancements** — Current limitations and planned features
+
+### 🔧 Bug Fixes
+
+#### TypeScript Fixes
+- ✅ **Curriculum Panel onClick Handler** — Fixed `onAddStep` function call
+- ✅ **ModuleLesson Type** — Added missing `sectionId` property
+- ✅ **Build Errors** — All TypeScript errors resolved, project builds successfully
+
+---
+
 ## [v1.9.6] - April 15, 2026
 
 ### 🎉 New Features

@@ -443,7 +443,7 @@ Table auto-refreshes (job removed from list)
 |---------|--------|----------------|
 | Public job detail `/jobs/[id]` | UI only | Supabase integration (uses hardcoded data) |
 | Learning module detail `/learning/[slug]` | UI only | Supabase integration for module content (uses hardcoded data) |
-| CV builder `/cv-builder` | UI only | No persistence, PDF generation |
+| CV builder `/cv-builder` | ✅ Complete | Real-time preview, PDF export, local storage persistence |
 | Portfolio builder `/portfolio` | UI only | No persistence, image upload |
 | Public portfolio `/portfolio/[username]` | SSG | Hardcoded data |
 | Feature pages i18n | Partial | Only dashboard translated |

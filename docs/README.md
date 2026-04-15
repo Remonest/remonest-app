@@ -52,6 +52,7 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
 - **[Admin Learning Architecture v1.9.3](./guides/admin-learning-architecture.md)** — 🆕 Why pages are kept separate (Flow Builder vs Materials vs Quiz)
 - **[Admin File Manager v1.9.4](./guides/admin-file-manager.md)** — 🆕 File upload page with drag-and-drop, image preview, and URL management
 - **[Flow Builder v1.9.6](./guides/learning-module-flow-builder.md)** — 🆕 Enhanced three-panel editor with complete section management, dialog system, and optimistic updates
+- **[CV Builder v1.0.0](./guides/cv-builder-guide.md)** — 🆕 Complete CV builder with real-time preview, PDF export, and local storage
 - **[Certificate System](./guides/certificate-download.md)** — 🆕 Certificate rendering, PNG download, print, zoom, public verification
 - **[Demo Learning Module](./guides/demo-learning-module.md)** — 🆕 Seed, test full flow, cleanup
 - **[Social Media Icons](./guides/social-media-icons.md)** — Custom SVG icons for footer (Twitter, LinkedIn, Instagram)
