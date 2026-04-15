@@ -80,6 +80,12 @@ export default function CVBuilderPage() {
 
   const handleExportPDF = () => {
     try {
+      // Check if required fields are filled
+      if (!cvData.fullName.trim()) {
+        toast.error("Please enter your full name");
+        return;
+      }
+
       const doc = new jsPDF();
 
       // Add content to PDF
@@ -175,8 +181,9 @@ export default function CVBuilderPage() {
       }
 
       // Save PDF
-      doc.save(`${cvData.fullName || "resume"}.pdf`);
-      toast.success("PDF exported successfully");
+      const fileName = `${cvData.fullName.replace(/\s+/g, '_').toLowerCase() || 'resume'}.pdf`;
+      doc.save(fileName);
+      toast.success(`PDF exported: ${fileName}`);
     } catch (error) {
       toast.error("Failed to export PDF");
       console.error("Export error:", error);
