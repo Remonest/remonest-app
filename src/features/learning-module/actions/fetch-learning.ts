@@ -217,6 +217,7 @@ function mapRowToLesson(row: any): ModuleLesson {
   return {
     id: row.id,
     moduleId: row.module_id,
+    sectionId: row.section_id,
     title: row.title,
     description: row.description,
     orderIndex: row.order_index,

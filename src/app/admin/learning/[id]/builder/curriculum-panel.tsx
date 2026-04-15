@@ -157,11 +157,11 @@ export function CurriculumPanel({
           <FileText className="h-4 w-4 text-muted-foreground" />
           Curriculum
         </span>
-        <Button 
-          variant="ghost" 
-          size="icon" 
+        <Button
+          variant="ghost"
+          size="icon"
           className="h-7 w-7"
-          onClick={onAddStep}
+          onClick={() => onAddStep("")}
           title="Add new step"
         >
           <Plus className="h-4 w-4" />
