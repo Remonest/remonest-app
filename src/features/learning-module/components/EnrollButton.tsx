@@ -3,23 +3,29 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { CheckCircle2, PlayCircle, Loader2 } from "lucide-react";
+import { CheckCircle2, PlayCircle, Loader2, ClipboardCheck } from "lucide-react";
 import { completeModule, updateModuleProgress } from "@/features/learning-module/actions/enrollment";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface EnrollButtonProps {
   moduleId: string;
   moduleTitle: string;
+  moduleSlug?: string;
   progress: number;
   isCompleted: boolean;
   materialsCount: number;
+  hasQuiz?: boolean;
 }
 
 export default function EnrollButton({
   moduleId,
   moduleTitle,
+  moduleSlug,
   progress,
   isCompleted,
   materialsCount,
+  hasQuiz,
 }: EnrollButtonProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -62,9 +68,19 @@ export default function EnrollButton({
 
   if (completed) {
     return (
-      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 text-sm font-medium">
-        <CheckCircle2 className="size-4" />
-        Modul selesai — Anda telah menyelesaikan modul ini
+      <div className="flex flex-col gap-3">
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 text-sm font-medium">
+          <CheckCircle2 className="size-4" />
+          Modul selesai — Anda telah menyelesaikan modul ini
+        </div>
+        {moduleSlug && (
+          <Link href={`/learning/${moduleSlug}/quiz`} className="w-full">
+            <Button variant="outline" className="w-full gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50">
+              <ClipboardCheck className="size-4" />
+              Lihat Hasil Quiz
+            </Button>
+          </Link>
+        )}
       </div>
     );
   }
@@ -85,20 +101,31 @@ export default function EnrollButton({
           </span>
         </div>
 
-        <div className="flex items-center gap-3">
-          <button
-            onClick={handleStartReading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80"
-          >
-            <PlayCircle className="size-3.5" />
-            Lanjutkan belajar
-          </button>
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleStartReading}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80"
+            >
+              <PlayCircle className="size-3.5" />
+              Lanjutkan belajar
+            </button>
 
-          {materialsCount > 0 && (
+            {hasQuiz && moduleSlug && (
+              <Link href={`/learning/${moduleSlug}/quiz`} className="flex-1">
+                <button className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
+                  <ClipboardCheck className="size-3.5" />
+                  Ambil Quiz
+                </button>
+              </Link>
+            )}
+          </div>
+
+          {!hasQuiz && materialsCount > 0 && (
             <button
               onClick={handleComplete}
               disabled={isPending}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
+              className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
             >
               {isPending ? (
                 <>

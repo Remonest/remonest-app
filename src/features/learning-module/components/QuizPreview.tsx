@@ -1,9 +1,12 @@
 "use client";
 
-import { CheckCircle2, ClipboardCheck } from "lucide-react";
+import { CheckCircle2, ClipboardCheck, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 interface QuizPreviewProps {
+  moduleSlug?: string;
   question?: string;
   options?: { label: string; text: string; isCorrect?: boolean }[];
   selectedOption?: string;
@@ -13,6 +16,7 @@ interface QuizPreviewProps {
 }
 
 export function QuizPreview({
+  moduleSlug,
   question,
   options = [],
   selectedOption,
@@ -39,7 +43,7 @@ export function QuizPreview({
       </div>
 
       {/* Quiz Preview Card */}
-      <div className="rounded-lg border bg-background p-5">
+      <div className="rounded-lg border bg-background p-5 mb-4">
         <div className="mb-2 text-xs text-muted-foreground">
           Pertanyaan 2 dari {totalQuestions}
         </div>
@@ -72,6 +76,16 @@ export function QuizPreview({
           ))}
         </div>
       </div>
+
+      {/* CTA Button */}
+      {moduleSlug && (
+        <Link href={`/learning/${moduleSlug}/quiz`} className="block">
+          <Button className="w-full gap-2 font-bold shadow-md">
+            Mulai Kerjakan Quiz
+            <ArrowRight className="size-4" />
+          </Button>
+        </Link>
+      )}
 
       {/* Footer info */}
       <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">

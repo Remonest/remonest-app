@@ -1,16 +1,20 @@
 "use server";
 
-import { getSupabaseServiceClient } from "@/lib/supabase/server";
+import { getSupabaseServiceClient, getSupabaseServerClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
+import { requireAuth } from "@/features/auth/actions/guards";
 import type {
   QuizConfigInput,
   QuestionInput,
   QuizResult,
   QuizWithQuestions,
   QuizConfig,
+  QuizConfigRow,
   Question,
   QuestionRow,
+  QuizAttemptResult,
 } from "@/features/learning-module/types/quiz";
+import { updateModuleProgress } from "./enrollment";
 
 // ============================================================
 // Quiz Configuration Actions
@@ -119,7 +123,7 @@ export async function createQuizWithQuestions(
       redirect: `/admin/learning`,
       quizConfigId: quizConfig.id,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       error: "Terjadi kesalahan saat menyimpan quiz",
@@ -192,7 +196,7 @@ export async function updateQuizConfig(
   const supabase = getSupabaseServiceClient();
 
   try {
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, unknown> = {};
     if (config.title !== undefined) updateData.title = config.title.trim();
     if (config.description !== undefined) updateData.description = config.description.trim() || null;
     if (config.durationMinutes !== undefined) updateData.duration_minutes = config.durationMinutes || null;
@@ -216,7 +220,7 @@ export async function updateQuizConfig(
     return {
       success: true,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       error: "Terjadi kesalahan saat mengupdate quiz",
@@ -249,7 +253,7 @@ export async function deleteQuiz(quizConfigId: string): Promise<QuizResult> {
     return {
       success: true,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       error: "Terjadi kesalahan saat menghapus quiz",
@@ -267,7 +271,7 @@ export async function updateQuestion(
   const supabase = getSupabaseServiceClient();
 
   try {
-    const updateData: Record<string, any> = {};
+    const updateData: Record<string, unknown> = {};
     if (question.questionText !== undefined) updateData.question_text = question.questionText.trim();
     if (question.options !== undefined) updateData.options = question.options;
     if (question.correctAnswer !== undefined) updateData.correct_answer = question.correctAnswer;
@@ -291,7 +295,7 @@ export async function updateQuestion(
     return {
       success: true,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       error: "Terjadi kesalahan saat mengupdate pertanyaan",
@@ -344,7 +348,7 @@ export async function addQuestionToQuiz(
     return {
       success: true,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       error: "Terjadi kesalahan saat menambahkan pertanyaan",
@@ -376,7 +380,7 @@ export async function deleteQuestion(questionId: string): Promise<QuizResult> {
     return {
       success: true,
     };
-  } catch (error) {
+  } catch (_error) {
     return {
       success: false,
       error: "Terjadi kesalahan saat menghapus pertanyaan",
@@ -388,7 +392,7 @@ export async function deleteQuestion(questionId: string): Promise<QuizResult> {
 // Helper Functions
 // ============================================================
 
-function mapRowToQuizConfig(row: any): QuizConfig {
+function mapRowToQuizConfig(row: QuizConfigRow): QuizConfig {
   return {
     id: row.id,
     moduleId: row.module_id,
@@ -415,4 +419,102 @@ function mapRowToQuestion(row: QuestionRow): Question {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
+}
+
+// ============================================================
+// User Quiz Actions
+// ============================================================
+
+/**
+ * Submit a quiz attempt, calculate score, and update progress
+ */
+export async function submitQuizAttempt(
+  quizConfigId: string,
+  answers: Record<string, string>, // questionId -> selectedOption
+  startedAt: string
+): Promise<QuizAttemptResult> {
+  const user = await requireAuth();
+  const supabase = getSupabaseServerClient();
+
+  try {
+    // 1. Fetch quiz config and questions for scoring
+    const quizData = await getQuizWithQuestions(quizConfigId);
+    if (!quizData) {
+      return { success: false, error: "Quiz tidak ditemukan" };
+    }
+
+    const { config, questions } = quizData;
+    const totalQuestions = questions.length;
+    
+    if (totalQuestions === 0) {
+      return { success: false, error: "Quiz tidak memiliki pertanyaan" };
+    }
+
+    // 2. Calculate score
+    let correctCount = 0;
+    questions.forEach((q) => {
+      if (answers[q.id] === q.correctAnswer) {
+        correctCount++;
+      }
+    });
+
+    const score = Math.round((correctCount / totalQuestions) * 100);
+    const passed = score >= config.passingGrade;
+
+    // 3. Save attempt to database
+    const { data: attempt, error: attemptError } = await supabase
+      .from("user_quiz_attempts")
+      .upsert({
+        user_id: user.id,
+        quiz_config_id: quizConfigId,
+        score,
+        passed,
+        answers,
+        started_at: startedAt,
+        completed_at: new Date().toISOString(),
+      }, {
+        onConflict: "user_id, quiz_config_id"
+      })
+      .select()
+      .single();
+
+    if (attemptError) {
+      console.error("Failed to save quiz attempt:", attemptError);
+      return { success: false, error: "Gagal menyimpan hasil quiz" };
+    }
+
+    // 4. Update module progress if passed
+    if (passed) {
+      // If they passed the quiz, we mark the module as 100% complete
+      // (Assuming the quiz is the final step)
+      await updateModuleProgress(config.moduleId, 100);
+    }
+
+    // Log activity
+    await supabase.from("activity_log").insert({
+      user_id: user.id,
+      action_type: passed ? "module_completed" : "quiz_failed",
+      title: passed 
+        ? `Lulus quiz "${config.title}" dengan skor ${score}%` 
+        : `Gagal quiz "${config.title}" dengan skor ${score}%`,
+      metadata: { 
+        quiz_config_id: quizConfigId, 
+        score, 
+        passed,
+        module_id: config.moduleId 
+      },
+    });
+
+    return {
+      success: true,
+      score,
+      passed,
+      correctCount,
+      totalQuestions,
+      attemptId: attempt.id,
+    };
+  } catch (error) {
+    console.error("Unexpected error in submitQuizAttempt:", error);
+    return { success: false, error: "Terjadi kesalahan saat memproses quiz" };
+  }
 }

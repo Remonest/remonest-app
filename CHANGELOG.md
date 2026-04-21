@@ -1,6 +1,27 @@
-# Changelog
+## [1.9.8] - 2026-04-21
 
-All notable changes to this project will be documented in this file.
+### 🐛 Fixed
+- CV Preview on mobile view in CV Builder: Ensured the CV preview is correctly displayed on mobile devices when the "Preview" tab is active by adjusting responsive classNames in `src/app/(main)/cv-builder/cv-builder-client.tsx`.
+
+## [1.9.7] - 2026-04-21
+
+### ✨ Added
+- **Professional CV Builder** (v1.0.0)
+  - Split-view real-time editor and preview
+  - High-fidelity PDF generation using `@react-pdf/renderer` (ATS-friendly)
+  - Database persistence via Supabase `user_cvs` table (Migration 023)
+  - Debounced auto-saving (3s) for seamless draft management
+  - Professional summary, dynamic experience, education, and skills/languages sections
+  - Modular component architecture in `src/features/portfolio/`
+
+### 🏗️ Changed
+- Refactored `CVBuilderPage` into Server/Client component pair for better performance and SEO
+- Migrated CV logic to feature-driven module structure
+- Replaced `jspdf` with `@react-pdf/renderer` for superior export quality
+
+### 📚 Documentation
+- Created `docs/guides/cv-builder-guide.md`
+- Updated database migration guide (Migration 023)
 
 ## [1.7.1] - 2026-04-13
 

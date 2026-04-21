@@ -144,3 +144,28 @@ export interface QuizWithQuestions {
   config: QuizConfig;
   questions: Question[];
 }
+
+// ============================================================
+// User Quiz Attempts
+// ============================================================
+
+export interface UserQuizAttempt {
+  id: string;
+  userId: string;
+  quizConfigId: string;
+  score: number;
+  passed: boolean;
+  answers: Record<string, string>; // Map of questionId -> selectedOption (A-E)
+  startedAt: string;
+  completedAt: string;
+}
+
+export interface QuizAttemptResult {
+  success: boolean;
+  error?: string;
+  score?: number;
+  passed?: boolean;
+  correctCount?: number;
+  totalQuestions?: number;
+  attemptId?: string;
+}

@@ -64,7 +64,7 @@ export function Footer() {
 
   return (
     <footer id="site-footer" className="py-0 md:py-6 pb-8 md:pb-10">
-      <div className="w-full max-w-[1200px] mx-auto px-4 md:px-8">
+      <div className="w-full max-w-300 mx-auto px-4 md:px-8">
         <div className="grid grid-cols-2 md:grid-cols-[1.4fr_1fr_1fr_1fr] gap-y-8 gap-x-4 md:gap-6 p-6 md:p-6 border border-border rounded-xl bg-card">
           {/* Brand - spans full width on mobile */}
           <div className="col-span-2 md:col-span-1">

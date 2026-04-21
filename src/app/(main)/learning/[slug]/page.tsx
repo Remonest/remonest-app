@@ -29,7 +29,11 @@ import {
   getUserModuleProgress,
   getUserEnrollments,
 } from "@/features/learning-module/actions/enrollment";
-import { getModuleReviews, submitReview, getUserReview } from "@/features/learning-module/actions/reviews";
+import {
+  getModuleReviews,
+  submitReview,
+  getUserReview,
+} from "@/features/learning-module/actions/reviews";
 import {
   LEARNING_CATEGORY_LABELS,
   LEARNING_CATEGORY_COLORS,
@@ -44,6 +48,7 @@ import CurriculumStepper from "@/features/learning-module/components/CurriculumS
 import { QuizPreview } from "@/features/learning-module/components/QuizPreview";
 import { CertificatePreview } from "@/features/learning-module/components/CertificatePreview";
 import ModuleCatalog from "@/features/learning-module/components/ModuleCatalog";
+import { getModuleQuizzes } from "@/features/learning-module/actions/quiz-actions";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -51,40 +56,72 @@ interface PageProps {
 
 // Simple Markdown → HTML renderer
 function renderMarkdown(md: string): string {
-  return md
-    // Code blocks
-    .replace(/```([\s\S]*?)```/g, '<pre class="bg-muted rounded-md p-4 my-4 overflow-x-auto text-sm font-mono"><code>$1</code></pre>')
-    // Inline code
-    .replace(/`([^`]+)`/g, '<code class="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">$1</code>')
-    // H2
-    .replace(/^## (.+)$/gm, '<h2 class="text-xl font-semibold mt-10 mb-4 text-foreground">$1</h2>')
-    // H3
-    .replace(/^### (.+)$/gm, '<h3 class="text-lg font-medium mt-8 mb-3 text-foreground">$1</h3>')
-    // H4
-    .replace(/^#### (.+)$/gm, '<h4 class="text-base font-medium mt-6 mb-2 text-foreground">$1</h4>')
-    // Bold + italic list items: - **term** — definition
-    .replace(/^- \*\*(.+?)\*\*\s*[—-]\s*(.+)$/gm, '<li class="text-muted-foreground mb-2"><strong class="text-foreground">$1</strong> — $2</li>')
-    // Bold list items: - **item**
-    .replace(/^- \*\*(.+?)\*\*$/gm, '<li class="text-muted-foreground mb-1"><strong class="text-foreground">$1</strong></li>')
-    // Regular list items
-    .replace(/^- (.+)$/gm, '<li class="text-muted-foreground mb-1">$1</li>')
-    // Numbered list items
-    .replace(/^(\d+)\. (.+)$/gm, '<li class="text-muted-foreground mb-1" style="list-style-type:decimal">$2</li>')
-    // Tables: header row
-    .replace(/^\|(.+?)\|$/gm, (match, content) => {
-      const cells = content.split('|').map((c: string) => c.trim());
-      if (cells.every((c: string) => /^[-]+$/.test(c))) return '';
-      return `<div class="flex gap-4 py-2 border-b border-border/50">${cells.map((c: string) => `<span class="flex-1 text-sm text-muted-foreground">${c}</span>`).join('')}</div>`;
-    })
-    // Horizontal rule
-    .replace(/^---$/gm, '<hr class="my-8 border-border/50" />')
-    // Paragraphs (non-empty lines)
-    .replace(/^(?!<[a-z])((?!<).+)$/gm, '<p class="text-muted-foreground leading-relaxed mb-2">$1</p>');
+  return (
+    md
+      // Code blocks
+      .replace(
+        /```([\s\S]*?)```/g,
+        '<pre class="bg-muted rounded-md p-4 my-4 overflow-x-auto text-sm font-mono"><code>$1</code></pre>',
+      )
+      // Inline code
+      .replace(
+        /`([^`]+)`/g,
+        '<code class="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">$1</code>',
+      )
+      // H2
+      .replace(
+        /^## (.+)$/gm,
+        '<h2 class="text-xl font-semibold mt-10 mb-4 text-foreground">$1</h2>',
+      )
+      // H3
+      .replace(
+        /^### (.+)$/gm,
+        '<h3 class="text-lg font-medium mt-8 mb-3 text-foreground">$1</h3>',
+      )
+      // H4
+      .replace(
+        /^#### (.+)$/gm,
+        '<h4 class="text-base font-medium mt-6 mb-2 text-foreground">$1</h4>',
+      )
+      // Bold + italic list items: - **term** — definition
+      .replace(
+        /^- \*\*(.+?)\*\*\s*[—-]\s*(.+)$/gm,
+        '<li class="text-muted-foreground mb-2"><strong class="text-foreground">$1</strong> — $2</li>',
+      )
+      // Bold list items: - **item**
+      .replace(
+        /^- \*\*(.+?)\*\*$/gm,
+        '<li class="text-muted-foreground mb-1"><strong class="text-foreground">$1</strong></li>',
+      )
+      // Regular list items
+      .replace(/^- (.+)$/gm, '<li class="text-muted-foreground mb-1">$1</li>')
+      // Numbered list items
+      .replace(
+        /^(\d+)\. (.+)$/gm,
+        '<li class="text-muted-foreground mb-1" style="list-style-type:decimal">$2</li>',
+      )
+      // Tables: header row
+      .replace(/^\|(.+?)\|$/gm, (match, content) => {
+        const cells = content.split("|").map((c: string) => c.trim());
+        if (cells.every((c: string) => /^[-]+$/.test(c))) return "";
+        return `<div class="flex gap-4 py-2 border-b border-border/50">${cells.map((c: string) => `<span class="flex-1 text-sm text-muted-foreground">${c}</span>`).join("")}</div>`;
+      })
+      // Horizontal rule
+      .replace(/^---$/gm, '<hr class="my-8 border-border/50" />')
+      // Paragraphs (non-empty lines)
+      .replace(
+        /^(?!<[a-z])((?!<).+)$/gm,
+        '<p class="text-muted-foreground leading-relaxed mb-2">$1</p>',
+      )
+  );
 }
 
 // Wrap list items in <ul>
 function wrapLists(html: string): string {
-  return html.replace(/(<li[^>]*>.*?<\/li>(?:\n|$))+/g, '<ul class="list-disc list-inside space-y-1 mb-4 ml-4">$&</ul>');
+  return html.replace(
+    /(<li[^>]*>.*?<\/li>(?:\n|$))+/g,
+    '<ul class="list-disc list-inside space-y-1 mb-4 ml-4">$&</ul>',
+  );
 }
 
 export default async function ModuleDetailPage({ params }: PageProps) {
@@ -106,14 +143,25 @@ export default async function ModuleDetailPage({ params }: PageProps) {
   }
 
   // Fetch all data in parallel
-  const [materials, lessons, relatedMods, enrollments, reviews, userReview] = await Promise.all([
+  const [
+    materials,
+    lessons,
+    relatedMods,
+    enrollments,
+    reviews,
+    userReview,
+    quizzes,
+  ] = await Promise.all([
     getPublishedMaterialsForModule(mod.id),
     getLessonsForModule(mod.id),
     getRelatedModules(mod.id, mod.category, 6),
     getUserEnrollments(),
     getModuleReviews(mod.id),
     getUserReview(mod.id),
+    getModuleQuizzes(mod.id),
   ]);
+
+  const hasPublishedQuiz = quizzes.some((q) => q.isPublished);
 
   // Auto-enroll on first visit
   await enrollUserInModule(mod.id);
@@ -129,24 +177,29 @@ export default async function ModuleDetailPage({ params }: PageProps) {
   const enrollmentState: "not_enrolled" | "enrolled" | "completed" = isCompleted
     ? "completed"
     : userEnrollment
-    ? "enrolled"
-    : "not_enrolled";
+      ? "enrolled"
+      : "not_enrolled";
 
   const categoryLabel = LEARNING_CATEGORY_LABELS[mod.category] || mod.category;
-  const categoryColor = LEARNING_CATEGORY_COLORS[mod.category] || "bg-gray-100 text-gray-700";
-  const difficultyLabel = DIFFICULTY_LABELS[mod.difficultyLevel] || mod.difficultyLevel;
-  const difficultyColor = DIFFICULTY_COLORS[mod.difficultyLevel] || "bg-gray-100 text-gray-700";
+  const categoryColor =
+    LEARNING_CATEGORY_COLORS[mod.category] || "bg-gray-100 text-gray-700";
+  const difficultyLabel =
+    DIFFICULTY_LABELS[mod.difficultyLevel] || mod.difficultyLevel;
+  const difficultyColor =
+    DIFFICULTY_COLORS[mod.difficultyLevel] || "bg-gray-100 text-gray-700";
 
   // Format enrollment count
   const formatEnrollment = (count: number) => {
-    if (count >= 1000) return `${(count / 1000).toFixed(1).replace(/\.0$/, "")}rb+ Terdaftar`;
+    if (count >= 1000)
+      return `${(count / 1000).toFixed(1).replace(/\.0$/, "")}rb+ Terdaftar`;
     return `${count}+ Terdaftar`;
   };
 
   // Format rating
-  const ratingDisplay = mod.averageRating > 0
-    ? `${mod.averageRating.toFixed(1)} (${reviews.length} ulasan)`
-    : "Belum ada ulasan";
+  const ratingDisplay =
+    mod.averageRating > 0
+      ? `${mod.averageRating.toFixed(1)} (${reviews.length} ulasan)`
+      : "Belum ada ulasan";
 
   // Build learning outcomes from module description
   const outcomes = [
@@ -159,15 +212,21 @@ export default async function ModuleDetailPage({ params }: PageProps) {
   // Build includes list
   const includes = [
     { icon: "monitor-play", text: `${mod.durationMin} jam video on-demand` },
-    { icon: "file-text", text: `${materials.length} artikel & template detail` },
+    {
+      icon: "file-text",
+      text: `${materials.length} artikel & template detail`,
+    },
     { icon: "award", text: "Sertifikat penyelesaian" },
     { icon: "infinity", text: "Akses seumur hidup" },
   ];
 
   // Completed lesson IDs (for now, all enrolled users have progress)
-  const completedLessonIds: string[] = isInProgress || isCompleted
-    ? lessons.slice(0, Math.floor((progress / 100) * lessons.length)).map((l) => l.id)
-    : [];
+  const completedLessonIds: string[] =
+    isInProgress || isCompleted
+      ? lessons
+          .slice(0, Math.floor((progress / 100) * lessons.length))
+          .map((l) => l.id)
+      : [];
 
   // User progress map for catalog
   const userProgressMap: Record<string, number> = {};
@@ -177,12 +236,18 @@ export default async function ModuleDetailPage({ params }: PageProps) {
 
   // Extract video lessons for curriculum
   const videoLessons = lessons.filter((l) => l.lessonType === "video");
-  const totalVideoHours = videoLessons.reduce((acc, l) => acc + l.durationMinutes, 0);
+  const totalVideoHours = videoLessons.reduce(
+    (acc, l) => acc + l.durationMinutes,
+    0,
+  );
 
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section */}
-      <section id="module-hero" className="border-b bg-gradient-to-b from-card to-background">
+      <section
+        id="module-hero"
+        className="border-b bg-gradient-to-b from-card to-background"
+      >
         <div className="mx-auto w-full max-w-[1200px] px-4 md:px-8">
           <div className="grid grid-cols-1 gap-8 py-12 lg:grid-cols-[1fr_400px] lg:items-start lg:gap-16">
             {/* Left Content */}
@@ -202,10 +267,14 @@ export default async function ModuleDetailPage({ params }: PageProps) {
 
               {/* Badges */}
               <div className="mb-4 flex items-center gap-3">
-                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${categoryColor}`}>
+                <span
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${categoryColor}`}
+                >
                   {categoryLabel}
                 </span>
-                <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${difficultyColor}`}>
+                <span
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${difficultyColor}`}
+                >
                   {difficultyLabel}
                 </span>
               </div>
@@ -223,13 +292,21 @@ export default async function ModuleDetailPage({ params }: PageProps) {
                 </span>
                 <span className="flex items-center gap-2">
                   <FileText className="h-[18px] w-[18px]" />
-                  {lessons.length > 0 ? `${lessons.length} Pelajaran` : `${materials.length} Materi`}
+                  {lessons.length > 0
+                    ? `${lessons.length} Pelajaran`
+                    : `${materials.length} Materi`}
                 </span>
                 <span className="flex items-center gap-2">
-                  <Star className="h-[18px] w-[18px]" style={{ color: "#eab308" }} />
+                  <Star
+                    className="h-[18px] w-[18px]"
+                    style={{ color: "#eab308" }}
+                  />
                   {ratingDisplay}
                 </span>
-                <Link href={`/learning/${mod.slug}/enrolled`} className="flex items-center gap-2 hover:text-foreground transition-colors">
+                <Link
+                  href={`/learning/${mod.slug}/enrolled`}
+                  className="flex items-center gap-2 hover:text-foreground transition-colors"
+                >
                   <Users className="h-[18px] w-[18px]" />
                   {formatEnrollment(mod.enrollmentCount)}
                 </Link>
@@ -244,12 +321,16 @@ export default async function ModuleDetailPage({ params }: PageProps) {
 
               {/* Learning Outcomes */}
               <div className="mt-8 rounded-xl border bg-card p-6">
-                <h3 className="mb-5 text-lg font-bold">Yang Akan Anda Pelajari</h3>
+                <h3 className="mb-5 text-lg font-bold">
+                  Yang Akan Anda Pelajari
+                </h3>
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {outcomes.map((outcome, i) => (
                     <div key={i} className="flex items-start gap-3">
                       <CheckCircle2 className="mt-0.5 h-[18px] w-[18px] shrink-0 text-emerald-500" />
-                      <span className="text-sm text-card-foreground">{outcome}</span>
+                      <span className="text-sm text-card-foreground">
+                        {outcome}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -287,13 +368,17 @@ export default async function ModuleDetailPage({ params }: PageProps) {
                   <EnrollButton
                     moduleId={mod.id}
                     moduleTitle={mod.title}
+                    moduleSlug={mod.slug}
                     progress={progress}
                     isCompleted={isCompleted}
                     materialsCount={materials.length}
+                    hasQuiz={hasPublishedQuiz}
                   />
 
                   {/* Includes */}
-                  <div className="text-sm font-semibold">Modul ini mencakup:</div>
+                  <div className="text-sm font-semibold">
+                    Modul ini mencakup:
+                  </div>
                   <div className="flex flex-col gap-3 text-sm text-muted-foreground">
                     {includes.map((item, i) => (
                       <div key={i} className="flex items-center gap-3">
@@ -326,7 +411,9 @@ export default async function ModuleDetailPage({ params }: PageProps) {
               ) : (
                 <div className="rounded-lg border bg-card p-8 text-center text-muted-foreground">
                   <FileText className="mx-auto mb-3 h-10 w-10 opacity-50" />
-                  <p className="text-sm">Materi pembelajaran akan segera tersedia</p>
+                  <p className="text-sm">
+                    Materi pembelajaran akan segera tersedia
+                  </p>
                 </div>
               )}
 
@@ -361,6 +448,7 @@ export default async function ModuleDetailPage({ params }: PageProps) {
             <div className="flex flex-col gap-6">
               {/* Quiz Preview */}
               <QuizPreview
+                moduleSlug={mod.slug}
                 question={SAMPLE_QUIZ_DATA.question}
                 options={SAMPLE_QUIZ_DATA.options}
                 passingGrade={70}
@@ -419,12 +507,9 @@ function MaterialCard({
 
   const isImageFile =
     hasFile && /\.(jpg|jpeg|png|webp|gif)(\?.*)?$/i.test(material.file_url!);
-  const isPdfFile =
-    hasFile && /\.(pdf)(\?.*)?$/i.test(material.file_url!);
+  const isPdfFile = hasFile && /\.(pdf)(\?.*)?$/i.test(material.file_url!);
 
-  const embedUrl = isVideo
-    ? extractVideoEmbedUrl(material.source_url)
-    : null;
+  const embedUrl = isVideo ? extractVideoEmbedUrl(material.source_url) : null;
 
   const showFile = hasFile && !isVideo;
 
@@ -459,12 +544,12 @@ function MaterialCard({
                   {material.source_type === "article"
                     ? "Artikel"
                     : material.source_type === "video"
-                    ? "Video"
-                    : material.source_type === "documentation"
-                    ? "Dokumentasi"
-                    : material.source_type === "tutorial"
-                    ? "Tutorial"
-                    : material.source_type}
+                      ? "Video"
+                      : material.source_type === "documentation"
+                        ? "Dokumentasi"
+                        : material.source_type === "tutorial"
+                          ? "Tutorial"
+                          : material.source_type}
                 </span>
               )}
               {isPdfFile && (
@@ -600,7 +685,7 @@ function extractVideoEmbedUrl(url: string | null): string | null {
   if (!url) return null;
 
   const ytMatch = url.match(
-    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/,
   );
   if (ytMatch) {
     return `https://www.youtube.com/embed/${ytMatch[1]}`;
