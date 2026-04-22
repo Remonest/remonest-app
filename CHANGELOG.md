@@ -1,3 +1,31 @@
+## [1.9.9] - 2026-04-22
+
+### ✨ Added
+- **Persistent Portfolio Builder**
+  - Full Supabase persistence for portfolio items (Migration 019 & 024)
+  - Support for Projects, Certificates, Achievements, and other items
+  - Cover image URL support with real-time preview in builder list
+  - Draft/Published status toggle
+  - External link and tag management
+- **Public Portfolio Enhancements**
+  - Support for both UUID and custom `username` slugs
+  - Enhanced responsive UI with "Share" functionality
+  - Profile header with professional headline, bio, location, and website
+  - Graceful empty states for new profiles
+- **Public CV Viewing**
+  - Dedicated public CV route `/cv/[userId]`
+  - "View CV" button on public portfolio pages (conditional on CV existence)
+  - Public read access for primary CVs (Migration 025)
+
+### 🏗️ Changed
+- Migrated user profile fields (`bio`, `location`, `headline`, `website`) to `user_profiles` for public access
+- Updated `getUserProfilePublic` server action to support multi-identifier lookup
+- Improved `PortfolioClient` with better mobile layout and image previews
+
+### 🗄️ Database
+- **Migration 024**: Added `headline`, `bio`, `location`, `website`, and `username` to `user_profiles`
+- **Migration 025**: Added public read policy for primary user CVs
+
 ## [1.9.8] - 2026-04-21
 
 ### 🐛 Fixed

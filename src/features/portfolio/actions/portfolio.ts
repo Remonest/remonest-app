@@ -9,21 +9,40 @@ import type {
 } from "../types/portfolio";
 
 // ============================================================
-// Public: Get user profile by ID (for public portfolio page)
+// Public: Get user profile by ID or Username (for public portfolio page)
 // ============================================================
 
 export async function getUserProfilePublic(
-  userId: string
-): Promise<{ full_name: string | null; avatar_url: string | null; headline: string | null; location: string | null; website: string | null; bio: string | null } | null> {
+  identifier: string
+): Promise<{ id: string; full_name: string | null; avatar_url: string | null; headline: string | null; location: string | null; website: string | null; bio: string | null } | null> {
   const supabase = getSupabaseServerClient();
 
-  const { data, error } = await supabase
+  // Try lookup by ID first (UUID format)
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+  
+  let query = supabase
     .from("user_profiles")
-    .select("full_name, avatar_url, headline, location, website, bio")
-    .eq("id", userId)
-    .single();
+    .select("id, full_name, avatar_url, headline, location, website, bio");
+
+  if (isUuid) {
+    query = query.eq("id", identifier);
+  } else {
+    query = query.eq("username", identifier);
+  }
+
+  const { data, error } = await query.single();
 
   if (error || !data) {
+    // If lookup by ID failed and identifier didn't look like UUID, it might still be a username
+    if (isUuid) {
+      const { data: dataByUsername, error: errorByUsername } = await supabase
+        .from("user_profiles")
+        .select("id, full_name, avatar_url, headline, location, website, bio")
+        .eq("username", identifier)
+        .single();
+      
+      if (!errorByUsername && dataByUsername) return dataByUsername as any;
+    }
     return null;
   }
 
@@ -278,9 +297,25 @@ export async function deletePortfolioItem(
 // ============================================================
 
 export async function getPublishedPortfolioItems(
-  userId: string
+  identifier: string
 ): Promise<PortfolioItem[]> {
   const supabase = getSupabaseServerClient();
+
+  // We need the internal user_id if identifier is a username
+  let userId = identifier;
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+
+  if (!isUuid) {
+    const { data: profile } = await supabase
+      .from("user_profiles")
+      .select("id")
+      .eq("username", identifier)
+      .single();
+    
+    if (profile) {
+      userId = profile.id;
+    }
+  }
 
   const { data, error } = await supabase
     .from("portfolio_items")

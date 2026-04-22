@@ -6,6 +6,32 @@ import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { CVData, cvDataSchema, UserCV } from "../types/cv";
 
 /**
+ * Fetch a user's primary CV (public)
+ */
+export async function getPublicCV(userId: string): Promise<UserCV | null> {
+  try {
+    const supabase = getSupabaseServerClient();
+
+    const { data, error } = await supabase
+      .from("user_cvs")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("is_primary", true)
+      .single();
+
+    if (error) {
+      if (error.code === "PGRST116") return null;
+      throw error;
+    }
+
+    return data as UserCV;
+  } catch (error) {
+    console.error("[getPublicCV] Error:", error);
+    return null;
+  }
+}
+
+/**
  * Fetch the current user's primary CV
  */
 export async function getUserCV(): Promise<UserCV | null> {

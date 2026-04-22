@@ -2,7 +2,7 @@
 
 Comprehensive documentation for the Remonest platform — a remote work hub for Indonesian professionals with learning modules, job board, CV/portfolio builder, and admin management.
 
-**Current Version:** v1.9.4 | [View Changelog](./CHANGELOG.md)
+**Current Version:** v1.9.9 | [View Changelog](./CHANGELOG.md)
 
 ---
 
@@ -57,7 +57,7 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
 - **[Demo Learning Module](./guides/demo-learning-module.md)** — 🆕 Seed, test full flow, cleanup
 - **[Social Media Icons](./guides/social-media-icons.md)** — Custom SVG icons for footer (Twitter, LinkedIn, Instagram)
 - **[Git Workflow](./guides/git-workflow.md)** — Commit messages, branching, PR guidelines
-- **[Database Migrations](./guides/database-migrations.md)** — Complete guide to all 18 migrations
+- **[Database Migrations](./guides/database-migrations.md)** — Complete guide to all 25 migrations
 - **[Admin Access Guide](./guides/admin-access.md)** — Step-by-step admin panel access instructions
 - **[Quick Admin Reference](./guides/quick-admin-access.md)** — Quick admin access steps
 - **[Adding New Features](./guides/new-feature.md)** — How to add features step-by-step
@@ -69,7 +69,7 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
 ```
 docs/
 ├── README.md                          # This file - Main documentation index
-├── CHANGELOG.md                       # Version history (v1.0.0 - v1.8.0)
+├── CHANGELOG.md                       # Version history
 ├── getting-started/                   # 🚀 Onboarding & overview
 │   ├── project-overview.md           # Tech stack, structure, conventions
 │   ├── implementation-guide.md       # Comprehensive implementation details
@@ -101,7 +101,7 @@ docs/
     ├── demo-learning-module.md       # 🆕 v1.8.0: seed demo module, full flow, cleanup
     ├── social-media-icons.md         # 🐦 Custom SVG icons (Twitter, LinkedIn, Instagram)
     ├── git-workflow.md               # 🔄 Commit messages, branching, PR guidelines
-    ├── database-migrations.md        # 🗄️ Complete guide to all 18 migrations
+    ├── database-migrations.md        # 🗄️ Complete guide to all 25 migrations
     ├── rls-policies.md               # 🔒 Complete RLS policy reference
     ├── rls-recursion-fix.md          # 🛠️ Fix for infinite recursion error
     ├── admin-action-logging.md       # 📊 Admin audit trail system
@@ -152,6 +152,9 @@ docs/
 - **Dashboard** (stats, activity, settings, applications)
 - **Dashboard Language Switcher** (EN/ID support for all dashboard pages)
 - **Profile Page** (role-aware UI for user, client, admin)
+- **Public Portfolio** (v1.9.9 — Persistent, UUID/Slug support, CV integration)
+- **CV Builder** (v1.0.0 — Real-time preview, PDF export, Supabase persistence)
+- **Portfolio Builder** (v1.0.0 — Persistent items, image support, draft management)
 
 #### Job Board System
 - **Job Board** (public listing, job posting, admin approval, client job management)
@@ -204,9 +207,6 @@ docs/
 - **Learning Resources** (tools, templates, ebooks, PDFs, external links)
 
 ### ⚠️ In Progress (Hardcoded/Mock Data)
-- Public portfolio (1 hardcoded portfolio)
-- CV builder (static UI, no persistence)
-- Portfolio builder (static UI, no persistence)
 - Feature pages language switcher (only dashboard pages translated)
 
 ### 🔧 API Route Placeholders (Not Connected)
@@ -281,7 +281,7 @@ You must apply all migrations for the app to work correctly:
 supabase db push
 ```
 
-**All Migrations (001–018):**
+**All Migrations (001–025):**
 - **001–002**: Core tables (`learning_modules`, `user_learning_progress`, etc.)
 - **003–010**: Job board, auth, activity logging
 - **011**: Complete RLS policies & admin action logging
@@ -291,6 +291,11 @@ supabase db push
 - **015–016**: Learning activity triggers
 - **017**: User profiles enhancements
 - **018**: Learning module revamp (`module_lessons`, `module_reviews`, enrollment/rating triggers)
+- **019**: Portfolio items table
+- **020-022**: Portfolio public read, profile access, module sections
+- **023**: User CVs table
+- **024**: Profile fields enhancements (headline, bio, username)
+- **025**: Public CV read policy
 
 See [Migration Guide](./guides/database-migrations.md) for details.
 
@@ -305,5 +310,5 @@ See [Migration Guide](./guides/database-migrations.md) for details.
 
 ---
 
-**Last Updated:** April 13, 2026
+**Last Updated:** April 22, 2026
 **Maintained By:** Development Team

@@ -46,4 +46,8 @@ export interface UserProfile {
   fullName: string;
   avatarUrl: string | null;
   email: string;
+  headline?: string | null;
+  location?: string | null;
+  bio?: string | null;
+  website?: string | null;
 }

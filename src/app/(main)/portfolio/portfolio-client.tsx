@@ -27,6 +27,7 @@ export default function PortfolioClient({ userId }: PortfolioClientProps) {
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
   const [newUrl, setNewUrl] = useState("");
+  const [newCoverImage, setNewCoverImage] = useState("");
   const [newTags, setNewTags] = useState("");
 
   useEffect(() => {
@@ -57,6 +58,7 @@ export default function PortfolioClient({ userId }: PortfolioClientProps) {
         title: newTitle,
         description: newDescription || undefined,
         external_url: newUrl || undefined,
+        cover_image_url: newCoverImage || undefined,
         tags: newTags
           ? newTags.split(",").map((t) => t.trim()).filter(Boolean)
           : [],
@@ -66,6 +68,7 @@ export default function PortfolioClient({ userId }: PortfolioClientProps) {
         setNewTitle("");
         setNewDescription("");
         setNewUrl("");
+        setNewCoverImage("");
         setNewTags("");
         setNewType("project");
         setShowAddForm(false);
@@ -227,6 +230,18 @@ export default function PortfolioClient({ userId }: PortfolioClientProps) {
                 />
               </div>
 
+              {/* Cover Image */}
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">Cover Image URL (optional)</label>
+                <input
+                  type="url"
+                  value={newCoverImage}
+                  onChange={(e) => setNewCoverImage(e.target.value)}
+                  placeholder="https://images.unsplash.com/..."
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+              </div>
+
               {/* Tags */}
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium">Tags (comma separated)</label>
@@ -280,7 +295,16 @@ export default function PortfolioClient({ userId }: PortfolioClientProps) {
                 key={item.id}
                 className="p-4 sm:p-5 border border-border rounded-xl bg-card group"
               >
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  {item.cover_image_url && (
+                    <div className="shrink-0">
+                      <img 
+                        src={item.cover_image_url} 
+                        alt="" 
+                        className="w-full sm:w-32 aspect-video object-cover rounded-lg border border-border"
+                      />
+                    </div>
+                  )}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="text-xs font-mono text-muted-foreground">
@@ -325,7 +349,7 @@ export default function PortfolioClient({ userId }: PortfolioClientProps) {
                   </div>
 
                   {/* Actions */}
-                  <div className="flex items-center gap-1 shrink-0">
+                  <div className="flex items-center gap-1 sm:flex-col sm:justify-start">
                     <button
                       onClick={() =>
                         handleTogglePublished(item.id, item.is_published)

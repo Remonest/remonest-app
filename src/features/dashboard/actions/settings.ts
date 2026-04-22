@@ -63,7 +63,7 @@ export async function getUserProfile(): Promise<UserProfile | null> {
 
   const { data, error } = await supabase
     .from("user_profiles")
-    .select("full_name, avatar_url")
+    .select("full_name, avatar_url, headline, location, bio, website")
     .eq("id", user.id)
     .single();
 
@@ -93,6 +93,10 @@ export async function getUserProfile(): Promise<UserProfile | null> {
     fullName: data.full_name ?? user.email?.split("@")[0] ?? "User",
     avatarUrl: data.avatar_url,
     email: user.email ?? "",
+    headline: data.headline,
+    location: data.location,
+    bio: data.bio,
+    website: data.website,
   };
 }
 
@@ -106,7 +110,9 @@ export async function saveProfileSettings(formData: FormData): Promise<{ success
 
   const parsed = profileSchema.safeParse({
     fullName: formData.get("fullName"),
+    headline: formData.get("headline"),
     location: formData.get("location"),
+    website: formData.get("website"),
     role: formData.get("role"),
     bio: formData.get("bio"),
   });
@@ -115,17 +121,24 @@ export async function saveProfileSettings(formData: FormData): Promise<{ success
     return { success: false, error: parsed.error.flatten().fieldErrors.fullName?.[0] || "Invalid input" };
   }
 
-  const { fullName, location, role, bio } = parsed.data;
+  const { fullName, headline, location, website, role, bio } = parsed.data;
 
   // Update user_profiles
   const { error: profileError } = await supabase
     .from("user_profiles")
-    .update({ full_name: fullName, updated_at: new Date().toISOString() })
+    .update({ 
+      full_name: fullName, 
+      headline,
+      location,
+      bio,
+      website,
+      updated_at: new Date().toISOString() 
+    })
     .eq("id", user.id);
 
   if (profileError) return { success: false, error: profileError.message };
 
-  // Upsert user_settings
+  // Upsert user_settings (keeping role here for now as it was there)
   const { error: settingsError } = await supabase
     .from("user_settings")
     .upsert(
