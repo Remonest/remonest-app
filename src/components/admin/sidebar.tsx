@@ -15,8 +15,11 @@ import {
   Activity,
   Upload,
   NotebookText,
+  Home,
 } from "lucide-react";
 import { SignOutButton } from "@/components/admin/sign-out-button";
+
+import { UserAvatar } from "@/components/user-avatar";
 
 const navItems = [
   { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
@@ -55,7 +58,7 @@ export function AdminSidebar() {
   );
 }
 
-export function MobileAdminHeader() {
+export function MobileAdminHeader({ user }: { user?: { fullName?: string, email?: string, avatarUrl?: string | null } }) {
   return (
     <header className="flex h-16 items-center justify-between border-b border-border px-4 lg:hidden">
       <Sheet>
@@ -73,11 +76,25 @@ export function MobileAdminHeader() {
             <span className="text-lg font-semibold">Admin Panel</span>
           </div>
 
+          <div className="flex items-center gap-3 border-b border-border px-6 py-4">
+            <UserAvatar src={user?.avatarUrl} name={user?.fullName} size="default" />
+            <div className="flex-1 min-w-0">
+              <p className="truncate text-sm font-medium">{user?.fullName || user?.email}</p>
+              <p className="truncate text-xs text-muted-foreground">Administrator</p>
+            </div>
+          </div>
+
           <AdminSidebar />
 
           <Separator />
 
-          <div className="p-4">
+          <div className="p-4 space-y-2">
+            <Link href="/dashboard" className="block">
+              <Button variant="secondary" className="w-full !h-11 gap-2 justify-start px-4">
+                <Home className="h-4 w-4" />
+                Back to Dashboard
+              </Button>
+            </Link>
             <SignOutButton />
           </div>
         </SheetContent>

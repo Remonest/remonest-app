@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/features/auth/actions/guards";
 import { getSupabaseServerClient } from "@/lib/supabase/server";
 import { profileSchema } from "@/features/dashboard/schemas/profile";
@@ -115,13 +116,14 @@ export async function saveProfileSettings(formData: FormData): Promise<{ success
     website: formData.get("website"),
     role: formData.get("role"),
     bio: formData.get("bio"),
+    avatarUrl: formData.get("avatarUrl"),
   });
 
   if (!parsed.success) {
     return { success: false, error: parsed.error.flatten().fieldErrors.fullName?.[0] || "Invalid input" };
   }
 
-  const { fullName, headline, location, website, role, bio } = parsed.data;
+  const { fullName, headline, location, website, role, bio, avatarUrl } = parsed.data;
 
   // Update user_profiles
   const { error: profileError } = await supabase
@@ -132,6 +134,7 @@ export async function saveProfileSettings(formData: FormData): Promise<{ success
       location,
       bio,
       website,
+      avatar_url: avatarUrl,
       updated_at: new Date().toISOString() 
     })
     .eq("id", user.id);
@@ -164,6 +167,10 @@ export async function saveProfileSettings(formData: FormData): Promise<{ success
       metadata: {},
     });
 
+  revalidatePath("/dashboard");
+  revalidatePath("/profile");
+  revalidatePath("/admin");
+
   return { success: true };
 }
 
@@ -190,6 +197,8 @@ export async function saveNotificationPreferences(formData: FormData): Promise<{
     );
 
   if (error) return { success: false, error: error.message };
+
+  revalidatePath("/dashboard/settings");
 
   return { success: true };
 }

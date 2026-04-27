@@ -2,7 +2,7 @@
 
 Comprehensive documentation for the Remonest platform — a remote work hub for Indonesian professionals with learning modules, job board, CV/portfolio builder, and admin management.
 
-**Current Version:** v1.9.9 | [View Changelog](./CHANGELOG.md)
+**Current Version:** v1.10.0 | [View Changelog](./CHANGELOG.md)
 
 ---
 
@@ -149,6 +149,7 @@ docs/
 
 #### Core Features
 - **Authentication System** (login, register, OAuth, email confirmation, password reset)
+- **Profile Photo Upload** (🆕 v1.10.0 — Client-side WebP compression, Supabase Storage integration, global avatar display)
 - **Dashboard** (stats, activity, settings, applications)
 - **Dashboard Language Switcher** (EN/ID support for all dashboard pages)
 - **Profile Page** (role-aware UI for user, client, admin)

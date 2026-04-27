@@ -7,6 +7,7 @@ import { TranslationProvider } from "@/lib/translations";
 import { getUserRoleInfo } from "@/lib/roles";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { DashboardRoleBadge } from "@/components/dashboard/role-badge";
+import { getUserProfile } from "@/features/dashboard/actions/settings";
 
 const MobileMenu = dynamic(() => import("@/components/mobile-menu"));
 
@@ -81,6 +82,13 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
 
   const roleInfo = await getUserRoleInfo();
   const role = await getUserRole();
+  const profile = await getUserProfile();
+
+  const headerUser = profile ? {
+    fullName: profile.fullName,
+    avatarUrl: profile.avatarUrl,
+    email: profile.email
+  } : null;
 
   return (
     <TranslationProvider>
@@ -114,12 +122,12 @@ async function DashboardShell({ children }: { children: React.ReactNode }) {
 
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-4">
-            <DashboardHeader role={role} />
+            <DashboardHeader role={role} user={headerUser} />
             <DashboardRoleBadge role={roleInfo} />
           </nav>
 
           {/* Mobile menu button */}
-          <MobileMenu roleInfo={roleInfo} role={role} />
+          <MobileMenu roleInfo={roleInfo} role={role} user={headerUser} />
         </div>
       </header>
 

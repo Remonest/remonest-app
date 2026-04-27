@@ -11,9 +11,12 @@ export default async function SettingsPage() {
     ? {
         fullName: profile.fullName ?? "",
         email: profile.email ?? "",
-        location: settings?.location ?? "",
-        role: settings?.role ?? "",
-        bio: settings?.bio ?? "",
+        location: profile.location ?? "",
+        role: profile.role ?? "",
+        bio: profile.bio ?? "",
+        avatarUrl: profile.avatarUrl ?? null,
+        headline: profile.headline ?? "",
+        website: profile.website ?? "",
       }
     : null;
 

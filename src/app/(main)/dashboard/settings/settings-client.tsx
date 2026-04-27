@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useActionState, useEffect } from "react";
+import { useState, useActionState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { User, Bell, Shield, Palette, Loader2, Check } from "lucide-react";
+import { User, Bell, Shield, Palette, Loader2, Check, Camera, Upload as UploadIcon, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   saveProfileSettings,
@@ -11,6 +11,9 @@ import {
 import { updatePassword } from "@/features/dashboard/actions/security";
 import { useTranslations } from "@/lib/translations";
 import type { UserSettings as UserSettingsType } from "@/features/dashboard/types/dashboard";
+import { UserAvatar } from "@/components/user-avatar";
+import { optimizeImage } from "@/lib/image-optimization";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 interface SettingsData {
   profile: {
@@ -19,6 +22,9 @@ interface SettingsData {
     location: string;
     role: string;
     bio: string;
+    avatarUrl: string | null;
+    headline: string;
+    website: string;
   } | null;
   settings: UserSettingsType | null;
 }
@@ -117,12 +123,23 @@ function ProfileTab({
     location: string;
     role: string;
     bio: string;
+    avatarUrl: string | null;
+    headline: string;
+    website: string;
   };
 }) {
   const { t } = useTranslations();
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(initialData.avatarUrl);
+  const [isUploading, setIsUploading] = useState(false);
+
   const [state, formAction, pending] = useActionState(
     async (_prev: { success: boolean; error?: string } | null, formData: FormData) => {
+      // Add avatarUrl to formData if it changed
+      if (avatarPreview) {
+        formData.append("avatarUrl", avatarPreview);
+      }
       return saveProfileSettings(formData);
     },
     null
@@ -137,95 +154,228 @@ function ProfileTab({
     }
   }, [state, router, t]);
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    try {
+      setIsUploading(true);
+      
+      // 1. Optimize image
+      const optimizedBlob = await optimizeImage(file, { maxWidth: 400, maxHeight: 400, quality: 0.8 });
+      
+      // 2. Upload to Supabase
+      const supabase = getSupabaseBrowserClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        toast.error("You must be logged in to upload an avatar");
+        return;
+      }
+
+      const fileName = `${user.id}/${Date.now()}.webp`;
+      const { data, error } = await supabase.storage
+        .from("avatars")
+        .upload(fileName, optimizedBlob, {
+          contentType: "image/webp",
+          upsert: true,
+        });
+
+      if (error) throw error;
+
+      // 3. Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from("avatars")
+        .getPublicUrl(data.path);
+
+      setAvatarPreview(publicUrl);
+      toast.success("Photo uploaded successfully");
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error(error.message || "Failed to upload image");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   return (
-    <form action={formAction} className="p-4 sm:p-5 border border-border rounded-xl bg-card space-y-4">
-      <h2 className="text-base sm:text-lg font-semibold text-foreground">
-        {t.dashboard.settings.profileInfo}
-      </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="flex flex-col gap-2">
-          <label htmlFor="fullName" className="text-sm font-medium">
-            {t.dashboard.settings.fullName}
-          </label>
+    <form action={formAction} className="p-4 sm:p-5 border border-border rounded-xl bg-card space-y-6">
+      <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center pb-2">
+        <div className="relative group">
+          <UserAvatar 
+            src={avatarPreview} 
+            name={initialData.fullName} 
+            className="size-20 sm:size-24 border-2 border-border"
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="absolute inset-0 flex items-center justify-center bg-black/40 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
+          >
+            {isUploading ? <Loader2 className="size-6 animate-spin" /> : <Camera className="size-6" />}
+          </button>
           <input
-            id="fullName"
-            name="fullName"
-            type="text"
-            defaultValue={initialData.fullName}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleFileChange}
+            className="hidden"
           />
         </div>
-        <div className="flex flex-col gap-2">
-          <label htmlFor="email" className="text-sm font-medium">
-            {t.dashboard.settings.email}
-          </label>
-          <input
-            id="email"
-            type="email"
-            defaultValue={initialData.email}
-            disabled
-            className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground cursor-not-allowed"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <label htmlFor="location" className="text-sm font-medium">
-            {t.dashboard.settings.location}
-          </label>
-          <input
-            id="location"
-            name="location"
-            type="text"
-            defaultValue={initialData.location}
-            placeholder={t.dashboard.settings.locationPlaceholder}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </div>
-        <div className="flex flex-col gap-2">
-          <label htmlFor="role" className="text-sm font-medium">
-            {t.dashboard.settings.role}
-          </label>
-          <input
-            id="role"
-            name="role"
-            type="text"
-            defaultValue={initialData.role}
-            placeholder={t.dashboard.settings.rolePlaceholder}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
+        <div className="flex-1 space-y-1">
+          <h3 className="text-lg font-semibold text-foreground">{t.dashboard.settings.profilePhoto || "Profile Photo"}</h3>
+          <p className="text-sm text-muted-foreground">
+            {t.dashboard.settings.profilePhotoDesc || "Upload a professional photo to build trust with employers. WebP format, max 2MB."}
+          </p>
+          <div className="flex gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploading}
+              className="inline-flex h-8 items-center justify-center rounded-md bg-secondary px-3 text-xs font-medium text-secondary-foreground transition-colors hover:bg-secondary/80 disabled:opacity-50"
+            >
+              <UploadIcon className="mr-1.5 size-3.5" />
+              {t.dashboard.settings.uploadNew || "Upload New"}
+            </button>
+            {avatarPreview && (
+              <button
+                type="button"
+                onClick={() => setAvatarPreview(null)}
+                className="inline-flex h-8 items-center justify-center rounded-md border border-input bg-background px-3 text-xs font-medium transition-colors hover:bg-accent hover:text-accent-foreground"
+              >
+                <X className="mr-1.5 size-3.5" />
+                {t.dashboard.settings.remove || "Remove"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
-      <div className="flex flex-col gap-2">
-        <label htmlFor="bio" className="text-sm font-medium">
-          {t.dashboard.settings.bio}
-        </label>
-        <textarea
-          id="bio"
-          name="bio"
-          rows={3}
-          defaultValue={initialData.bio}
-          placeholder={t.dashboard.settings.bioPlaceholder}
-          className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
-        />
-      </div>
-      <div className="flex justify-end">
-        <button
-          type="submit"
-          disabled={pending}
-          className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground whitespace-nowrap transition-colors hover:bg-primary/90 disabled:opacity-50"
-        >
-          {pending ? (
-            <>
-              <Loader2 className="mr-2 size-4 animate-spin" />
-              {t.dashboard.settings.saving}
-            </>
-          ) : (
-            t.dashboard.settings.saveChanges
-          )}
-        </button>
+
+      <Separator />
+
+      <div className="space-y-4 pt-2">
+        <h2 className="text-base sm:text-lg font-semibold text-foreground">
+          {t.dashboard.settings.profileInfo}
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="fullName" className="text-sm font-medium">
+              {t.dashboard.settings.fullName}
+            </label>
+            <input
+              id="fullName"
+              name="fullName"
+              type="text"
+              defaultValue={initialData.fullName}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="email" className="text-sm font-medium">
+              {t.dashboard.settings.email}
+            </label>
+            <input
+              id="email"
+              type="email"
+              defaultValue={initialData.email}
+              disabled
+              className="flex h-10 w-full rounded-md border border-input bg-muted px-3 py-2 text-sm text-muted-foreground cursor-not-allowed"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="headline" className="text-sm font-medium">
+              Headline
+            </label>
+            <input
+              id="headline"
+              name="headline"
+              type="text"
+              defaultValue={initialData.headline}
+              placeholder="e.g. Senior Frontend Engineer"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="location" className="text-sm font-medium">
+              {t.dashboard.settings.location}
+            </label>
+            <input
+              id="location"
+              name="location"
+              type="text"
+              defaultValue={initialData.location}
+              placeholder={t.dashboard.settings.locationPlaceholder}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="website" className="text-sm font-medium">
+              Website
+            </label>
+            <input
+              id="website"
+              name="website"
+              type="text"
+              defaultValue={initialData.website}
+              placeholder="https://yourwebsite.com"
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="role" className="text-sm font-medium">
+              {t.dashboard.settings.role}
+            </label>
+            <input
+              id="role"
+              name="role"
+              type="text"
+              defaultValue={initialData.role}
+              placeholder={t.dashboard.settings.rolePlaceholder}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </div>
+        </div>
+        <div className="flex flex-col gap-2">
+          <label htmlFor="bio" className="text-sm font-medium">
+            {t.dashboard.settings.bio}
+          </label>
+          <textarea
+            id="bio"
+            name="bio"
+            rows={3}
+            defaultValue={initialData.bio}
+            placeholder={t.dashboard.settings.bioPlaceholder}
+            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring resize-none"
+          />
+        </div>
+        <div className="flex justify-end pt-2">
+          <button
+            type="submit"
+            disabled={pending || isUploading}
+            className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground whitespace-nowrap transition-colors hover:bg-primary/90 disabled:opacity-50"
+          >
+            {pending ? (
+              <>
+                <Loader2 className="mr-2 size-4 animate-spin" />
+                {t.dashboard.settings.saving}
+              </>
+            ) : (
+              t.dashboard.settings.saveChanges
+            )}
+          </button>
+        </div>
       </div>
     </form>
   );
 }
+
+const Separator = () => <div className="h-px w-full bg-border" />;
 
 // ============================================================
 // Notifications Tab

@@ -11,6 +11,7 @@ export const profileSchema = z.object({
   website: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
   role: z.string().max(100).optional(),
   bio: z.string().max(1000).optional(),
+  avatarUrl: z.string().url().optional().nullable(),
 });
 
 export type ProfileInput = z.infer<typeof profileSchema>;

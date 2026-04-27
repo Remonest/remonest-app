@@ -9,12 +9,19 @@ import { logoutAction } from "@/features/auth/actions/session"
 import { getUserRoleInfo } from "@/lib/roles"
 import { useTranslations } from "@/lib/translations"
 
+import { UserAvatar } from "@/components/user-avatar"
+
 interface MobileMenuProps {
   roleInfo: Awaited<ReturnType<typeof getUserRoleInfo>>;
   role: "admin" | "user" | "client" | null;
+  user: {
+    fullName: string | null
+    avatarUrl: string | null
+    email: string | null
+  } | null
 }
 
-export default function MobileMenu({ roleInfo, role }: MobileMenuProps) {
+export default function MobileMenu({ roleInfo, role, user }: MobileMenuProps) {
   const [open, setOpen] = useState(false)
   const [isVisible, setIsVisible] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
@@ -79,6 +86,15 @@ export default function MobileMenu({ roleInfo, role }: MobileMenuProps) {
           }`}
         >
           <nav className="flex flex-col gap-2 p-4 border border-border rounded-xl bg-card shadow-lg">
+            {/* User Info Section */}
+            <div className="flex items-center gap-3 px-3 py-2 mb-1 border-b border-border pb-3">
+              <UserAvatar src={user?.avatarUrl} name={user?.fullName} size="lg" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground truncate">{user?.fullName}</p>
+                <p className="text-xs text-muted-foreground truncate">{user?.email}</p>
+              </div>
+            </div>
+
             {/* Role Badge in Mobile Menu */}
             {roleInfo && (
               <div className="mb-1 px-3 py-2">

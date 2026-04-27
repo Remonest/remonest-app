@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { optimizeImageBuffer } from "@/lib/server-image-optimization";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
@@ -52,24 +53,32 @@ export async function POST(request: NextRequest) {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Generate unique filename: timestamp-random-originalname
-    const ext = file.name.split(".").pop();
-    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    let buffer = Buffer.from(arrayBuffer);
+    let finalMimeType = file.type;
+
+    // Optimize image if necessary
+    if (isImage) {
+      const optimized = await optimizeImageBuffer(buffer, file.type);
+      buffer = optimized.buffer;
+      finalMimeType = optimized.mimeType;
+    }
+
+    // Generate unique filename: timestamp-random-originalname
+    const ext = finalMimeType === 'image/webp' ? 'webp' : file.name.split(".").pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
     const { data, error } = await supabase.storage
       .from(BUCKET)
       .upload(fileName, buffer, {
-        contentType: file.type,
+        contentType: finalMimeType,
         cacheControl: "3600",
         upsert: false,
       });
 
     if (error) {
       return NextResponse.json(
-        { error: "Gagal mengupload file" },
+        { error: "Gagal mengupload file: " + error.message },
         { status: 500 }
       );
     }
@@ -78,12 +87,12 @@ export async function POST(request: NextRequest) {
       success: true,
       path: fileName,
       url: `/api/learning/file/${fileName}`,
-      size: file.size,
-      type: file.type,
+      size: buffer.length, // use optimized buffer size
+      type: finalMimeType,
     });
-  } catch {
+  } catch (err: any) {
     return NextResponse.json(
-      { error: "Gagal mengupload file" },
+      { error: "Gagal mengupload file: " + err.message },
       { status: 500 }
     );
   }

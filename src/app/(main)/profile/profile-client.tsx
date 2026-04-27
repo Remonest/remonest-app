@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { saveProfileSettings } from "@/features/dashboard/actions/settings";
+import { UserAvatar } from "@/components/user-avatar";
 
 interface ProfileData {
   fullName: string;
@@ -68,19 +69,11 @@ export default function ProfileClient({ data }: { data: ProfileData }) {
           <div className="flex flex-col sm:flex-row items-start gap-4 -mt-16 sm:-mt-20">
             {/* Avatar */}
             <div className="relative">
-              <div className="size-28 sm:size-32 rounded-2xl border-4 border-background bg-muted flex items-center justify-center overflow-hidden shadow-lg">
-                {data.avatarUrl ? (
-                  <img
-                    src={data.avatarUrl}
-                    alt={data.fullName}
-                    className="size-full object-cover"
-                  />
-                ) : (
-                  <span className="text-3xl sm:text-4xl font-semibold text-muted-foreground">
-                    {data.fullName.charAt(0).toUpperCase()}
-                  </span>
-                )}
-              </div>
+              <UserAvatar 
+                src={data.avatarUrl} 
+                name={data.fullName} 
+                className="size-28 sm:size-32 rounded-2xl border-4 border-background bg-muted shadow-lg" 
+              />
               <div className="absolute -bottom-1 -right-1 size-5 sm:size-6 bg-green-500 rounded-full border-2 border-background" />
             </div>
 

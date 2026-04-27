@@ -6,13 +6,20 @@ import { LogOut, LayoutDashboard, Briefcase, Settings, Shield, FileText, Award }
 import { Button } from "@/components/ui/button"
 import { useTranslations } from "@/lib/translations"
 import { LanguageSwitcher } from "@/components/landing/language-switcher"
+import { ThemeToggle } from "@/components/landing/theme-toggle"
 import { logoutAction } from "@/features/auth/actions/session"
+
+import { UserAvatar } from "@/components/user-avatar"
 
 interface DashboardHeaderProps {
   role: "admin" | "user" | "client" | null
+  user: {
+    fullName: string | null
+    avatarUrl: string | null
+  } | null
 }
 
-export function DashboardHeader({ role }: DashboardHeaderProps) {
+export function DashboardHeader({ role, user }: DashboardHeaderProps) {
   const { t, language, setLanguage } = useTranslations()
   const pathname = usePathname()
 
@@ -102,6 +109,17 @@ export function DashboardHeader({ role }: DashboardHeaderProps) {
         currentLanguage={language}
         onLanguageChange={setLanguage}
       />
+
+      <ThemeToggle />
+
+      <Link href="/dashboard/settings" className="mx-1">
+        <UserAvatar 
+          src={user?.avatarUrl} 
+          name={user?.fullName} 
+          size="default" 
+          className="border border-border hover:ring-2 hover:ring-primary/20 transition-all"
+        />
+      </Link>
 
       <form
         action={async () => {

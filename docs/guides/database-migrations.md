@@ -19,10 +19,10 @@ Complete guide to all database migrations in the Remonest App.
 
 ## 📊 Migration Overview
 
-**Total Migrations:** 22
+**Total Migrations:** 27
 **Database:** PostgreSQL (Supabase)
 **Migration Tool:** Supabase CLI
-**Latest Migration:** 022 (add_module_sections)
+**Latest Migration:** 027 (add_avatars_storage)
 **Naming Convention:** `{number}_{action}_{subject}.sql`
 
 ---
@@ -322,6 +322,11 @@ Before creating a new migration file, verify:
 | 020 | `portfolio_public_read` | Apr 13, 2026 | Public read access for portfolios | ✅ Applied |
 | 021 | `portfolio_user_profiles_read` | Apr 13, 2026 | User profile access for portfolios | ✅ Applied |
 | 022 | `add_module_sections` | Apr 14, 2026 | Group lessons into sections for Flow Builder | ✅ Applied |
+| 023 | `add_user_cvs` | Apr 21, 2026 | User CVs table for CV builder | ✅ Applied |
+| 024 | `add_profile_fields_to_user_profiles` | Apr 22, 2026 | Add bio, location, headline, website, username | ✅ Applied |
+| 025 | `add_cv_public_read` | Apr 22, 2026 | Public read access for user CVs | ✅ Applied |
+| 026 | `add_quiz_update_policy` | Apr 25, 2026 | Fix admin update policy for quizzes | ✅ Applied |
+| 027 | `add_avatars_storage` | Apr 27, 2026 | Avatars storage bucket and RLS policies | ✅ Applied |
 
 ---
 
@@ -1007,7 +1012,7 @@ When creating new migrations, follow this template:
 
 ---
 
-**Last Updated:** April 11, 2026
-**Migration Version:** 014
+**Last Updated:** April 27, 2026
+**Migration Version:** 027
 **Naming Convention:** `{number}_{action}_{subject}.sql`
 **Status:** ✅ All migrations applied successfully

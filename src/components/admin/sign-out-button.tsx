@@ -14,7 +14,7 @@ export function SignOutButton() {
       <Button
         type="submit"
         variant="outline"
-        className="w-full !h-11 gap-2"
+        className="w-full !h-11 gap-2 justify-start px-4 text-destructive hover:text-destructive hover:bg-destructive/10"
       >
         <LogOut className="h-4 w-4" />
         Sign Out

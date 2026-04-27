@@ -1,11 +1,13 @@
 import { Suspense } from "react";
 import dynamic from "next/dynamic";
+import Link from "next/link";
 import { requireAdmin } from "@/lib/admin/require-admin";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LayoutDashboard, LogOut } from "lucide-react";
+import { LayoutDashboard, LogOut, Home } from "lucide-react";
 
 import { ForceLightTheme } from "@/components/admin/force-light-theme";
+import { UserAvatar } from "@/components/user-avatar";
 
 const AdminSidebar = dynamic(() => import("@/components/admin/sidebar").then((mod) => ({ default: mod.AdminSidebar })));
 const MobileAdminHeader = dynamic(() => import("@/components/admin/sidebar").then((mod) => ({ default: mod.MobileAdminHeader })));
@@ -56,29 +58,40 @@ async function AdminShell({ children }: { children: React.ReactNode }) {
         <AdminSidebar />
 
         <div className="border-t border-border p-4">
-          <div className="mb-3 rounded-lg bg-accent p-3">
-            <p className="text-sm font-medium">{admin.full_name || admin.email}</p>
-            <p className="text-xs text-muted-foreground">Administrator</p>
+          <div className="mb-3 flex items-center gap-3 rounded-lg bg-accent p-3">
+            <UserAvatar src={admin.avatar_url} name={admin.full_name} size="default" />
+            <div className="flex-1 min-w-0">
+              <p className="truncate text-sm font-medium">{admin.full_name || admin.email}</p>
+              <p className="truncate text-xs text-muted-foreground">Administrator</p>
+            </div>
           </div>
-          <form
-            action={async () => {
-              "use server";
-              const { logoutAction } = await import("@/features/auth/actions/session");
-              await logoutAction();
-            }}
-          >
-            <Button type="submit" variant="outline" size="sm" className="w-full gap-2">
-              <LogOut className="h-4 w-4" />
-              Sign Out
-            </Button>
-          </form>
+          <div className="space-y-2">
+            <Link href="/dashboard" className="block w-full">
+              <Button variant="secondary" size="sm" className="w-full gap-2 justify-start">
+                <Home className="h-4 w-4" />
+                Back to Dashboard
+              </Button>
+            </Link>
+            <form
+              action={async () => {
+                "use server";
+                const { logoutAction } = await import("@/features/auth/actions/session");
+                await logoutAction();
+              }}
+            >
+              <Button type="submit" variant="outline" size="sm" className="w-full gap-2 justify-start text-destructive hover:text-destructive hover:bg-destructive/10">
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </Button>
+            </form>
+          </div>
         </div>
       </aside>
 
       {/* Main content */}
       <div className="flex flex-1 flex-col">
         {/* Mobile header */}
-        <MobileAdminHeader />
+        <MobileAdminHeader user={{ fullName: admin.full_name, email: admin.email, avatarUrl: admin.avatar_url }} />
 
         <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
       </div>

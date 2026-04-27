@@ -41,7 +41,7 @@ export function ThemeToggle() {
     <button
       onClick={toggleTheme}
       aria-label="Toggle theme"
-      className="inline-flex items-center h-9 md:h-10 px-1 md:px-2.5 border border-border rounded-full bg-secondary text-foreground text-sm font-medium whitespace-nowrap transition-colors"
+      className="inline-flex items-center h-9 md:h-10 px-1 md:px-2.5 gap-1.5 border border-border rounded-full bg-secondary text-foreground text-sm font-medium whitespace-nowrap transition-colors"
     >
       <div className="w-11 h-6 md:w-12 md:h-7 rounded-full bg-accent p-0.5 relative overflow-hidden">
         <div

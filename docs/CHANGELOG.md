@@ -7,6 +7,63 @@ All notable changes to the Remonest App project.
 
 ---
 
+## [v2.1.2] - April 27, 2026 (Night)
+
+### 🚀 Performance & Storage
+- **Server-Side Image Optimization**
+  - Integrated `sharp` for automated, high-performance image processing.
+  - All image uploads (`/api/upload`) are now automatically resized (max 1200px) and converted to **WebP** format.
+  - Non-image files (PDF, Word, Excel) remain untouched.
+  - Significantly reduced storage footprint and improved load times for learning materials.
+
+### 🐛 Fixed
+- **File Upload API**
+  - Updated upload route to handle optimized buffer streams correctly.
+  - Dynamically updated file extensions and MIME types for optimized images.
+
+---
+
+## [v2.1.1] - April 27, 2026
+
+### ✨ Added
+- **Dashboard Theme Toggle**
+  - Integrated `ThemeToggle` component into `DashboardHeader` for seamless light/dark mode switching.
+  - Used project-native theme implementation to ensure consistency and avoid module dependency errors.
+
+### 🏗️ Changed
+- **Admin Sidebar UI Overhaul**
+  - Added "Back to Dashboard" navigation button in both desktop sidebar and mobile menu.
+  - Improved button alignment and hierarchy for logout/dashboard actions.
+  - Standardized destructive styling for the Sign Out button.
+
+### 🐛 Fixed
+- **Runtime Error in Login Page**
+  - Fixed an unhandled server response error in `LoginPage` by ensuring strict server action compliance and improved error boundaries.
+- **Header Dependency Error**
+  - Resolved `next-themes` module resolution error by migrating to the internal `ThemeToggle` implementation.
+
+---
+
+## [v2.1.0] - April 27, 2026
+
+### ✨ Added
+- **Profile Photo Upload System**
+  - **Client-side Optimization** — Automated image compression and WebP conversion using Canvas API to reduce storage usage and improve load times.
+  - **Supabase Storage Integration** — Dedicated `avatars` bucket with Row-Level Security (RLS) policies for user-specific folder management (Migration 027).
+  - **Global Avatar Display** — Integrated user avatars across the entire dashboard flow, including Header, Mobile Menu, Admin Sidebar, and Profile page.
+  - **Initials Fallback** — Automatic generation of initials from user's full name when no photo is uploaded.
+  - **Settings Management** — Live preview and upload management in the Profile Settings tab.
+
+### 🏗️ Changed
+- Updated `saveProfileSettings` server action to handle persistent avatar URLs.
+- Enhanced `DashboardHeader` and `MobileMenu` with user profile awareness.
+- Standardized user profile displays using the new `UserAvatar` component.
+
+### 🗄️ Database
+- **Migration 027**: Created `avatars` storage bucket with selective RLS policies (public read, private write per user).
+
+---
+
 ## [v2.0.0] - April 27, 2026
 
 ### 🐛 Bug Fixes
@@ -907,13 +964,17 @@ supabase db remote --list
 
 | Version | Date | Key Features |
 |---------|------|--------------|
-| v1.7.0 | Apr 13, 2026 | Learning module revamp: lessons, reviews, admin list, public detail page |
+| v2.1.0 | Apr 27, 2026 | Profile photo upload, client-side compression, WebP conversion |
+| v2.0.0 | Apr 27, 2026 | Portfolio access fixes, quiz submission warnings |
+| v1.9.9 | Apr 22, 2026 | Persistent Portfolio, Public CV, Profile field migration |
+| v1.8.0 | Apr 13, 2026 | Certificate system overhaul (html2canvas) |
+| v1.7.0 | Apr 13, 2026 | Learning module revamp: lessons, reviews, admin list |
 | v1.5.0 | Apr 11, 2026 | Login/logout activity tracking |
-| v1.2.0 | Apr 10, 2026 (PM) | Admin logging, Complete RLS, Bug fixes, Social icons |
+| v1.2.0 | Apr 10, 2026 (PM) | Admin logging, Complete RLS, Bug fixes |
 | v1.1.0 | Apr 10, 2026 (AM) | Job detail modal v1.1.0 |
 | v1.0.0 | Apr 7-9, 2026 | Initial feature set |
 
 ---
 
-**Last Updated:** April 13, 2026
+**Last Updated:** April 27, 2026
 **Maintained By:** Development Team
