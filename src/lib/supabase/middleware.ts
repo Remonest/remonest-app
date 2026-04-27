@@ -41,16 +41,11 @@ export async function updateSession(
     },
   });
 
-  // Refresh the session — Supabase will issue new cookies if the
-  // access token has expired and a valid refresh token exists.
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
   // Get the current user (validates the session server-side).
+  // This will also refresh the session if it's expired.
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
-  return { response, user, session };
+  return { response, user, session: null };
 }
