@@ -33,21 +33,30 @@ export async function POST(request: NextRequest) {
     // Validate file size (different limits per type)
     const isPdf = file.type === "application/pdf";
     const isImage = file.type.startsWith("image/");
-    const maxSize = isPdf ? MAX_PDF_SIZE : isImage ? MAX_IMAGE_SIZE : MAX_DOC_SIZE;
+    const maxSize = isPdf
+      ? MAX_PDF_SIZE
+      : isImage
+        ? MAX_IMAGE_SIZE
+        : MAX_DOC_SIZE;
 
     if (file.size > maxSize) {
       const sizeMB = (maxSize / (1024 * 1024)).toFixed(0);
       return NextResponse.json(
-        { error: `Ukuran file maksimal ${sizeMB}MB untuk ${isPdf ? "PDF" : "gambar/dokumen"}` },
-        { status: 400 }
+        {
+          error: `Ukuran file maksimal ${sizeMB}MB untuk ${isPdf ? "PDF" : "gambar/dokumen"}`,
+        },
+        { status: 400 },
       );
     }
 
     // Validate file type
     if (!ALLOWED_TYPES.includes(file.type)) {
       return NextResponse.json(
-        { error: "Tipe file tidak didukung. Hanya PDF, gambar (JPEG/PNG/WebP/GIF), dan dokumen Word/Excel." },
-        { status: 400 }
+        {
+          error:
+            "Tipe file tidak didukung. Hanya PDF, gambar (JPEG/PNG/WebP/GIF), dan dokumen Word/Excel.",
+        },
+        { status: 400 },
       );
     }
 
@@ -60,12 +69,13 @@ export async function POST(request: NextRequest) {
     // Optimize image if necessary
     if (isImage) {
       const optimized = await optimizeImageBuffer(buffer, file.type);
-      buffer = optimized.buffer;
+      buffer = Buffer.from(optimized.buffer);
       finalMimeType = optimized.mimeType;
     }
 
     // Generate unique filename: timestamp-random-originalname
-    const ext = finalMimeType === 'image/webp' ? 'webp' : file.name.split(".").pop();
+    const ext =
+      finalMimeType === "image/webp" ? "webp" : file.name.split(".").pop();
     const fileName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
 
     const { data, error } = await supabase.storage
@@ -79,7 +89,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       return NextResponse.json(
         { error: "Gagal mengupload file: " + error.message },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -93,7 +103,7 @@ export async function POST(request: NextRequest) {
   } catch (err: any) {
     return NextResponse.json(
       { error: "Gagal mengupload file: " + err.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

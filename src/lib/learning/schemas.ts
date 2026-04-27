@@ -15,12 +15,7 @@ export const LEARNING_LEVELS = [
   "advanced",
 ] as const;
 
-export const CONTENT_TYPES = [
-  "article",
-  "video",
-  "exercise",
-  "quiz",
-] as const;
+export const CONTENT_TYPES = ["article", "video", "exercise", "quiz"] as const;
 
 export type LearningCategory = (typeof LEARNING_CATEGORIES)[number];
 export type LearningLevel = (typeof LEARNING_LEVELS)[number];
@@ -73,3 +68,5 @@ export const moduleContentSchema = z.object({
 });
 
 export type ModuleContentInput = z.infer<typeof moduleContentSchema>;
+
+export const pathURL = `https://remonest-app.vercel.app/`;

@@ -2,7 +2,17 @@
 
 import { useState, useActionState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { User, Bell, Shield, Palette, Loader2, Check, Camera, Upload as UploadIcon, X } from "lucide-react";
+import {
+  User,
+  Bell,
+  Shield,
+  Palette,
+  Loader2,
+  Check,
+  Camera,
+  Upload as UploadIcon,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   saveProfileSettings,
@@ -29,17 +39,17 @@ interface SettingsData {
   settings: UserSettingsType | null;
 }
 
-export default function SettingsClient({
-  data,
-}: {
-  data: SettingsData;
-}) {
+export default function SettingsClient({ data }: { data: SettingsData }) {
   const { t } = useTranslations();
   const [activeTab, setActiveTab] = useState("profile");
 
   const tabs = [
     { id: "profile", label: t.dashboard.settings.profile, icon: User },
-    { id: "notifications", label: t.dashboard.settings.notifications, icon: Bell },
+    {
+      id: "notifications",
+      label: t.dashboard.settings.notifications,
+      icon: Bell,
+    },
     { id: "appearance", label: t.dashboard.settings.appearance, icon: Palette },
     { id: "security", label: t.dashboard.settings.security, icon: Shield },
   ];
@@ -50,6 +60,9 @@ export default function SettingsClient({
     location: "",
     role: "",
     bio: "",
+    avatarUrl: null,
+    headline: "",
+    website: "",
   };
 
   const notifData = {
@@ -84,7 +97,15 @@ export default function SettingsClient({
               }`}
             >
               <tab.icon className="size-3.5 sm:size-4" />
-              <span className="sm:hidden">{tab.label === "Profile" ? "Profile" : tab.label === "Notifications" ? "Notifs" : tab.label === "Appearance" ? "Theme" : "Secure"}</span>
+              <span className="sm:hidden">
+                {tab.label === "Profile"
+                  ? "Profile"
+                  : tab.label === "Notifications"
+                    ? "Notifs"
+                    : tab.label === "Appearance"
+                      ? "Theme"
+                      : "Secure"}
+              </span>
               <span className="hidden sm:inline">{tab.label}</span>
             </button>
           ))}
@@ -92,12 +113,18 @@ export default function SettingsClient({
 
         {/* Profile Tab */}
         {activeTab === "profile" && (
-          <ProfileTab key={`profile-${profileData.fullName}-${profileData.email}`} initialData={profileData} />
+          <ProfileTab
+            key={`profile-${profileData.fullName}-${profileData.email}`}
+            initialData={profileData}
+          />
         )}
 
         {/* Notifications Tab */}
         {activeTab === "notifications" && (
-          <NotificationsTab key={`notif-${notifData.emailNotifications}-${notifData.jobAlerts}`} initialData={notifData} />
+          <NotificationsTab
+            key={`notif-${notifData.emailNotifications}-${notifData.jobAlerts}`}
+            initialData={notifData}
+          />
         )}
 
         {/* Appearance Tab */}
@@ -131,18 +158,23 @@ function ProfileTab({
   const { t } = useTranslations();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(initialData.avatarUrl);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(
+    initialData.avatarUrl,
+  );
   const [isUploading, setIsUploading] = useState(false);
 
   const [state, formAction, pending] = useActionState(
-    async (_prev: { success: boolean; error?: string } | null, formData: FormData) => {
+    async (
+      _prev: { success: boolean; error?: string } | null,
+      formData: FormData,
+    ) => {
       // Add avatarUrl to formData if it changed
       if (avatarPreview) {
         formData.append("avatarUrl", avatarPreview);
       }
       return saveProfileSettings(formData);
     },
-    null
+    null,
   );
 
   useEffect(() => {
@@ -165,14 +197,20 @@ function ProfileTab({
 
     try {
       setIsUploading(true);
-      
+
       // 1. Optimize image
-      const optimizedBlob = await optimizeImage(file, { maxWidth: 400, maxHeight: 400, quality: 0.8 });
-      
+      const optimizedBlob = await optimizeImage(file, {
+        maxWidth: 400,
+        maxHeight: 400,
+        quality: 0.8,
+      });
+
       // 2. Upload to Supabase
       const supabase = getSupabaseBrowserClient();
-      const { data: { user } } = await supabase.auth.getUser();
-      
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
       if (!user) {
         toast.error("You must be logged in to upload an avatar");
         return;
@@ -189,9 +227,9 @@ function ProfileTab({
       if (error) throw error;
 
       // 3. Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from("avatars")
-        .getPublicUrl(data.path);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("avatars").getPublicUrl(data.path);
 
       setAvatarPreview(publicUrl);
       toast.success("Photo uploaded successfully");
@@ -204,12 +242,15 @@ function ProfileTab({
   };
 
   return (
-    <form action={formAction} className="p-4 sm:p-5 border border-border rounded-xl bg-card space-y-6">
+    <form
+      action={formAction}
+      className="p-4 sm:p-5 border border-border rounded-xl bg-card space-y-6"
+    >
       <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center pb-2">
         <div className="relative group">
-          <UserAvatar 
-            src={avatarPreview} 
-            name={initialData.fullName} 
+          <UserAvatar
+            src={avatarPreview}
+            name={initialData.fullName}
             className="size-20 sm:size-24 border-2 border-border"
           />
           <button
@@ -218,7 +259,11 @@ function ProfileTab({
             disabled={isUploading}
             className="absolute inset-0 flex items-center justify-center bg-black/40 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
           >
-            {isUploading ? <Loader2 className="size-6 animate-spin" /> : <Camera className="size-6" />}
+            {isUploading ? (
+              <Loader2 className="size-6 animate-spin" />
+            ) : (
+              <Camera className="size-6" />
+            )}
           </button>
           <input
             ref={fileInputRef}
@@ -229,9 +274,12 @@ function ProfileTab({
           />
         </div>
         <div className="flex-1 space-y-1">
-          <h3 className="text-lg font-semibold text-foreground">{t.dashboard.settings.profilePhoto || "Profile Photo"}</h3>
+          <h3 className="text-lg font-semibold text-foreground">
+            {t.dashboard.settings.profilePhoto || "Profile Photo"}
+          </h3>
           <p className="text-sm text-muted-foreground">
-            {t.dashboard.settings.profilePhotoDesc || "Upload a professional photo to build trust with employers. WebP format, max 2MB."}
+            {t.dashboard.settings.profilePhotoDesc ||
+              "Upload a professional photo to build trust with employers. WebP format, max 2MB."}
           </p>
           <div className="flex gap-2 pt-2">
             <button
@@ -394,10 +442,13 @@ function NotificationsTab({
   const { t } = useTranslations();
   const router = useRouter();
   const [state, formAction, pending] = useActionState(
-    async (_prev: { success: boolean; error?: string } | null, formData: FormData) => {
+    async (
+      _prev: { success: boolean; error?: string } | null,
+      formData: FormData,
+    ) => {
       return saveNotificationPreferences(formData);
     },
-    null
+    null,
   );
 
   const [toggles, setToggles] = useState(initialData);
@@ -435,7 +486,10 @@ function NotificationsTab({
   ];
 
   return (
-    <form action={formAction} className="p-4 sm:p-5 border border-border rounded-xl bg-card space-y-4">
+    <form
+      action={formAction}
+      className="p-4 sm:p-5 border border-border rounded-xl bg-card space-y-4"
+    >
       <h2 className="text-base sm:text-lg font-semibold text-foreground">
         {t.dashboard.settings.notificationPrefs}
       </h2>
@@ -445,12 +499,8 @@ function NotificationsTab({
           className="flex items-center justify-between py-3 border-b last:border-b-0 border-border"
         >
           <div>
-            <p className="text-sm font-medium text-foreground">
-              {pref.label}
-            </p>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              {pref.desc}
-            </p>
+            <p className="text-sm font-medium text-foreground">{pref.label}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{pref.desc}</p>
           </div>
           <label className="relative inline-flex items-center cursor-pointer">
             <input
@@ -505,7 +555,9 @@ function AppearanceTab() {
   const applyTheme = (mode: string) => {
     setTheme(mode);
     if (mode === "system") {
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const prefersDark = window.matchMedia(
+        "(prefers-color-scheme: dark)",
+      ).matches;
       document.documentElement.classList.toggle("dark", prefersDark);
     } else {
       document.documentElement.classList.toggle("dark", mode === "dark");
@@ -568,10 +620,13 @@ function SecurityTab() {
   const { t } = useTranslations();
   const router = useRouter();
   const [state, formAction, pending] = useActionState(
-    async (_prev: { success: boolean; error?: string } | null, formData: FormData) => {
+    async (
+      _prev: { success: boolean; error?: string } | null,
+      formData: FormData,
+    ) => {
       return updatePassword(formData);
     },
-    null
+    null,
   );
 
   useEffect(() => {
@@ -584,7 +639,10 @@ function SecurityTab() {
   }, [state, router, t]);
 
   return (
-    <form action={formAction} className="p-4 sm:p-5 border border-border rounded-xl bg-card space-y-4">
+    <form
+      action={formAction}
+      className="p-4 sm:p-5 border border-border rounded-xl bg-card space-y-4"
+    >
       <h2 className="text-base sm:text-lg font-semibold text-foreground">
         {t.dashboard.settings.security}
       </h2>

@@ -297,6 +297,10 @@ interface Translations {
       updatePassword: string;
       updating: string;
       updated: string;
+      profilePhoto: string;
+      profilePhotoDesc: string;
+      uploadNew: string;
+      remove: string;
     };
     certificates: {
       title: string;
@@ -682,6 +686,10 @@ const translations: Record<Language, Translations> = {
         updatePassword: "Update Password",
         updating: "Updating...",
         updated: "Password updated successfully",
+        profilePhoto: "Profile Photo",
+        profilePhotoDesc: "Upload and manage your profile picture.",
+        uploadNew: "Upload New",
+        remove: "Remove",
       },
       certificates: {
         title: "Certificates",
@@ -1077,6 +1085,10 @@ const translations: Record<Language, Translations> = {
         updatePassword: "Perbarui Kata Sandi",
         updating: "Memperbarui...",
         updated: "Kata sandi berhasil diperbarui",
+        profilePhoto: "Foto Profil",
+        profilePhotoDesc: "Upload dan atur foto profil mu",
+        uploadNew: "Upload",
+        remove: "Buang",
       },
       certificates: {
         title: "Sertifikat",

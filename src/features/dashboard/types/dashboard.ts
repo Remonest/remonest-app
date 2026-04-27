@@ -50,4 +50,5 @@ export interface UserProfile {
   location?: string | null;
   bio?: string | null;
   website?: string | null;
+  role?: string | null;
 }

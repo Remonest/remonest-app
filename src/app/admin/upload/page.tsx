@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { LearningBreadcrumb } from "@/components/admin/learning-breadcrumb";
+import { pathURL } from "@/lib/learning/schemas";
 
 // ─── Types ───────────────────────────────────────────────────
 
@@ -73,134 +74,131 @@ export default function AdminUploadPage() {
   const [filter, setFilter] = useState<"all" | "images" | "files">("all");
 
   // Handle file selection
-  const handleFiles = useCallback(
-    async (files: FileList | File[]) => {
-      const fileArray = Array.from(files);
-      setIsUploading(true);
+  const handleFiles = useCallback(async (files: FileList | File[]) => {
+    const fileArray = Array.from(files);
+    setIsUploading(true);
 
-      // Initialize progress tracking
-      const progressList: UploadProgress[] = fileArray.map((file) => ({
-        fileName: file.name,
-        progress: 0,
-        status: "uploading",
-      }));
-      setUploadProgress(progressList);
+    // Initialize progress tracking
+    const progressList: UploadProgress[] = fileArray.map((file) => ({
+      fileName: file.name,
+      progress: 0,
+      status: "uploading",
+    }));
+    setUploadProgress(progressList);
 
-      const newFiles: UploadedFile[] = [];
+    const newFiles: UploadedFile[] = [];
 
-      for (let i = 0; i < fileArray.length; i++) {
-        const file = fileArray[i];
+    for (let i = 0; i < fileArray.length; i++) {
+      const file = fileArray[i];
 
-        // Validate file
-        if (!ALLOWED_FILE_TYPES.includes(file.type)) {
-          setUploadProgress((prev) =>
-            prev.map((p, idx) =>
-              idx === i
-                ? {
-                    ...p,
-                    status: "error",
-                    error: "Tipe file tidak didukung",
-                  }
-                : p
-            )
-          );
-          toast.error(`"${file.name}" - Tipe file tidak didukung`);
-          continue;
-        }
-
-        const isImage = file.type.startsWith("image/");
-        const maxSize = isImage ? MAX_IMAGE_SIZE : MAX_FILE_SIZE;
-
-        if (file.size > maxSize) {
-          setUploadProgress((prev) =>
-            prev.map((p, idx) =>
-              idx === i
-                ? {
-                    ...p,
-                    status: "error",
-                    error: `Ukuran file melebihi ${maxSize / 1024 / 1024}MB`,
-                  }
-                : p
-            )
-          );
-          toast.error(`"${file.name}" - Ukuran file terlalu besar`);
-          continue;
-        }
-
-        try {
-          // Upload file
-          const formData = new FormData();
-          formData.append("file", file);
-
-          const response = await fetch("/api/upload", {
-            method: "POST",
-            body: formData,
-          });
-
-          const data = await response.json();
-
-          if (data.success) {
-            setUploadProgress((prev) =>
-              prev.map((p, idx) =>
-                idx === i ? { ...p, progress: 100, status: "success" } : p
-              )
-            );
-
-            const newFile: UploadedFile = {
-              id: `${Date.now()}-${i}`,
-              name: file.name,
-              url: `${window.location.origin}${data.url}`,
-              path: data.path,
-              type: file.type,
-              size: file.size,
-              uploadedAt: new Date().toISOString(),
-            };
-
-            newFiles.push(newFile);
-            toast.success(`"${file.name}" berhasil diupload`);
-          } else {
-            setUploadProgress((prev) =>
-              prev.map((p, idx) =>
-                idx === i
-                  ? {
-                      ...p,
-                      status: "error",
-                      error: data.error || "Upload gagal",
-                    }
-                  : p
-              )
-            );
-            toast.error(`"${file.name}" - ${data.error || "Upload gagal"}`);
-          }
-        } catch (error) {
-          setUploadProgress((prev) =>
-            prev.map((p, idx) =>
-              idx === i
-                ? {
-                    ...p,
-                    status: "error",
-                    error: "Upload gagal",
-                  }
-                : p
-            )
-          );
-          toast.error(`"${file.name}" - Upload gagal`);
-        }
+      // Validate file
+      if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+        setUploadProgress((prev) =>
+          prev.map((p, idx) =>
+            idx === i
+              ? {
+                  ...p,
+                  status: "error",
+                  error: "Tipe file tidak didukung",
+                }
+              : p,
+          ),
+        );
+        toast.error(`"${file.name}" - Tipe file tidak didukung`);
+        continue;
       }
 
-      if (newFiles.length > 0) {
-        setUploadedFiles((prev) => [...newFiles, ...prev]);
+      const isImage = file.type.startsWith("image/");
+      const maxSize = isImage ? MAX_IMAGE_SIZE : MAX_FILE_SIZE;
+
+      if (file.size > maxSize) {
+        setUploadProgress((prev) =>
+          prev.map((p, idx) =>
+            idx === i
+              ? {
+                  ...p,
+                  status: "error",
+                  error: `Ukuran file melebihi ${maxSize / 1024 / 1024}MB`,
+                }
+              : p,
+          ),
+        );
+        toast.error(`"${file.name}" - Ukuran file terlalu besar`);
+        continue;
       }
 
-      setIsUploading(false);
+      try {
+        // Upload file
+        const formData = new FormData();
+        formData.append("file", file);
 
-      // Clear progress after 3 seconds
-      setTimeout(() => {
-        setUploadProgress([]);
-      }, 3000);
-    },
-    []
-  );
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          setUploadProgress((prev) =>
+            prev.map((p, idx) =>
+              idx === i ? { ...p, progress: 100, status: "success" } : p,
+            ),
+          );
+
+          const newFile: UploadedFile = {
+            id: `${Date.now()}-${i}`,
+            name: file.name,
+            url: `${pathURL}${data.url}`,
+            path: data.path,
+            type: file.type,
+            size: file.size,
+            uploadedAt: new Date().toISOString(),
+          };
+
+          newFiles.push(newFile);
+          toast.success(`"${file.name}" berhasil diupload`);
+        } else {
+          setUploadProgress((prev) =>
+            prev.map((p, idx) =>
+              idx === i
+                ? {
+                    ...p,
+                    status: "error",
+                    error: data.error || "Upload gagal",
+                  }
+                : p,
+            ),
+          );
+          toast.error(`"${file.name}" - ${data.error || "Upload gagal"}`);
+        }
+      } catch (error) {
+        setUploadProgress((prev) =>
+          prev.map((p, idx) =>
+            idx === i
+              ? {
+                  ...p,
+                  status: "error",
+                  error: "Upload gagal",
+                }
+              : p,
+          ),
+        );
+        toast.error(`"${file.name}" - Upload gagal`);
+      }
+    }
+
+    if (newFiles.length > 0) {
+      setUploadedFiles((prev) => [...newFiles, ...prev]);
+    }
+
+    setIsUploading(false);
+
+    // Clear progress after 3 seconds
+    setTimeout(() => {
+      setUploadProgress([]);
+    }, 3000);
+  }, []);
 
   // Drag and drop handlers
   const handleDragOver = (e: React.DragEvent) => {
@@ -268,9 +266,7 @@ export default function AdminUploadPage() {
 
       {/* Header */}
       <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">
-          File Manager
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">File Manager</h1>
         <p className="text-sm text-muted-foreground">
           Upload and manage images and files for your learning modules.
         </p>
@@ -359,9 +355,7 @@ export default function AdminUploadPage() {
                     {progress.fileName}
                   </p>
                   {progress.error && (
-                    <p className="text-xs text-destructive">
-                      {progress.error}
-                    </p>
+                    <p className="text-xs text-destructive">{progress.error}</p>
                   )}
                 </div>
 
@@ -451,9 +445,7 @@ export default function AdminUploadPage() {
 
                   {/* File info */}
                   <div className="p-3">
-                    <p className="truncate text-sm font-medium">
-                      {file.name}
-                    </p>
+                    <p className="truncate text-sm font-medium">{file.name}</p>
                     <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
                       <span>{formatFileSize(file.size)}</span>
                       <Badge variant="outline" className="text-[10px]">
