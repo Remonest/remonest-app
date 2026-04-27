@@ -24,7 +24,35 @@ export default async function PublicPortfolioPage({ params }: PortfolioUserPageP
   const decodedUsername = decodeURIComponent(username);
 
   const profile = await getUserProfilePublic(decodedUsername);
-  if (!profile) return notFound();
+  
+  if (!profile) {
+    return (
+      <div className="min-h-[80vh] flex flex-col items-center justify-center text-center px-4">
+        <div className="w-20 h-20 rounded-full bg-muted flex items-center justify-center mb-6">
+          <FolderOpen className="size-10 text-muted-foreground" />
+        </div>
+        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          Profile Not Found
+        </h1>
+        <p className="mt-3 text-muted-foreground max-w-[420px] mx-auto text-lg leading-relaxed">
+          The portfolio you are looking for doesn't exist or may have been moved. 
+          Check the URL or try searching for another professional.
+        </p>
+        <div className="mt-10 flex items-center gap-4">
+          <Link href="/learning">
+            <button className="h-11 px-8 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors">
+              Explore Modules
+            </button>
+          </Link>
+          <Link href="/jobs">
+            <button className="h-11 px-8 rounded-md border border-input bg-background font-medium hover:bg-accent transition-colors">
+              Find Jobs
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const items = await getPublishedPortfolioItems(decodedUsername);
   const cv = await getPublicCV(profile.id);
