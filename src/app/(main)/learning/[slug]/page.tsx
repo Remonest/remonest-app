@@ -48,7 +48,12 @@ import CurriculumStepper from "@/features/learning-module/components/CurriculumS
 import { QuizPreview } from "@/features/learning-module/components/QuizPreview";
 import { CertificatePreview } from "@/features/learning-module/components/CertificatePreview";
 import ModuleCatalog from "@/features/learning-module/components/ModuleCatalog";
-import { getModuleQuizzes } from "@/features/learning-module/actions/quiz-actions";
+import {
+  getModuleQuizzes,
+  getQuizAttemptsByUser,
+  getQuizWithQuestions,
+} from "@/features/learning-module/actions/quiz-actions";
+import { generateCertificateId } from "@/features/learning-module/utils/certificate-utils";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -161,7 +166,23 @@ export default async function ModuleDetailPage({ params }: PageProps) {
     getModuleQuizzes(mod.id),
   ]);
 
-  const hasPublishedQuiz = quizzes.some((q) => q.isPublished);
+  const publishedQuiz = quizzes.find((q) => q.isPublished);
+  const hasPublishedQuiz = !!publishedQuiz;
+
+  // Fetch quiz attempts and detailed quiz data if there is a quiz
+  let lastAttempt = null;
+  let publishedQuizData = null;
+  if (publishedQuiz) {
+    publishedQuizData = await getQuizWithQuestions(publishedQuiz.id);
+    const attempts = await getQuizAttemptsByUser(publishedQuiz.id);
+    if (attempts && attempts.length > 0) {
+      lastAttempt = {
+        score: attempts[0].score,
+        passed: attempts[0].passed,
+        completedAt: attempts[0].completed_at,
+      };
+    }
+  }
 
   // Auto-enroll on first visit
   await enrollUserInModule(mod.id);
@@ -171,6 +192,10 @@ export default async function ModuleDetailPage({ params }: PageProps) {
   const progress = progressRecord?.progress ?? 0;
   const isCompleted = progressRecord?.completedAt != null;
   const isInProgress = progress > 0 && !isCompleted;
+
+  // Generate certificate ID if completed
+  const certificateId = isCompleted ? generateCertificateId(user.id, mod.id) : undefined;
+  const completionDate = progressRecord?.completedAt;
 
   // Enrollment state
   const userEnrollment = enrollments.find((e) => e.moduleId === mod.id);
@@ -447,18 +472,23 @@ export default async function ModuleDetailPage({ params }: PageProps) {
             {/* Right Col: Quiz & Certificate Preview */}
             <div className="flex flex-col gap-6">
               {/* Quiz Preview */}
-              <QuizPreview
-                moduleSlug={mod.slug}
-                question={SAMPLE_QUIZ_DATA.question}
-                options={SAMPLE_QUIZ_DATA.options}
-                passingGrade={70}
-                totalQuestions={10}
-              />
+              {hasPublishedQuiz && publishedQuizData && (
+                <QuizPreview
+                  moduleSlug={mod.slug}
+                  questions={publishedQuizData.questions}
+                  passingGrade={publishedQuiz.passingGrade}
+                  totalQuestions={publishedQuizData.questions.length}
+                  lastAttempt={lastAttempt}
+                />
+              )}
 
               {/* Certificate Preview */}
               <CertificatePreview
-                userName={user.email?.split("@")[0] || "Peserta"}
+                userName={user.user_metadata?.full_name || user.email?.split("@")[0] || "Peserta"}
                 moduleTitle={mod.title}
+                isCompleted={isCompleted}
+                certificateId={certificateId}
+                issuedDate={completionDate ?? undefined}
               />
             </div>
           </div>

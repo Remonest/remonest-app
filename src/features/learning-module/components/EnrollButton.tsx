@@ -73,14 +73,6 @@ export default function EnrollButton({
           <CheckCircle2 className="size-4" />
           Modul selesai — Anda telah menyelesaikan modul ini
         </div>
-        {moduleSlug && (
-          <Link href={`/learning/${moduleSlug}/quiz`} className="w-full">
-            <Button variant="outline" className="w-full gap-2 border-emerald-200 text-emerald-700 hover:bg-emerald-50">
-              <ClipboardCheck className="size-4" />
-              Lihat Hasil Quiz
-            </Button>
-          </Link>
-        )}
       </div>
     );
   }

@@ -3,7 +3,7 @@
 All notable changes to the Remonest App project.
 
 **Format:** [Semantic Versioning](https://semver.org/)
-**Date Format:** April 15, 2026
+**Date Format:** April 27, 2026
 
 ---
 
@@ -11,7 +11,7 @@ All notable changes to the Remonest App project.
 
 ### 🐛 Bug Fixes
 
-- ✅ **Portfolio Access** — Fixed bugs affecting public portfolio viewing and data fetching
+- ✅ **Portfolio Access** — Fixed critical bugs affecting public portfolio viewing and data fetching (especially for custom usernames)
 - ✅ **Quiz Submission** — Implemented browser-level warnings to prevent accidental navigation during active quizzes
 
 ### 🛠 Improvements
@@ -21,70 +21,58 @@ All notable changes to the Remonest App project.
 
 ---
 
-## [v1.0.1] - April 15, 2026
+## [v1.9.9] - April 22, 2026
 
-### 🎉 New Features
+### ✨ Added
+- **Persistent Portfolio Builder**
+  - Full Supabase persistence for portfolio items (Migration 019 & 024)
+  - Support for Projects, Certificates, Achievements, and other items
+  - Cover image URL support with real-time preview in builder list
+  - Draft/Published status toggle
+  - External link and tag management
+- **Public Portfolio Enhancements**
+  - Support for both UUID and custom `username` slugs
+  - Enhanced responsive UI with "Share" functionality
+  - Profile header with professional headline, bio, location, and website
+  - Graceful empty states for new profiles
+- **Public CV Viewing**
+  - Dedicated public CV route `/cv/[userId]`
+  - "View CV" button on public portfolio pages (conditional on CV existence)
+  - Public read access for primary CVs (Migration 025)
 
-#### CV Builder Enhancement
+### 🏗️ Changed
+- Migrated user profile fields (`bio`, `location`, `headline`, `website`) to `user_profiles` for public access
+- Updated `getUserProfilePublic` server action to support multi-identifier lookup
+- Improved `PortfolioClient` with better mobile layout and image previews
 
-- ✅ **Years Field** — Added years input to work experience section
-- ✅ **Duration Display** — Shows employment duration in preview (e.g., "2020 - 2023")
-- ✅ **PDF Export** — Enhanced PDF generation with years information
-- ✅ **Form Validation** — Placeholder text for years field with format guidance
-
-#### Technical Implementation
-
-- ✅ **Interface Update** — Added `years` property to Experience interface
-- ✅ **Form Field** — Years input with placeholder and validation
-- ✅ **Preview Display** — Years shown in CV preview with proper formatting
-- ✅ **PDF Generation** — Years included in PDF export with right alignment
+### 🗄️ Database
+- **Migration 024**: Added `headline`, `bio`, `location`, `website`, and `username` to `user_profiles`
+- **Migration 025**: Added public read policy for primary user CVs
 
 ---
 
-## [v1.0.0] - April 15, 2026
+## [v1.9.8] - April 21, 2026
 
-### 🎉 New Features
+### 🐛 Fixed
+- **CV Builder Mobile Preview** — Ensured the CV preview is correctly displayed on mobile devices when the "Preview" tab is active.
 
-#### CV Builder Implementation
+---
 
-- ✅ **Complete CV Builder** — Fully functional resume creation tool
-- ✅ **Real-time Preview** — All changes instantly reflect in preview panel
-- ✅ **Local Storage Persistence** — CV data auto-saves to browser storage
-- ✅ **Work Experience Management** — Add and remove multiple positions
-- ✅ **PDF Export** — Professional PDF generation using jsPDF
-- ✅ **Responsive Design** — Split view on desktop, tab switcher on mobile
-- ✅ **Form Validation** — User-friendly error handling with toast notifications
-- ✅ **Complete State Management** — Instant updates with local state
+## [v1.9.7] - April 21, 2026
 
-#### UI Improvements
+### ✨ Added
+- **Professional CV Builder** (v1.0.0)
+  - Split-view real-time editor and preview
+  - High-fidelity PDF generation using `@react-pdf/renderer` (ATS-friendly)
+  - Database persistence via Supabase `user_cvs` table (Migration 023)
+  - Debounced auto-saving (3s) for seamless draft management
+  - Professional summary, dynamic experience, education, and skills/languages sections
+  - Modular component architecture in `src/features/portfolio/`
 
-- ✅ **Professional Interface** — Clean, modern design with proper spacing
-- ✅ **Form Elements** — Personal info, experience, skills sections
-- ✅ **Preview Layout** — ATS-friendly format with A4 aspect ratio
-- ✅ **Mobile Responsive** — Tab-based navigation for mobile devices
-- ✅ **Error Handling** — Graceful validation and user feedback
-
-#### Technical Implementation
-
-- ✅ **State Management** — Local state with optimistic updates
-- ✅ **Data Persistence** — localStorage with auto-save functionality
-- ✅ **PDF Generation** — Client-side PDF creation using jsPDF library
-- ✅ **Component Architecture** — Server/client component pattern
-- ✅ **TypeScript Types** — Complete type definitions for CV data
-
-### 📚 Documentation Updates
-
-- ✅ **CV Builder Guide** — Comprehensive documentation with user workflows
-- ✅ **Architecture Documentation** — Technical implementation details
-- ✅ **Testing Checklist** — Manual testing scenarios and edge cases
-- ✅ **Known Issues & Future Enhancements** — Current limitations and planned features
-
-### 🔧 Bug Fixes
-
-#### TypeScript Fixes
-- ✅ **Curriculum Panel onClick Handler** — Fixed `onAddStep` function call
-- ✅ **ModuleLesson Type** — Added missing `sectionId` property
-- ✅ **Build Errors** — All TypeScript errors resolved, project builds successfully
+### 🏗️ Changed
+- Refactored `CVBuilderPage` into Server/Client component pair for better performance and SEO
+- Migrated CV logic to feature-driven module structure
+- Replaced `jspdf` with `@react-pdf/renderer` for superior export quality
 
 ---
 
@@ -147,24 +135,6 @@ All notable changes to the Remonest App project.
 - ✅ **Dialog state management** — Proper cleanup and state reset between operations
 - ✅ **Loading state management** — Disabled buttons during operations
 - ✅ **Error handling** — Graceful error recovery with user feedback
-
-### 📁 New Files
-
-| File | Purpose |
-|------|---------|
-| `docs/guides/flow-builder-v1.9.6-quick-reference.md` | Quick reference guide for v1.9.6 features |
-| `src/features/learning-module/actions/sections.ts` | Section management server actions |
-
-### 📄 Files Modified
-
-| File | Changes |
-|------|---------|
-| `docs/guides/learning-module-flow-builder.md` | Complete rewrite with v1.9.6 features |
-| `docs/README.md` | Added Flow Builder v1.9.6 reference |
-| `docs/getting-started/implementation-summary.md` | Updated version to v1.9.6 |
-| `src/app/admin/learning/[id]/builder/builder-client.tsx` | Enhanced with section management and dialogs |
-| `src/app/admin/learning/[id]/builder/curriculum-panel.tsx` | Added section management UI |
-| `src/features/learning-module/actions/lessons.ts` | Enhanced with better error handling |
 
 ---
 

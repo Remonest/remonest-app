@@ -187,6 +187,92 @@ export async function getModuleQuizzes(moduleId: string): Promise<QuizConfig[]> 
 }
 
 /**
+ * Update existing quiz configuration and its questions.
+ * Replaces all questions for the quiz.
+ */
+export async function updateQuizWithQuestions(
+  quizConfigId: string,
+  config: QuizConfigInput,
+  questions: QuestionInput[]
+): Promise<QuizResult> {
+  const supabase = getSupabaseServiceClient();
+
+  // Validate minimum 1 question
+  if (questions.length === 0) {
+    return {
+      success: false,
+      error: "Quiz harus memiliki minimal 1 pertanyaan",
+    };
+  }
+
+  // Validate questions fields
+  for (let i = 0; i < questions.length; i++) {
+    const q = questions[i];
+    if (!q.questionText.trim()) {
+      return { success: false, error: `Pertanyaan #${i + 1} tidak boleh kosong` };
+    }
+    if (!q.correctAnswer) {
+      return { success: false, error: `Pertanyaan #${i + 1} harus memiliki jawaban yang benar` };
+    }
+    const options = ["A", "B", "C", "D", "E"] as const;
+    for (const opt of options) {
+      if (!q.options[opt]?.trim()) {
+        return { success: false, error: `Pertanyaan #${i + 1}, opsi ${opt} tidak boleh kosong` };
+      }
+    }
+  }
+
+  try {
+    // 1. Update Quiz Config
+    const { error: configError } = await supabase
+      .from("quiz_configs")
+      .update({
+        title: config.title.trim(),
+        description: config.description.trim() || null,
+        duration_minutes: config.durationMinutes || null,
+        passing_grade: config.passingGrade,
+        is_published: config.isPublished,
+      })
+      .eq("id", quizConfigId);
+
+    if (configError) {
+      return { success: false, error: `Gagal mengupdate quiz: ${configError.message}` };
+    }
+
+    // 2. Delete existing questions
+    await supabase.from("questions").delete().eq("quiz_config_id", quizConfigId);
+
+    // 3. Insert new questions
+    const questionsToInsert = questions.map((q, index) => ({
+      quiz_config_id: quizConfigId,
+      question_text: q.questionText.trim(),
+      options: q.options,
+      correct_answer: q.correctAnswer,
+      explanation: q.explanation.trim() || null,
+      difficulty: q.difficulty,
+      order_index: index,
+    }));
+
+    const { error: questionsError } = await supabase
+      .from("questions")
+      .insert(questionsToInsert);
+
+    if (questionsError) {
+      return { success: false, error: `Gagal menyimpan pertanyaan baru: ${questionsError.message}` };
+    }
+
+    revalidatePath(`/admin/learning`);
+
+    return {
+      success: true,
+      redirect: `/admin/learning`,
+    };
+  } catch (_error) {
+    return { success: false, error: "Terjadi kesalahan saat mengupdate quiz" };
+  }
+}
+
+/**
  * Update quiz configuration
  */
 export async function updateQuizConfig(
@@ -421,6 +507,28 @@ function mapRowToQuestion(row: QuestionRow): Question {
   };
 }
 
+/**
+ * Get quiz attempt history for a user
+ */
+export async function getQuizAttemptsByUser(quizConfigId: string) {
+  const user = await requireAuth();
+  const supabase = getSupabaseServerClient();
+
+  const { data, error } = await supabase
+    .from("user_quiz_attempts")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("quiz_config_id", quizConfigId)
+    .order("completed_at", { ascending: false });
+
+  if (error) {
+    console.error("Failed to fetch quiz attempts:", error);
+    return [];
+  }
+
+  return data;
+}
+
 // ============================================================
 // User Quiz Actions
 // ============================================================
@@ -461,7 +569,23 @@ export async function submitQuizAttempt(
     const score = Math.round((correctCount / totalQuestions) * 100);
     const passed = score >= config.passingGrade;
 
-    // 3. Save attempt to database
+    // Check for recent attempt (1 minute cooldown)
+    const recentAttempts = await getQuizAttemptsByUser(quizConfigId);
+    const lastAttempt = recentAttempts[0]; // Assuming ordered by completed_at desc
+    if (lastAttempt) {
+      const lastCompletedAt = new Date(lastAttempt.completed_at).getTime();
+      const now = new Date().getTime();
+      const oneMinuteInMs = 60 * 1000;
+      
+      if (now - lastCompletedAt < oneMinuteInMs) {
+        return { 
+          success: false, 
+          error: "Harap tunggu 1 menit sebelum mencoba kembali" 
+        };
+      }
+    }
+
+    // 3. Save attempt to database (upsert to support retakes)
     const { data: attempt, error: attemptError } = await supabase
       .from("user_quiz_attempts")
       .upsert({
@@ -473,7 +597,7 @@ export async function submitQuizAttempt(
         started_at: startedAt,
         completed_at: new Date().toISOString(),
       }, {
-        onConflict: "user_id, quiz_config_id"
+        onConflict: "user_id,quiz_config_id"
       })
       .select()
       .single();

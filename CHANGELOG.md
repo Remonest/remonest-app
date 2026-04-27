@@ -1,3 +1,27 @@
+## [2.0.0] - 2026-04-27
+
+### ✨ Added
+- **Interactive Quiz Flow Enhancements**
+  - Added "Review Mode" to quiz results: Users can now see a detailed breakdown of correct and incorrect answers after completion.
+  - Interactive "Lihat Hasil Detail" button on the module detail page for completed quizzes.
+  - Automatic scroll-to-top upon quiz completion for immediate feedback.
+  - Dynamic "Coba Lagi" cooldown timer (1 minute) with visual feedback.
+- **Certificate Integration on Module Detail**
+  - Real-time Certificate Preview on the module detail page now reflects completion status.
+  - Dynamic certificate generation: Completed modules show the actual Certificate ID and completion date.
+  - Direct "Download Certificate" and "View Public Version" buttons available immediately after passing.
+  - Achievement-themed UI for completed module certificate previews.
+
+### 🏗️ Changed
+- Refactored `generateCertificateId` into a dedicated utility `src/features/learning-module/utils/certificate-utils.ts` to avoid Server Action restrictions.
+- Standardized `Badge` component usage across learning modules.
+- Improved `ModuleDetailPage` data fetching: Now fetches quiz attempts and progress in parallel for better performance.
+
+### 🐛 Fixed
+- Fixed `duplicate key` error when retaking quizzes by implementing `upsert` in `submitQuizAttempt`.
+- Resolved `TypeError: Cannot read properties of undefined (reading 'auth')` in `QuizTakingClient` by using the correct Supabase browser client utility.
+- Fixed `Server Actions must be async functions` error for certificate ID generation.
+
 ## [1.9.9] - 2026-04-22
 
 ### ✨ Added

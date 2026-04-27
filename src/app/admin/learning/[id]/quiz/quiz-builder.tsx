@@ -30,7 +30,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
-import { createQuizWithQuestions } from "@/features/learning-module/actions/quiz-actions";
+import { createQuizWithQuestions, getQuizWithQuestions, updateQuizWithQuestions } from "@/features/learning-module/actions/quiz-actions";
 import type {
   QuestionInput,
   QuizConfigInput,
@@ -56,9 +56,15 @@ const initialState = {
   error: undefined as string | undefined,
 };
 
-export default function QuizBuilder({ moduleId, moduleTitle }: QuizBuilderProps) {
+interface QuizBuilderProps {
+  moduleId: string;
+  moduleTitle: string;
+  initialQuizId?: string;
+}
+
+export default function QuizBuilder({ moduleId, moduleTitle, initialQuizId }: QuizBuilderProps) {
   const router = useRouter();
-  
+
   // Quiz configuration state
   const [config, setConfig] = useState<QuizConfigInput>({
     title: `Kuis: ${moduleTitle}`,
@@ -73,6 +79,31 @@ export default function QuizBuilder({ moduleId, moduleTitle }: QuizBuilderProps)
     createEmptyQuestion(),
   ]);
 
+  useEffect(() => {
+    if (initialQuizId) {
+      getQuizWithQuestions(initialQuizId).then((data) => {
+        if (data) {
+          setConfig({
+            title: data.config.title,
+            description: data.config.description || "",
+            durationMinutes: data.config.durationMinutes || 30,
+            passingGrade: data.config.passingGrade,
+            isPublished: data.config.isPublished,
+          });
+          setQuestions(
+            data.questions.map((q) => ({
+              questionText: q.questionText,
+              options: q.options,
+              correctAnswer: q.correctAnswer,
+              explanation: q.explanation || "",
+              difficulty: q.difficulty,
+            }))
+          );
+        }
+      });
+    }
+  }, [initialQuizId]);
+
   // Collapsed state for each question
   const [collapsedQuestions, setCollapsedQuestions] = useState<Record<number, boolean>>({
     0: false,
@@ -86,6 +117,9 @@ export default function QuizBuilder({ moduleId, moduleTitle }: QuizBuilderProps)
         return { success: false, error: "Quiz harus memiliki minimal 1 pertanyaan" };
       }
 
+      if (initialQuizId) {
+        return updateQuizWithQuestions(initialQuizId, config, questions);
+      }
       return createQuizWithQuestions(moduleId, config, questions);
     },
     initialState
@@ -94,7 +128,7 @@ export default function QuizBuilder({ moduleId, moduleTitle }: QuizBuilderProps)
   // Show toast based on result
   useEffect(() => {
     if (state?.success) {
-      toast.success("Quiz berhasil dibuat!", {
+      toast.success(initialQuizId ? "Quiz berhasil diperbarui!" : "Quiz berhasil dibuat!", {
         icon: <CheckCircle2 className="size-4 text-green-500" />,
       });
       if (state.redirect) {
@@ -105,7 +139,7 @@ export default function QuizBuilder({ moduleId, moduleTitle }: QuizBuilderProps)
         icon: <AlertCircle className="size-4" />,
       });
     }
-  }, [state, router]);
+  }, [state, router, initialQuizId]);
 
   // Add new question
   const addQuestion = () => {

@@ -1,22 +1,46 @@
-# Implementation Summary — April 22, 2026
+# Implementation Summary — April 27, 2026
 
 ## Overview
 
-This document summarizes all features implemented in the Remonest App as of April 22, 2026.
+This document summarizes all features implemented in the Remonest App as of April 27, 2026.
 
-**Version:** v1.9.9 (Latest)
-**Last Updated:** April 22, 2026
+**Version:** v2.0.0 (Latest)
+**Last Updated:** April 27, 2026
 
 ---
 
-## 🎯 Latest Updates (April 22, 2026)
+## 🎯 Latest Updates (April 27, 2026)
 
-### Portfolio & CV Enhancement Suite
+### Quiz UX & Submission Safety (v2.0.0)
+
+**Status:** ✅ Complete
+**Version:** v2.0.0
+
+#### What's New
+1. **Browser Navigation Warnings**
+   - Added `beforeunload` event listeners to prevent accidental tab closing/refreshing during active quizzes.
+   - Prevents loss of unsaved quiz answers.
+2. **Client-side Navigation Protection**
+   - Implemented warnings for internal route changes during assessments.
+   - "Quiz sedang berjalan. Jika Anda pergi, jawaban Anda mungkin tidak tersimpan. Apakah Anda yakin?"
+
+### Portfolio & CV Enhancement Suite (v1.9.9)
 
 **Status:** ✅ Complete
 **Version:** v1.9.9
 
 #### What's New
+1. **Persistent Portfolio Builder**
+   - Full Supabase persistence for portfolio items (Migration 019 & 024).
+   - Support for Projects, Certificates, Achievements, and more.
+   - Cover image URL support with real-time preview in builder list.
+2. **Public Portfolio Enhancements**
+   - Support for both UUID and custom `username` slugs (e.g., `/portfolio/johndoe`).
+   - Enhanced responsive UI with "Share" functionality.
+   - Profile header with headline, bio, location, and website.
+3. **Public CV Viewing**
+   - Dedicated public CV route `/cv/[userId]` with professional ATS-friendly layout.
+   - Public read access for primary CVs (Migration 025).
 
 1. **Persistent Portfolio Builder**
    - Full integration with Supabase `portfolio_items` table.

@@ -33,9 +33,15 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
-import { submitQuizAttempt } from "../actions/quiz-actions";
+import {
+  submitQuizAttempt,
+  getQuizAttemptsByUser,
+} from "../actions/quiz-actions";
+import { generateCertificateId } from "../utils/certificate-utils";
 import type { QuizConfig, Question, QuizAttemptResult } from "../types/quiz";
 
 interface QuizTakingClientProps {
@@ -56,6 +62,9 @@ export default function QuizTakingClient({
   questions,
 }: QuizTakingClientProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [status, setStatus] = useState<QuizStatus>("intro");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -65,41 +74,104 @@ export default function QuizTakingClient({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<QuizAttemptResult | null>(null);
   const [startedAt, setStartedAt] = useState<string>("");
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [attempts, setAttempts] = useState<any[]>([]);
+  const [retryCooldown, setRetryCooldown] = useState(0);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-
-  // Add warning when leaving during quiz (browser close/refresh)
   useEffect(() => {
-    if (status === "taking") {
-      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-        e.preventDefault();
-        e.returnValue = "";
-      };
-      window.addEventListener("beforeunload", handleBeforeUnload);
-      return () => {
-        window.removeEventListener("beforeunload", handleBeforeUnload);
-      };
+    // Get user ID for certificate generation if passed
+    async function loadUser() {
+      const supabase = getSupabaseBrowserClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) setUserId(user.id);
+    }
+    loadUser();
+  }, []);
+
+  useEffect(() => {
+    if (status === "finished") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   }, [status]);
 
-  // Handle client-side navigation attempts
   useEffect(() => {
-    const handleRouteChange = () => {
+    async function loadHistory() {
+      const data = await getQuizAttemptsByUser(quiz.id);
+      setAttempts(data);
+
+      // If view=result is in URL, automatically show the last result
+      if (searchParams.get("view") === "result" && data.length > 0) {
+        const last = data[0];
+        setResult({
+          success: true,
+          score: last.score,
+          passed: last.passed,
+          correctCount: Object.entries(last.answers).filter(([qid, ans]) => {
+            const q = questions.find((q) => q.id === qid);
+            return q && q.correctAnswer === ans;
+          }).length,
+          totalQuestions: questions.length,
+          attemptId: last.id,
+        });
+        setAnswers(last.answers);
+        setStatus("finished");
+      }
+    }
+    loadHistory();
+  }, [quiz.id, searchParams, questions]);
+// Timer for cooldown
+useEffect(() => {
+  if (retryCooldown > 0) {
+    const timer = setInterval(() => {
+      setRetryCooldown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }
+}, [retryCooldown]);
+
+// Persist cooldown through page reloads by checking last attempt time
+useEffect(() => {
+  if (attempts && attempts.length > 0 && attempts[0] && !attempts[0].passed) {
+    const lastAttemptTime = new Date(attempts[0].completed_at).getTime();
+    const diff = Date.now() - lastAttemptTime;
+    const remaining = Math.max(0, Math.ceil((60 * 1000 - diff) / 1000));
+    if (remaining > 0) {
+      setRetryCooldown(remaining);
+    }
+  }
+}, [attempts]);
+  const canRetry = () => {
+    if (attempts.length === 0) return true;
+    const lastAttemptTime = new Date(attempts[0].completed_at).getTime();
+    return Date.now() - lastAttemptTime >= 60 * 1000;
+  };
+
+  const getRetryRemainingSeconds = () => {
+    if (retryCooldown > 0) return retryCooldown;
+    if (attempts.length === 0) return 0;
+    const lastAttemptTime = new Date(attempts[0].completed_at).getTime();
+    const diff = Date.now() - lastAttemptTime;
+    return Math.max(0, Math.ceil((60 * 1000 - diff) / 1000));
+  };
+
+  // Add warning when leaving during quiz (browser close/refresh)
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (status === "taking") {
-        const confirmed = window.confirm(
-          "Quiz sedang berjalan. Jika Anda pergi, jawaban Anda mungkin tidak tersimpan. Apakah Anda yakin?"
-        );
-        if (!confirmed) {
-          // This part is tricky with Next.js router. 
-          // Simple approach: block the navigation by re-navigating back
-        }
+        e.preventDefault();
+        e.returnValue = "";
       }
     };
-    // Note: Next.js 13+ App Router doesn't provide a robust way to block navigation
-    // without custom solutions, but the browser alert is a good first step.
-  }, [pathname, searchParams, status]);
-
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [status]);
+  const handleSubmit = useCallback(
+    async (isAutoSubmit = false) => {
       if (isSubmitting) return;
 
       // Check if all questions answered
@@ -113,6 +185,7 @@ export default function QuizTakingClient({
       try {
         const res = await submitQuizAttempt(quiz.id, answers, startedAt);
         if (res.success) {
+          clearSavedAnswers();
           setResult(res);
           setStatus("finished");
           toast.success(
@@ -149,6 +222,30 @@ export default function QuizTakingClient({
     return () => clearInterval(timer);
   }, [status, timeLeft, handleSubmit]);
 
+  // Load saved answers from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(`quiz_answers_${quiz.id}`);
+    if (saved) {
+      try {
+        setAnswers(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse saved answers", e);
+      }
+    }
+  }, [quiz.id]);
+
+  // Save answers to localStorage whenever they change
+  useEffect(() => {
+    if (status === "taking") {
+      localStorage.setItem(`quiz_answers_${quiz.id}`, JSON.stringify(answers));
+    }
+  }, [answers, status, quiz.id]);
+
+  // Clear answers on finish
+  const clearSavedAnswers = useCallback(() => {
+    localStorage.removeItem(`quiz_answers_${quiz.id}`);
+  }, [quiz.id]);
+
   const handleStart = () => {
     setStartedAt(new Date().toISOString());
     setStatus("taking");
@@ -178,6 +275,25 @@ export default function QuizTakingClient({
 
   return (
     <>
+      {status !== "taking" && (
+        <header className="sticky top-0 z-50 bg-background border-b px-4 py-3">
+          <div className="max-w-4xl mx-auto flex items-center gap-4">
+            <Button variant="ghost" size="sm" asChild className="gap-1">
+              <a href={`/learning/${module.slug}`}>
+                <ChevronLeft className="size-4" />
+                Kembali
+              </a>
+            </Button>
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground uppercase font-semibold">
+                Modul Pembelajaran
+              </span>
+              <span className="text-sm font-bold">{module.title}</span>
+            </div>
+          </div>
+        </header>
+      )}
+
       {status === "intro" && (
         <div className="min-h-screen bg-secondary/30 py-12 px-4 flex items-center justify-center">
           <Card className="max-w-2xl w-full">
@@ -186,7 +302,9 @@ export default function QuizTakingClient({
                 <ClipboardCheck className="size-6 text-primary" />
                 {quiz.title}
               </CardTitle>
-              {quiz.description && <CardDescription>{quiz.description}</CardDescription>}
+              {quiz.description && (
+                <CardDescription>{quiz.description}</CardDescription>
+              )}
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
@@ -240,9 +358,19 @@ export default function QuizTakingClient({
                 size="lg"
                 className="w-full text-base font-bold h-12 gap-2 shadow-lg"
                 onClick={handleStart}
+                disabled={!canRetry()}
               >
-                Mulai Kerjakan Quiz
-                <ArrowRight className="size-5" />
+                {canRetry() ? (
+                  <>
+                    Mulai Kerjakan Quiz
+                    <ArrowRight className="size-5" />
+                  </>
+                ) : (
+                  <>
+                    <RefreshCcw className="size-4 animate-spin" />
+                    Coba Lagi dalam {getRetryRemainingSeconds()}s
+                  </>
+                )}
               </Button>
             </CardFooter>
           </Card>
@@ -290,7 +418,9 @@ export default function QuizTakingClient({
             <div className="w-full h-1.5 bg-secondary">
               <div
                 className="h-full bg-primary transition-all duration-300 ease-in-out"
-                style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
+                style={{
+                  width: `${((currentIndex + 1) / questions.length) * 100}%`,
+                }}
               />
             </div>
           </header>
@@ -334,16 +464,21 @@ export default function QuizTakingClient({
 
                   <div className="space-y-3">
                     {(["A", "B", "C", "D", "E"] as const).map((letter) => {
-                      const optionText = questions[currentIndex].options[letter];
+                      const optionText =
+                        questions[currentIndex].options[letter];
                       if (!optionText) return null;
 
-                      const isSelected = answers[questions[currentIndex].id] === letter;
+                      const isSelected =
+                        answers[questions[currentIndex].id] === letter;
 
                       return (
                         <button
                           key={letter}
                           onClick={() =>
-                            handleSelectOption(questions[currentIndex].id, letter)
+                            handleSelectOption(
+                              questions[currentIndex].id,
+                              letter,
+                            )
                           }
                           className={cn(
                             "w-full flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all",
@@ -437,7 +572,9 @@ export default function QuizTakingClient({
                   )}
                 </div>
                 <CardTitle className="text-3xl font-bold">
-                  {result.passed ? "Selamat, Anda Lulus!" : "Belum Lulus, Coba Lagi!"}
+                  {result.passed
+                    ? "Selamat, Anda Lulus!"
+                    : "Belum Lulus, Coba Lagi!"}
                 </CardTitle>
                 <CardDescription className="text-lg">
                   Skor Anda:{" "}
@@ -466,7 +603,8 @@ export default function QuizTakingClient({
                       Salah
                     </p>
                     <p className="text-xl font-bold text-rose-600">
-                      {(result.totalQuestions || 0) - (result.correctCount || 0)}
+                      {(result.totalQuestions || 0) -
+                        (result.correctCount || 0)}
                     </p>
                   </div>
                   <div className="p-4 rounded-xl border bg-card text-center">
@@ -483,19 +621,32 @@ export default function QuizTakingClient({
                   </div>
                 </div>
 
-                {result.passed ? (
-                  <div className="bg-emerald-50 dark:bg-emerald-900/20 p-6 rounded-xl border border-emerald-100 dark:border-emerald-800 text-center">
-                    <p className="text-emerald-800 dark:text-emerald-300 font-medium">
-                      Luar biasa! Anda telah menyelesaikan modul ini dan berhak
-                      mendapatkan sertifikat.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="bg-amber-50 dark:bg-amber-900/20 p-6 rounded-xl border border-amber-100 dark:border-amber-800 text-center">
-                    <p className="text-amber-800 dark:text-amber-300 font-medium">
-                      Jangan menyerah! Tinjau materi pembelajaran lagi dan coba
-                      kerjakan quiz ini kembali.
-                    </p>
+                {/* History Section */}
+                {attempts.length > 0 && (
+                  <div className="pt-4">
+                    <h3 className="font-bold mb-2">
+                      Riwayat Percobaan Terakhir
+                    </h3>
+                    <div className="space-y-2">
+                      {attempts.map((a, i) => (
+                        <div
+                          key={i}
+                          className="flex justify-between p-3 rounded-lg bg-secondary/50 text-sm"
+                        >
+                          <span>
+                            {new Date(a.completed_at).toLocaleString()}
+                          </span>
+                          <span
+                            className={cn(
+                              "font-bold",
+                              a.passed ? "text-emerald-600" : "text-rose-600",
+                            )}
+                          >
+                            Skor: {a.score}% ({a.passed ? "Lulus" : "Gagal"})
+                          </span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
@@ -510,44 +661,68 @@ export default function QuizTakingClient({
                       const userAnswer = answers[q.id];
                       const isCorrect = userAnswer === q.correctAnswer;
                       return (
-                        <div key={q.id} className="p-6 rounded-xl border bg-card space-y-4">
+                        <div
+                          key={q.id}
+                          className="p-6 rounded-xl border bg-card space-y-4"
+                        >
                           <div className="flex items-start justify-between gap-4">
                             <div className="flex gap-3">
-                              <span className="font-bold text-muted-foreground">#{idx + 1}</span>
+                              <span className="font-bold text-muted-foreground">
+                                #{idx + 1}
+                              </span>
                               <p className="font-medium">{q.questionText}</p>
                             </div>
                             {isCorrect ? (
-                              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 shrink-0 border-emerald-200">Benar</Badge>
+                              <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-100 shrink-0 border-emerald-200">
+                                Benar
+                              </Badge>
                             ) : (
-                              <Badge variant="destructive" className="shrink-0">Salah</Badge>
+                              <Badge variant="destructive" className="shrink-0">
+                                Salah
+                              </Badge>
                             )}
                           </div>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-8">
-                            <div className={cn("p-3 rounded-lg border text-sm", isCorrect ? "bg-emerald-50 border-emerald-100" : "bg-rose-50 border-rose-100")}>
-                              <p className="text-xs font-bold uppercase mb-1 opacity-60">Jawaban Anda</p>
+                            <div
+                              className={cn(
+                                "p-3 rounded-lg border text-sm",
+                                isCorrect
+                                  ? "bg-emerald-50 border-emerald-100"
+                                  : "bg-rose-50 border-rose-100",
+                              )}
+                            >
+                              <p className="text-xs font-bold uppercase mb-1 opacity-60">
+                                Jawaban Anda
+                              </p>
                               <p className="font-medium">
-                                <span className="mr-1">{userAnswer || "-"}.</span>
-                                {userAnswer ? q.options[userAnswer as keyof typeof q.options] : "Tidak dijawab"}
+                                <span className="mr-1">
+                                  {userAnswer || "-"}.
+                                </span>
+                                {userAnswer
+                                  ? q.options[
+                                      userAnswer as keyof typeof q.options
+                                    ]
+                                  : "Tidak dijawab"}
                               </p>
                             </div>
                             {!isCorrect && (
                               <div className="p-3 rounded-lg border border-emerald-100 bg-emerald-50 text-sm">
-                                <p className="text-xs font-bold uppercase mb-1 opacity-60 text-emerald-700">Jawaban Benar</p>
+                                <p className="text-xs font-bold uppercase mb-1 opacity-60 text-emerald-700">
+                                  Jawaban Benar
+                                </p>
                                 <p className="font-medium text-emerald-800">
-                                  <span className="mr-1">{q.correctAnswer}.</span>
-                                  {q.options[q.correctAnswer as keyof typeof q.options]}
+                                  <span className="mr-1">
+                                    {q.correctAnswer}.
+                                  </span>
+                                  {
+                                    q.options[
+                                      q.correctAnswer as keyof typeof q.options
+                                    ]
+                                  }
                                 </p>
                               </div>
                             )}
                           </div>
-                          {q.explanation && (
-                            <div className="pl-8 pt-2">
-                              <div className="bg-secondary/50 p-4 rounded-lg text-sm border-l-4 border-primary">
-                                <p className="font-bold text-xs uppercase mb-1 text-primary">Penjelasan</p>
-                                <p className="text-muted-foreground leading-relaxed italic">{q.explanation}</p>
-                              </div>
-                            </div>
-                          )}
                         </div>
                       );
                     })}
@@ -555,19 +730,56 @@ export default function QuizTakingClient({
                 </div>
               </CardContent>
               <CardFooter className="flex flex-col sm:flex-row gap-4 pt-8 bg-secondary/10 border-t">
-                <Button variant="outline" size="lg" className="flex-1 gap-2" onClick={() => router.push(`/learning/${module.slug}`)}>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="flex-1 gap-2"
+                  onClick={() => router.push(`/learning/${module.slug}`)}
+                >
                   <ChevronLeft className="size-4" />
                   Kembali ke Modul
                 </Button>
+
                 {!result.passed && (
-                  <Button size="lg" className="flex-1 gap-2" onClick={() => window.location.reload()}>
-                    <RefreshCcw className="size-4" />
-                    Coba Lagi
+                  <Button
+                    size="lg"
+                    className="flex-1 gap-2 disabled:opacity-50"
+                    onClick={() => {
+                      if (canRetry()) {
+                        window.location.reload();
+                      } else {
+                        setRetryCooldown(getRetryRemainingSeconds());
+                      }
+                    }}
+                    disabled={!canRetry()}
+                  >
+                    {retryCooldown > 0
+                      ? `Tunggu ${retryCooldown} detik`
+                      : "Coba Lagi"}
                   </Button>
                 )}
-                {result.passed && (
-                  <Button size="lg" className="flex-1 gap-2 bg-emerald-600 hover:bg-emerald-700" onClick={() => router.push(`/learning/${module.slug}`)}>
+
+                {result.passed && userId && (
+                  <Button
+                    size="lg"
+                    className="flex-1 gap-2 bg-emerald-600 hover:bg-emerald-700"
+                    onClick={() => {
+                      const certId = generateCertificateId(userId, module.id);
+                      router.push(`/certificates/${certId}`);
+                    }}
+                  >
                     Lihat Sertifikat
+                    <Award className="size-4" />
+                  </Button>
+                )}
+
+                {result.passed && !userId && (
+                  <Button
+                    size="lg"
+                    className="flex-1 gap-2"
+                    onClick={() => router.push(`/learning/${module.slug}`)}
+                  >
+                    Selesai
                     <ArrowRight className="size-4" />
                   </Button>
                 )}
@@ -586,12 +798,16 @@ export default function QuizTakingClient({
               Konfirmasi Pengumpulan
             </DialogTitle>
             <DialogDescription>
-              Anda baru menjawab {Object.keys(answers).length} dari {questions.length} pertanyaan.
-              Apakah Anda yakin ingin mengumpulkan quiz sekarang?
+              Anda baru menjawab {Object.keys(answers).length} dari{" "}
+              {questions.length} pertanyaan. Apakah Anda yakin ingin
+              mengumpulkan quiz sekarang?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowConfirmModal(false)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowConfirmModal(false)}
+            >
               Lanjutkan Mengerjakan
             </Button>
             <Button variant="default" onClick={confirmSubmit}>
@@ -601,34 +817,5 @@ export default function QuizTakingClient({
         </DialogContent>
       </Dialog>
     </>
-  );
-}
-
-// Sub-component for Badge (since it might not be exported)
-function Badge({
-  children,
-  className,
-  variant = "default",
-}: {
-  children: React.ReactNode;
-  className?: string;
-  variant?: "default" | "destructive" | "outline";
-}) {
-  const variants = {
-    default: "bg-primary text-primary-foreground",
-    destructive: "bg-destructive text-destructive-foreground",
-    outline: "text-foreground border border-input bg-background",
-  };
-
-  return (
-    <div
-      className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-        variants[variant],
-        className,
-      )}
-    >
-      {children}
-    </div>
   );
 }

@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LayoutDashboard, LogOut } from "lucide-react";
 
+import { ForceLightTheme } from "@/components/admin/force-light-theme";
+
 const AdminSidebar = dynamic(() => import("@/components/admin/sidebar").then((mod) => ({ default: mod.AdminSidebar })));
 const MobileAdminHeader = dynamic(() => import("@/components/admin/sidebar").then((mod) => ({ default: mod.MobileAdminHeader })));
 
 function LoadingSkeleton() {
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background force-light">
       {/* Sidebar skeleton */}
       <aside className="hidden w-64 flex-col border-r border-border bg-card lg:flex">
         <div className="flex h-16 items-center border-b border-border px-6">
@@ -41,7 +43,7 @@ async function AdminShell({ children }: { children: React.ReactNode }) {
   const admin = await requireAdmin();
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-background force-light">
       {/* Desktop sidebar */}
       <aside className="hidden w-64 flex-col border-r border-border bg-card lg:flex">
         <div className="flex h-16 items-center gap-2 border-b border-border px-6">
@@ -87,6 +89,7 @@ async function AdminShell({ children }: { children: React.ReactNode }) {
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
     <Suspense fallback={<LoadingSkeleton />}>
+      <ForceLightTheme />
       <AdminShell>{children}</AdminShell>
     </Suspense>
   );

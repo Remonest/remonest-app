@@ -1,10 +1,15 @@
-# Learning Module Flow Builder (v1.9.6)
+# Learning Module Flow Builder (v2.0.0)
 
-> **Updated** — April 15, 2026
+> **Updated** — April 27, 2026
 
-## Recent Enhancements (v1.9.6)
+## Recent Enhancements (v2.0.0)
 
-### Complete Section Management System
+### Quiz UX & Submission Safety
+- ✅ **Navigation Warnings** — Implemented browser-level warnings (`beforeunload`) to prevent accidental data loss when leaving an active quiz
+- ✅ **Route Change Protection** — Added custom handling for client-side navigation attempts during assessments
+- ✅ **Enhanced State Persistence** — Improved reliability of quiz progress tracking
+
+### Complete Section Management System (v1.9.6)
 - ✅ **Section Creation** — Add new sections to organize lessons into logical chapters
 - ✅ **Section Editing** — Rename existing sections with dialog-based interface
 - ✅ **Section Deletion** — Remove sections (lessons must be moved first)

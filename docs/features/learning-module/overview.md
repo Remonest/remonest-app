@@ -28,6 +28,22 @@ Learning Module adalah fitur edukasi Remonest yang memungkinkan freelancer untuk
 
 ---
 
+## User Experience (v2.0.0)
+
+### 1. Interactive Quiz Flow
+- **Review Mode** — Setelah mengerjakan kuis, peserta dapat melihat detail jawaban benar/salah langsung di halaman hasil kuis.
+- **Lihat Hasil Detail** — Peserta yang sudah pernah mengerjakan kuis dapat mengakses kembali hasil percobaan terakhir mereka via tombol "Lihat Hasil Detail" di halaman modul.
+- **Retry Cooldown** — Jeda 1 menit diterapkan antar percobaan untuk mendorong peserta meninjau kembali materi sebelum mencoba lagi.
+- **Auto-Scroll** — Halaman otomatis scroll ke atas setelah kuis selesai untuk menunjukkan skor & status kelulusan.
+
+### 2. Certificate Integration
+- **Real-time Preview** — Preview sertifikat di sidebar halaman modul berubah secara dinamis sesuai status penyelesaian.
+- **Achievement Theme** — Modul yang sudah selesai akan menampilkan preview sertifikat dengan tema emerald dan status "Lulus".
+- **Direct Access** — Tombol "Unduh Sertifikat" dan "Lihat Versi Publik" muncul langsung di halaman modul setelah kuis lulus, memudahkan akses tanpa harus navigasi ke halaman lain.
+- **Dynamic Certificate ID** — Menampilkan ID sertifikat asli (e.g., `RMN-2026-12345`) dan tanggal penyelesaian pada preview sertifikat.
+
+---
+
 ## Database Schema
 
 ### `learning_modules`

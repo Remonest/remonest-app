@@ -9,6 +9,7 @@ import {
   getModuleEnrollments,
 } from "@/lib/learning/actions";
 import { getLessonsByModuleId } from "@/features/learning-module/actions/lessons";
+import { getModuleQuizzes } from "@/features/learning-module/actions/quiz-actions";
 
 // ─── Server Component ────────────────────────────────────────
 
@@ -18,10 +19,11 @@ export default async function AdminLearningPage() {
   // Fetch lesson counts, completion counts, and enrollments in parallel
   const modulesWithData = await Promise.all(
     modules.map(async (mod) => {
-      const [lessons, completions, enrollments] = await Promise.all([
+      const [lessons, completions, enrollments, quizzes] = await Promise.all([
         getLessonsByModuleId(mod.id),
         getModuleCompletions(mod.id),
         getModuleEnrollments(mod.id),
+        getModuleQuizzes(mod.id),
       ]);
       return {
         ...mod,
@@ -30,6 +32,7 @@ export default async function AdminLearningPage() {
         enrollmentCount: enrollments.length,
         completions,
         enrollments,
+        quizzes,
       };
     })
   );

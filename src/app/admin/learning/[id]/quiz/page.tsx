@@ -6,10 +6,12 @@ import { LearningBreadcrumb } from "@/components/admin/learning-breadcrumb";
 
 interface QuizPageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ quizId?: string }>;
 }
 
-export default async function QuizBuilderPage({ params }: QuizPageProps) {
+export default async function QuizBuilderPage({ params, searchParams }: QuizPageProps) {
   const { id } = await params;
+  const { quizId } = await searchParams;
 
   // Fetch module to verify it exists
   const module = await getLearningModuleById(id);
@@ -24,16 +26,16 @@ export default async function QuizBuilderPage({ params }: QuizPageProps) {
       <LearningBreadcrumb
         moduleId={id}
         moduleTitle={module.title}
-        currentPage="Quiz Builder"
+        currentPage={quizId ? "Edit Quiz" : "Quiz Builder"}
       />
 
       {/* Header */}
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">
-          Quiz Builder
+          {quizId ? "Edit Quiz" : "Quiz Builder"}
         </h1>
         <p className="text-sm text-muted-foreground">
-          Create and manage quizzes for "{module.title}"
+          {quizId ? "Modify existing quiz" : "Create new quiz"} for "{module.title}"
         </p>
       </div>
 
@@ -41,6 +43,7 @@ export default async function QuizBuilderPage({ params }: QuizPageProps) {
       <QuizBuilder
         moduleId={id}
         moduleTitle={module.title}
+        initialQuizId={quizId}
       />
     </div>
   );

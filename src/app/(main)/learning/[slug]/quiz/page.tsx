@@ -1,57 +1,41 @@
-import { notFound, redirect } from "next/navigation";
-import { getSupabaseServerClient } from "@/lib/supabase/server";
+import { notFound } from "next/navigation";
+import Link from "next/link";
+import { ChevronLeft } from "lucide-react";
 import { getLearningModuleBySlug } from "@/features/learning-module/actions/fetch-learning";
-import { getModuleQuizzes, getQuizWithQuestions } from "@/features/learning-module/actions/quiz-actions";
-import { getUserModuleProgress } from "@/features/learning-module/actions/enrollment";
+import {
+  getModuleQuizzes,
+  getQuizWithQuestions,
+} from "@/features/learning-module/actions/quiz-actions";
 import QuizTakingClient from "@/features/learning-module/components/QuizTakingClient";
+import { Button } from "@/components/ui/button";
 
-interface QuizPageProps {
+interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
-export default async function QuizPage({ params }: QuizPageProps) {
+export default async function QuizPlayPage({ params }: PageProps) {
   const { slug } = await params;
-  
-  const supabase = getSupabaseServerClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect(`/login?next=/learning/${slug}/quiz`);
-  }
-
-  // 1. Fetch module
   const mod = await getLearningModuleBySlug(slug);
-  if (!mod) {
-    notFound();
-  }
 
-  // 2. Verify enrollment
-  const progress = await getUserModuleProgress(mod.id);
-  if (!progress) {
-    // User must be enrolled to take the quiz
-    redirect(`/learning/${slug}`);
-  }
+  if (!mod) notFound();
 
-  // 3. Fetch published quiz for this module
   const quizzes = await getModuleQuizzes(mod.id);
-  const publishedQuiz = quizzes.find(q => q.isPublished);
+  const publishedQuiz = quizzes.find((q) => q.isPublished);
 
-  if (!publishedQuiz) {
-    // No published quiz for this module
-    notFound();
-  }
+  if (!publishedQuiz) notFound();
 
-  // 4. Fetch complete quiz with questions
   const quizData = await getQuizWithQuestions(publishedQuiz.id);
-  if (!quizData || quizData.questions.length === 0) {
-    notFound();
-  }
+  if (!quizData) notFound();
 
   return (
-    <QuizTakingClient 
-      module={mod} 
-      quiz={quizData.config} 
-      questions={quizData.questions} 
+    <QuizTakingClient
+      module={{
+        id: mod.id,
+        title: mod.title,
+        slug: mod.slug,
+      }}
+      quiz={quizData.config}
+      questions={quizData.questions}
     />
   );
 }

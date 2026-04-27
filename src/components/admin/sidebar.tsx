@@ -14,12 +14,14 @@ import {
   Menu,
   Activity,
   Upload,
+  NotebookText,
 } from "lucide-react";
 import { SignOutButton } from "@/components/admin/sign-out-button";
 
 const navItems = [
   { href: "/admin/jobs", label: "Jobs", icon: Briefcase },
   { href: "/admin/learning", label: "Learning", icon: BookOpen },
+  { href: "/admin/quizzes", label: "Quizzes", icon: NotebookText },
   { href: "/admin/upload", label: "File Manager", icon: Upload },
   { href: "/admin/activity-log", label: "Activity Log", icon: Activity },
   { href: "/admin/settings", label: "Settings", icon: Settings },
@@ -31,7 +33,8 @@ export function AdminSidebar() {
   return (
     <nav className="flex-1 space-y-1 p-4">
       {navItems.map((item) => {
-        const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+        const isActive =
+          pathname === item.href || pathname?.startsWith(`${item.href}/`);
 
         return (
           <Link

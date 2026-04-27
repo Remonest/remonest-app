@@ -68,6 +68,7 @@ type ModuleWithLessonCount = LearningModuleRow & {
   enrollmentCount: number;
   completions: ModuleCompletion[];
   enrollments: ModuleEnrollment[];
+  quizzes: any[];
 };
 
 interface AdminLearningListProps {
@@ -277,6 +278,9 @@ export default function AdminLearningList({ modules }: AdminLearningListProps) {
                   Category
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Quiz
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
                   Status
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -351,6 +355,17 @@ export default function AdminLearningList({ modules }: AdminLearningListProps) {
                           mod.category as keyof typeof LEARNING_CATEGORY_LABELS
                         ] ?? mod.category}
                       </span>
+                    </td>
+
+                    {/* Quiz */}
+                    <td className="px-6 py-4">
+                      {mod.quizzes && mod.quizzes.length > 0 ? (
+                        <div className="text-sm font-medium text-foreground">
+                          {mod.quizzes[0].title}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">—</span>
+                      )}
                     </td>
 
                     {/* Status */}
