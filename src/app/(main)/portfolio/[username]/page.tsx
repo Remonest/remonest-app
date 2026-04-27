@@ -8,9 +8,7 @@ interface PortfolioUserPageProps {
   params: Promise<{ username: string }>;
 }
 
-export async function generateStaticParams() {
-  return [];
-}
+export const dynamic = "force-dynamic";
 
 const typeConfig: Record<string, { icon: typeof FolderOpen; color: string; label: string }> = {
   certificate: { icon: Award, color: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400", label: "Certificate" },

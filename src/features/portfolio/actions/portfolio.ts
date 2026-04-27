@@ -15,38 +15,44 @@ import type {
 export async function getUserProfilePublic(
   identifier: string
 ): Promise<{ id: string; full_name: string | null; avatar_url: string | null; headline: string | null; location: string | null; website: string | null; bio: string | null } | null> {
-  const supabase = getSupabaseServerClient();
+  try {
+    const supabase = getSupabaseServerClient();
 
-  // Try lookup by ID first (UUID format)
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
-  
-  let query = supabase
-    .from("user_profiles")
-    .select("id, full_name, avatar_url, headline, location, website, bio");
+    // Try lookup by ID first (UUID format)
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+    
+    let query = supabase
+      .from("user_profiles")
+      .select("id, full_name, avatar_url, headline, location, website, bio");
 
-  if (isUuid) {
-    query = query.eq("id", identifier);
-  } else {
-    query = query.eq("username", identifier);
-  }
-
-  const { data, error } = await query.single();
-
-  if (error || !data) {
-    // If lookup by ID failed and identifier didn't look like UUID, it might still be a username
     if (isUuid) {
-      const { data: dataByUsername, error: errorByUsername } = await supabase
-        .from("user_profiles")
-        .select("id, full_name, avatar_url, headline, location, website, bio")
-        .eq("username", identifier)
-        .single();
-      
-      if (!errorByUsername && dataByUsername) return dataByUsername as any;
+      query = query.eq("id", identifier);
+    } else {
+      query = query.eq("username", identifier);
     }
+
+    const { data, error } = await query.single();
+
+    if (error || !data) {
+      // If lookup by ID failed and identifier was a UUID, it might still be a username
+      // (Someone could have a username that looks like a UUID)
+      if (isUuid) {
+        const { data: dataByUsername, error: errorByUsername } = await supabase
+          .from("user_profiles")
+          .select("id, full_name, avatar_url, headline, location, website, bio")
+          .eq("username", identifier)
+          .single();
+        
+        if (!errorByUsername && dataByUsername) return dataByUsername as any;
+      }
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("[getUserProfilePublic] Error:", error);
     return null;
   }
-
-  return data;
 }
 
 // ============================================================
@@ -299,37 +305,46 @@ export async function deletePortfolioItem(
 export async function getPublishedPortfolioItems(
   identifier: string
 ): Promise<PortfolioItem[]> {
-  const supabase = getSupabaseServerClient();
+  try {
+    const supabase = getSupabaseServerClient();
 
-  // We need the internal user_id if identifier is a username
-  let userId = identifier;
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
+    // We need the internal user_id if identifier is a username
+    let userId = identifier;
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(identifier);
 
-  if (!isUuid) {
-    const { data: profile } = await supabase
-      .from("user_profiles")
-      .select("id")
-      .eq("username", identifier)
-      .single();
-    
-    if (profile) {
-      userId = profile.id;
+    if (!isUuid) {
+      const { data: profile } = await supabase
+        .from("user_profiles")
+        .select("id")
+        .eq("username", identifier)
+        .single();
+      
+      if (profile) {
+        userId = profile.id;
+      } else {
+        // Profile not found for this username, return empty items
+        // instead of querying with a non-UUID string which would crash
+        return [];
+      }
     }
-  }
 
-  const { data, error } = await supabase
-    .from("portfolio_items")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("is_published", true)
-    .order("order_index", { ascending: true });
+    const { data, error } = await supabase
+      .from("portfolio_items")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("is_published", true)
+      .order("order_index", { ascending: true });
 
-  if (error) {
-    console.error("Failed to fetch published portfolio items:", error);
+    if (error) {
+      console.error("Failed to fetch published portfolio items:", error);
+      return [];
+    }
+
+    return data.map(mapDbToPortfolioItem);
+  } catch (error) {
+    console.error("[getPublishedPortfolioItems] Error:", error);
     return [];
   }
-
-  return data.map(mapDbToPortfolioItem);
 }
 
 // ============================================================
