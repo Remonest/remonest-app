@@ -7,7 +7,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:keys": "node scripts/test-supabase-keys.js",
+    "test:rls": "node scripts/verify-rls-fix.js",
+    "fix:rls": "node scripts/safe-rls-apply.js"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
