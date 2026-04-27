@@ -7,6 +7,20 @@ All notable changes to the Remonest App project.
 
 ---
 
+## [v2.0.0] - April 27, 2026
+
+### 🐛 Bug Fixes
+
+- ✅ **Portfolio Access** — Fixed bugs affecting public portfolio viewing and data fetching
+- ✅ **Quiz Submission** — Implemented browser-level warnings to prevent accidental navigation during active quizzes
+
+### 🛠 Improvements
+
+- ✅ **Portfolio View** — Optimized portfolio page rendering and data handling for improved performance
+- ✅ **Quiz UX** — Added browser warning dialog when leaving or closing tabs while a quiz is in progress
+
+---
+
 ## [v1.0.1] - April 15, 2026
 
 ### 🎉 New Features

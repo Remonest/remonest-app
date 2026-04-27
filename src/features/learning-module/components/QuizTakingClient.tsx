@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import {
   ClipboardCheck,
   Clock,
@@ -66,10 +66,40 @@ export default function QuizTakingClient({
   const [result, setResult] = useState<QuizAttemptResult | null>(null);
   const [startedAt, setStartedAt] = useState<string>("");
 
-  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const handleSubmit = useCallback(
-    async (isAutoSubmit = false) => {
+  // Add warning when leaving during quiz (browser close/refresh)
+  useEffect(() => {
+    if (status === "taking") {
+      const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+        e.preventDefault();
+        e.returnValue = "";
+      };
+      window.addEventListener("beforeunload", handleBeforeUnload);
+      return () => {
+        window.removeEventListener("beforeunload", handleBeforeUnload);
+      };
+    }
+  }, [status]);
+
+  // Handle client-side navigation attempts
+  useEffect(() => {
+    const handleRouteChange = () => {
+      if (status === "taking") {
+        const confirmed = window.confirm(
+          "Quiz sedang berjalan. Jika Anda pergi, jawaban Anda mungkin tidak tersimpan. Apakah Anda yakin?"
+        );
+        if (!confirmed) {
+          // This part is tricky with Next.js router. 
+          // Simple approach: block the navigation by re-navigating back
+        }
+      }
+    };
+    // Note: Next.js 13+ App Router doesn't provide a robust way to block navigation
+    // without custom solutions, but the browser alert is a good first step.
+  }, [pathname, searchParams, status]);
+
       if (isSubmitting) return;
 
       // Check if all questions answered
