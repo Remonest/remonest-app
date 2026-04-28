@@ -13,6 +13,8 @@ Learning Module adalah fitur edukasi Remonest yang memungkinkan freelancer untuk
 
 **Learning Materials & Resources (v1.0.0):** Admin dapat menambahkan materi pembelajaran (artikel, video, dokumentasi, tutorial) dan resource tambahan (tools, template, ebook, PDF) ke setiap modul. [Lihat Materials Guide](./materials.md)
 
+**Learning Player (v1.0.0):** 🆕 Step-by-step lesson interface dengan manual progress tracking. User dapat menyelesaikan pelajaran satu per satu, dengan progress otomatis dihitung berdasarkan pelajaran yang diselesaikan. [Lihat Learning Player Docs](./learning-player.md)
+
 ---
 
 ## Kategori & Topik
@@ -28,15 +30,23 @@ Learning Module adalah fitur edukasi Remonest yang memungkinkan freelancer untuk
 
 ---
 
-## User Experience (v2.0.0)
+## User Experience (v2.1.0)
 
-### 1. Interactive Quiz Flow
+### 1. Learning Player Flow (🆕 v1.0.0)
+- **Step-by-Step Interface** — User dapat mengakses modul melalui player interface yang menampilkan pelajaran satu per satu.
+- **Manual Progress Tracking** — User menandai pelajaran sebagai "selesai" secara manual, progress modul dihitung otomatis.
+- **Sequential Unlocking** — Pelajaran terbuka secara berurutan, pelajaran berikutnya terkunci sampai pelajaran sebelumnya selesai.
+- **Lesson Navigation** — Sidebar navigasi menampilkan semua pelajaran dengan status (selesai, aktif, terkunci).
+- **Multi-Format Support** — Mendukung video, PDF, gambar, dan artikel dalam satu interface yang konsisten.
+- **Mobile Responsive** — Interface yang dioptimalkan untuk mobile dengan sidebar yang bisa di-toggle.
+
+### 2. Interactive Quiz Flow
 - **Review Mode** — Setelah mengerjakan kuis, peserta dapat melihat detail jawaban benar/salah langsung di halaman hasil kuis.
 - **Lihat Hasil Detail** — Peserta yang sudah pernah mengerjakan kuis dapat mengakses kembali hasil percobaan terakhir mereka via tombol "Lihat Hasil Detail" di halaman modul.
 - **Retry Cooldown** — Jeda 1 menit diterapkan antar percobaan untuk mendorong peserta meninjau kembali materi sebelum mencoba lagi.
 - **Auto-Scroll** — Halaman otomatis scroll ke atas setelah kuis selesai untuk menunjukkan skor & status kelulusan.
 
-### 2. Certificate Integration
+### 3. Certificate Integration
 - **Real-time Preview** — Preview sertifikat di sidebar halaman modul berubah secara dinamis sesuai status penyelesaian.
 - **Achievement Theme** — Modul yang sudah selesai akan menampilkan preview sertifikat dengan tema emerald dan status "Lulus".
 - **Direct Access** — Tombol "Unduh Sertifikat" dan "Lihat Versi Publik" muncul langsung di halaman modul setelah kuis lulus, memudahkan akses tanpa harus navigasi ke halaman lain.
@@ -187,6 +197,24 @@ Features:
 - Back link to catalog
 - Module header: category badge, title, description, duration, material count
 - Markdown content rendering (H2-H4, lists, code blocks, tables, bold/italic)
+- "Mulai Belajar" button links to Learning Player
+- Materials section with published learning materials
+- Quiz preview (if available)
+- Certificate preview (if completed)
+
+### `/learning/[slug]/player` — Learning Player (🆕 v1.0.0)
+
+**File:** `src/app/(main)/learning/[slug]/player/page.tsx`
+
+Features:
+- Step-by-step lesson interface
+- Sidebar navigation with lesson list
+- Progress tracking per lesson
+- Automatic module progress calculation
+- Video, PDF, image, and article support
+- Mobile responsive design
+- Previous/Next navigation
+- "Mark as Complete" functionality
 - Materials section showing published learning materials
   - Material cards: title, summary, source type, difficulty, reading time, tags, language
   - External source links

@@ -1,6 +1,6 @@
-"use server";
+﻿"use server";
 
-import { getSupabaseServiceClient, getSupabaseServerClient } from "@/lib/supabase/server";
+import { getSupabaseServiceClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { requireAuth } from "@/features/auth/actions/guards";
 import type {
@@ -512,7 +512,7 @@ function mapRowToQuestion(row: QuestionRow): Question {
  */
 export async function getQuizAttemptsByUser(quizConfigId: string) {
   const user = await requireAuth();
-  const supabase = getSupabaseServerClient();
+  const supabase = getSupabaseServiceClient();
 
   const { data, error } = await supabase
     .from("user_quiz_attempts")
@@ -542,7 +542,7 @@ export async function submitQuizAttempt(
   startedAt: string
 ): Promise<QuizAttemptResult> {
   const user = await requireAuth();
-  const supabase = getSupabaseServerClient();
+  const supabase = getSupabaseServiceClient();
 
   try {
     // 1. Fetch quiz config and questions for scoring
@@ -642,3 +642,5 @@ export async function submitQuizAttempt(
     return { success: false, error: "Terjadi kesalahan saat memproses quiz" };
   }
 }
+
+

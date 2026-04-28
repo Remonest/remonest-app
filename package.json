@@ -50,6 +50,14 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "puppeteer"
+    ],
+    "ignoredBuiltDependencies": [
+      "@parcel/watcher",
+      "@swc/core",
+      "core-js",
+      "msw",
+      "sharp",
+      "unrs-resolver"
     ]
   },
   "devDependencies": {

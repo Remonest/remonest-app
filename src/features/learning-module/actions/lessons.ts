@@ -135,7 +135,6 @@ export async function getLessonWithContent(lessonId: string): Promise<{
       .from("learning_materials")
       .select("*")
       .eq("id", lesson.materialId)
-      .eq("is_published", true)
       .single();
     material = data;
   }

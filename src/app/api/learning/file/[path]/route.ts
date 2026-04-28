@@ -12,13 +12,16 @@ const BUCKET = "learning-files";
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ path: string }> }
+  { params }: { params: Promise<{ path: string }> },
 ) {
   try {
     const { path } = await params;
 
     if (!path) {
-      return NextResponse.json({ error: "No file path provided" }, { status: 400 });
+      return NextResponse.json(
+        { error: "No file path provided" },
+        { status: 400 },
+      );
     }
 
     const supabase = createClient(supabaseUrl, supabaseKey);
@@ -43,6 +46,10 @@ export async function GET(
       docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
       xls: "application/vnd.ms-excel",
       xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      mp4: "video/mp4",
+      webm: "video/webm",
+      ogg: "video/ogg",
+      mov: "video/quicktime",
     };
 
     const contentType = contentTypeMap[ext || ""] || "application/octet-stream";
@@ -62,24 +69,30 @@ export async function GET(
     headers.set("Referrer-Policy", "no-referrer");
     headers.set(
       "Content-Security-Policy",
-      "default-src 'none'; style-src 'unsafe-inline'; img-src 'self'; frame-ancestors 'none';"
+      "default-src 'none'; style-src 'unsafe-inline'; img-src 'self'; frame-ancestors 'none';",
     );
 
-    // For PDFs: inline only (legacy, now handled by canvas viewer)
-    if (contentType === "application/pdf") {
-      headers.set("Content-Disposition", `inline; filename="${path}"`);
-    }
+    // // For PDFs: inline only (legacy, now handled by canvas viewer)
+    // if (contentType === "application/pdf") {
+    //   headers.set("Content-Disposition", `inline; filename="${path}"`);
+    // }
 
-    // For images: inline display only
-    if (contentType.startsWith("image/")) {
-      headers.set("Content-Disposition", `inline; filename="${path}"`);
-    }
+    // // For images: inline display only
+    // if (contentType.startsWith("image/")) {
+    //   headers.set("Content-Disposition", `inline; filename="${path}"`);
+    // }
+    //
+    headers.set("Accept-Ranges", "bytes");
+    headers.set("Content-Disposition", `inline; filename="${path}"`);
 
     return new NextResponse(arrayBuffer, {
       status: 200,
       headers,
     });
   } catch {
-    return NextResponse.json({ error: "Failed to fetch file" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch file" },
+      { status: 500 },
+    );
   }
 }

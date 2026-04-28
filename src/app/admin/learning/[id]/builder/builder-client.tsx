@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -74,6 +74,7 @@ interface LearningFlowBuilderProps {
   quizzes: { id: string; title: string }[];
   resources: { id: string; title: string; resource_type: string }[];
   initialLessonContent?: string | null;
+  initialVideoUrl?: string | null;
 }
 
 export type LessonType = "video" | "article" | "exercise" | "quiz" | "resource";
@@ -99,6 +100,7 @@ export default function LearningFlowBuilder({
   quizzes,
   resources,
   initialLessonContent,
+  initialVideoUrl,
 }: LearningFlowBuilderProps) {
   const router = useRouter();
   const [lessons, setLessons] = useState(initialLessons);
@@ -108,6 +110,7 @@ export default function LearningFlowBuilder({
   const [editorContent, setEditorContent] = useState(
     initialLessonContent ?? "",
   );
+  const [editorVideoUrl, setEditorVideoUrl] = useState(initialVideoUrl ?? "");
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaved, setLastSaved] = useState<string | null>(null);
   const [propertiesOpen, setPropertiesOpen] = useState(true);
@@ -347,75 +350,105 @@ export default function LearningFlowBuilder({
 
   const selectedLesson = lessons.find((l) => l.id === selectedLessonId) ?? null;
 
-  // Auto-save debounce
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (selectedLessonId && editorContent) {
-        handleAutoSave();
-      }
-    }, 2000);
-
-    return () => clearTimeout(timer);
-  }, [editorContent, selectedLessonId]);
-
   const handleAutoSave = useCallback(async () => {
-    if (!selectedLessonId || !editorContent.trim()) return;
+    if (!selectedLessonId) return;
+    const lesson = lessons.find((l) => l.id === selectedLessonId);
+    const isVideo = lesson?.lessonType === "video";
+    if (!isVideo && !editorContent.trim()) return;
 
     try {
       const result = await saveStepContent(
         admin,
         selectedLessonId,
         editorContent,
+        isVideo ? editorVideoUrl : undefined,
+        lesson?.lessonType,
       );
 
       if (result.success) {
         setLastSaved(new Date().toLocaleTimeString());
+        // Update local lessons state with materialId if newly created
+        if (result.materialId) {
+          setLessons((prev) =>
+            prev.map((l) =>
+              l.id === selectedLessonId ? { ...l, materialId: result.materialId! } : l
+            )
+          );
+        }
       }
     } catch (error) {
       console.error("Auto-save failed:", error);
     }
-  }, [selectedLessonId, editorContent, admin]);
+  }, [selectedLessonId, editorContent, editorVideoUrl, admin, lessons]);
+
+  const handleAutoSaveRef = useRef(handleAutoSave);
+  useEffect(() => { handleAutoSaveRef.current = handleAutoSave; }, [handleAutoSave]);
+
+  const skipNextSaveRef = useRef(false);
+
+  // Auto-save debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (skipNextSaveRef.current) {
+        skipNextSaveRef.current = false;
+        return;
+      }
+      if (selectedLessonId && (editorContent || editorVideoUrl)) {
+        handleAutoSaveRef.current();
+      }
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, [editorContent, editorVideoUrl, selectedLessonId]);
+
+  const loadLessonContent = useCallback(async (lessonId: string) => {
+    const lesson = lessons.find((l) => l.id === lessonId);
+    if (!lesson) return;
+
+    if (lesson.lessonType === "article" || lesson.lessonType === "exercise") {
+      if (lesson.materialId) {
+        const response = await fetch(`/api/learning/materials/${lesson.materialId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setEditorContent(data.content ?? "");
+          setEditorVideoUrl("");
+        }
+      } else {
+        setEditorContent("");
+        setEditorVideoUrl("");
+      }
+    } else if (lesson.lessonType === "video") {
+      if (lesson.materialId) {
+        const response = await fetch(`/api/learning/materials/${lesson.materialId}`);
+        if (response.ok) {
+          const data = await response.json();
+          setEditorContent(data.content ?? "");
+          setEditorVideoUrl(data.source_url ?? "");
+        }
+      } else {
+        setEditorContent("");
+        setEditorVideoUrl("");
+      }
+    } else {
+      setEditorContent("");
+      setEditorVideoUrl("");
+    }
+  }, [lessons]);
+
+  // Load content whenever selected lesson changes (including on mount)
+  useEffect(() => {
+    if (selectedLessonId) {
+      loadLessonContent(selectedLessonId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedLessonId]);
 
   const handleLessonSelect = useCallback(
     async (lessonId: string) => {
       setSelectedLessonId(lessonId);
-      const lesson = lessons.find((l) => l.id === lessonId);
-
-      // Fetch lesson content based on type
-      if (!lesson) return;
-
-      if (lesson.lessonType === "article" || lesson.lessonType === "exercise") {
-        // Load markdown content from material
-        if (lesson.materialId) {
-          const response = await fetch(
-            `/api/learning/materials/${lesson.materialId}`,
-          );
-          if (response.ok) {
-            const data = await response.json();
-            setEditorContent(data.content ?? "");
-          }
-        } else {
-          setEditorContent("");
-        }
-      } else if (lesson.lessonType === "video") {
-        // Load video URL and notes
-        if (lesson.materialId) {
-          const response = await fetch(
-            `/api/learning/materials/${lesson.materialId}`,
-          );
-          if (response.ok) {
-            const data = await response.json();
-            setEditorContent(data.content ?? "");
-          }
-        } else {
-          setEditorContent("");
-        }
-      } else {
-        // Quiz, Resource - load description if exists
-        setEditorContent("");
-      }
+      await loadLessonContent(lessonId);
     },
-    [lessons],
+    [loadLessonContent],
   );
 
   const handleAddStep = useCallback(async () => {
@@ -665,6 +698,27 @@ export default function LearningFlowBuilder({
           materials={materials}
           quizzes={quizzes}
           resources={resources}
+          initialVideoUrl={editorVideoUrl}
+          onVideoUrlChange={setEditorVideoUrl}
+          onMaterialLink={async (materialId) => {
+            if (selectedLessonId) {
+              skipNextSaveRef.current = true;
+              await updateLesson(admin, selectedLessonId, { materialId });
+              setLessons((prev) =>
+                prev.map((l) =>
+                  l.id === selectedLessonId ? { ...l, materialId } : l
+                )
+              );
+              const response = await fetch(`/api/learning/materials/${materialId}`);
+              if (response.ok) {
+                const data = await response.json();
+                skipNextSaveRef.current = true; // suppress save triggered by state change
+                setEditorVideoUrl(data.source_url ?? "");
+                setEditorContent(data.content ?? "");
+              }
+              toast.success("Material linked to lesson");
+            }
+          }}
           onQuizSelect={async (quizId) => {
             if (selectedLessonId) {
               await updateLesson(admin, selectedLessonId, {

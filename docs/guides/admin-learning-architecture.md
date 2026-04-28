@@ -16,6 +16,7 @@
 - ✅ `/admin/learning/[id]/quiz` - Quiz Builder
 - ✅ `/admin/learning` - Module list (obviously)
 - ✅ `/admin/learning/[id]/edit` - Module metadata
+- ✅ `/admin/upload` - File Manager (central file storage)
 
 ---
 
@@ -50,6 +51,7 @@
 |------|------------------|-----------|
 | **Flow Builder** | "I want to structure my course and write lesson content" | Create curriculum flow |
 | **Materials** | "I want to upload files, embed videos, and manage resources" | Add rich media content |
+| **File Manager** | "I want to upload files and videos for use anywhere" | Central file storage |
 | **Quiz Builder** | "I want to create assessments with multiple questions" | Test student knowledge |
 
 These are **fundamentally different tasks** that shouldn't be crammed into one interface.
@@ -75,6 +77,7 @@ Each page has a **clear, focused purpose**:
 |------|----------------|
 | **Flow Builder** | Lesson structure + content writing |
 | **Materials** | Rich media + file management |
+| **File Manager** | Central file upload & URL generation |
 | **Quiz Builder** | Assessment creation |
 | **Edit Metadata** | Module-level settings |
 
@@ -164,6 +167,7 @@ Dropdown Menu:
 |------|--------------|-------------------|
 | **Flow Builder** | Lessons, content editing, module publish | File uploads, quiz creation |
 | **Materials** | File uploads, videos, resources, metadata | Lesson structure, quiz creation |
+| **File Manager** | Central file storage, URL generation | Material creation, lesson structure |
 | **Quiz Builder** | Multi-question assessments | Lesson content, file uploads |
 | **Edit Metadata** | Module title, category, status | Lessons, materials, quizzes |
 
@@ -211,6 +215,7 @@ Instead of cramming everything into Flow Builder, consider:
 | Decision | Rationale |
 |----------|-----------|
 | **Keep Materials page** | Handles file uploads, videos, resources - different workflow |
+| **Keep File Manager** | Central file storage for videos, images, documents - reusable across system |
 | **Keep Quiz Builder page** | Complex multi-question forms - different workflow |
 | **Remove content type tabs** | Misleading UI, functionality belongs in separate pages |
 | **Flow Builder = Lessons only** | Clear, focused purpose without overwhelming UI |

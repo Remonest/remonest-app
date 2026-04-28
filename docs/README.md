@@ -1,8 +1,8 @@
-# Remonest App - Documentation
+﻿# Remonest App - Documentation
 
 Comprehensive documentation for the Remonest platform — a remote work hub for Indonesian professionals with learning modules, job board, CV/portfolio builder, and admin management.
 
-**Current Version:** v1.10.0 | [View Changelog](./CHANGELOG.md)
+**Current Version:** v2.1.5 | [View Changelog](./CHANGELOG.md)
 
 ---
 
@@ -50,7 +50,7 @@ Comprehensive documentation for the Remonest platform — a remote work hub for 
 - **[Admin Learning Breadcrumb Standardization v1.9.1](./guides/admin-learning-breadcrumb-standardization.md)** — 🆕 Unified breadcrumb navigation across all admin learning pages
 - **[Flow Builder Bug Fixes v1.9.2](./guides/flow-builder-bug-fixes.md)** — 🆕 All 9 critical bugs fixed and working implementation
 - **[Admin Learning Architecture v1.9.3](./guides/admin-learning-architecture.md)** — 🆕 Why pages are kept separate (Flow Builder vs Materials vs Quiz)
-- **[Admin File Manager v1.9.4](./guides/admin-file-manager.md)** — 🆕 File upload page with drag-and-drop, image preview, and URL management
+- **[Admin File Manager v1.9.5](./guides/admin-file-manager.md)** — 🆕 File upload page with drag-and-drop, image/video preview, and URL management
 - **[Flow Builder v1.9.6](./guides/learning-module-flow-builder.md)** — 🆕 Enhanced three-panel editor with complete section management, dialog system, and optimistic updates
 - **[CV Builder v1.0.0](./guides/cv-builder-guide.md)** — 🆕 Complete CV builder with real-time preview, PDF export, and local storage
 - **[Certificate System](./guides/certificate-download.md)** — 🆕 Certificate rendering, PNG download, print, zoom, public verification
@@ -311,5 +311,6 @@ See [Migration Guide](./guides/database-migrations.md) for details.
 
 ---
 
-**Last Updated:** April 22, 2026
+**Last Updated:** April 28, 2026 (v2.1.5)
 **Maintained By:** Development Team
+

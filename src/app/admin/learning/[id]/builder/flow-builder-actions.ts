@@ -12,8 +12,10 @@ import type { AdminUser } from "@/lib/admin/require-admin";
 export async function saveStepContent(
   admin: AdminUser,
   lessonId: string,
-  content: string
-): Promise<{ success: boolean; error?: string }> {
+  content: string,
+  sourceUrl?: string,
+  lessonType?: string
+): Promise<{ success: boolean; error?: string; materialId?: string }> {
   try {
     await requireAdmin();
 
@@ -31,13 +33,18 @@ export async function saveStepContent(
     }
 
     // If lesson has a material_id, update the material content
+    let materialId = existingLesson.material_id;
     if (existingLesson.material_id) {
+      const updatePayload: Record<string, any> = {
+        content,
+        updated_at: new Date().toISOString(),
+      };
+      if (sourceUrl !== undefined) updatePayload.source_url = sourceUrl;
+      if (lessonType === "video") updatePayload.source_type = "video";
+
       const { error } = await supabase
         .from("learning_materials")
-        .update({
-          content: content,
-          updated_at: new Date().toISOString(),
-        })
+        .update(updatePayload)
         .eq("id", existingLesson.material_id);
 
       if (error) {
@@ -60,7 +67,8 @@ export async function saveStepContent(
           module_id: existingLesson.module_id,
           title: "Lesson Content",
           content: content,
-          source_type: "article",
+          source_url: sourceUrl ?? null,
+          source_type: lessonType === "video" ? "video" : "article",
           is_published: false,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
@@ -73,10 +81,15 @@ export async function saveStepContent(
       }
 
       // Link the lesson to the new material
-      await supabase
+      materialId = newMaterial.id;
+      const { error: linkError } = await supabase
         .from("module_lessons")
         .update({ material_id: newMaterial.id })
         .eq("id", lessonId);
+
+      if (linkError) {
+        console.error("[saveStepContent] Failed to link material to lesson:", linkError);
+      }
 
       // Log admin action
       await supabase.from("admin_actions").insert({
@@ -90,7 +103,7 @@ export async function saveStepContent(
 
     revalidatePath(`/admin/learning/${existingLesson.module_id}/builder`);
 
-    return { success: true };
+    return { success: true, materialId };
   } catch (error: any) {
     console.error("[saveStepContent] Unexpected error:", error);
     return { success: false, error: "Failed to save step content" };

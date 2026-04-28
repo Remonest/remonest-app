@@ -1,6 +1,6 @@
-# Admin File Manager (v1.9.4)
+# Admin File Manager (v1.9.5)
 
-> **Date:** April 14, 2026  
+> **Date:** April 28, 2026  
 > **Purpose:** Centralized file upload and management for admin users
 
 ---
@@ -29,10 +29,12 @@ The **Admin File Manager** is a centralized page for uploading and managing file
 |------|------------|----------|
 | **Images** | JPEG, PNG, WebP, GIF | 10MB |
 | **Documents** | PDF, DOC, DOCX, XLS, XLSX | 10MB |
+| **Videos** | MP4, WebM, OGG, MOV | 50MB |
 
 ### **3. File Management**
 - ✅ **Image Preview** - Shows thumbnail for uploaded images
-- ✅ **File Icons** - Different icons for PDFs, documents, etc.
+- ✅ **Video Preview** - Shows video thumbnails with hover-to-play functionality
+- ✅ **File Icons** - Different icons for PDFs, documents, videos, etc.
 - ✅ **Copy URL** - One-click copy file URL to clipboard
 - ✅ **Delete Files** - Remove files from the list
 - ✅ **File Info** - Shows file size and type
@@ -41,6 +43,7 @@ The **Admin File Manager** is a centralized page for uploading and managing file
 - **All** - Show all uploaded files
 - **Images** - Filter to show only images
 - **Files** - Filter to show only documents
+- **Videos** - Filter to show only videos
 
 ---
 
@@ -57,6 +60,7 @@ The **Admin File Manager** is a centralized page for uploading and managing file
 │  │           [Choose Files] Button             │    │
 │  │   Images: JPEG, PNG, WebP, GIF (max 10MB)   │    │
 │  │   Documents: PDF, DOC, XLS (max 10MB)       │    │
+│  │   Videos: MP4, WebM, OGG, MOV (max 50MB)   │    │
 │  └─────────────────────────────────────────────┘    │
 │                                                      │
 │  Upload Progress (if uploading)                      │
@@ -195,7 +199,7 @@ Settings
 Content-Type: multipart/form-data
 
 FormData:
-  file: File (image or document)
+  file: File (image, document, or video)
 ```
 
 **Response (Success):**
@@ -228,24 +232,29 @@ FormData:
 
 ### **Upload Tests**
 - [ ] Drag single image → Uploads successfully
+- [ ] Drag single video → Uploads successfully
 - [ ] Drag multiple files → All upload successfully
 - [ ] Click "Choose Files" → File browser opens
 - [ ] Upload invalid type (e.g., .exe) → Shows error
-- [ ] Upload large file (>10MB) → Shows size error
+- [ ] Upload large image/file (>10MB) → Shows size error
+- [ ] Upload large video (>50MB) → Shows size error
 - [ ] Upload 5 files at once → All process correctly
 
 ### **File Management Tests**
 - [ ] Image shows preview thumbnail
+- [ ] Video shows preview with hover-to-play
 - [ ] PDF shows document icon
 - [ ] Click "Copy URL" → URL copied to clipboard
 - [ ] Click delete → Confirmation shows
 - [ ] Confirm delete → File removed from list
 - [ ] Filter "Images" → Only images shown
 - [ ] Filter "Files" → Only documents shown
+- [ ] Filter "Videos" → Only videos shown
 - [ ] Filter "All" → All files shown
 
 ### **Integration Tests**
 - [ ] Copy image URL → Paste in "Cover Image URL" → Saves correctly
+- [ ] Upload video → Copy URL → Create material → Video plays correctly
 - [ ] Upload PDF → Copy URL → Create material → File accessible
 - [ ] Upload template → Copy URL → Create resource → Downloads correctly
 
@@ -336,6 +345,6 @@ className={`border-2 border-dashed ${
 
 ---
 
-**Last Updated:** April 14, 2026  
-**Version:** v1.9.4  
+**Last Updated:** April 28, 2026  
+**Version:** v1.9.5  
 **Status:** ✅ Implemented & Working

@@ -94,43 +94,20 @@ export default function EnrollButton({
         </div>
 
         <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleStartReading}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80"
-            >
+          <Link href={`/learning/${moduleSlug}/player`} className="flex-1">
+            <button className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
               <PlayCircle className="size-3.5" />
               Lanjutkan belajar
             </button>
+          </Link>
 
-            {hasQuiz && moduleSlug && (
-              <Link href={`/learning/${moduleSlug}/quiz`} className="flex-1">
-                <button className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90">
-                  <ClipboardCheck className="size-3.5" />
-                  Ambil Quiz
-                </button>
-              </Link>
-            )}
-          </div>
-
-          {!hasQuiz && materialsCount > 0 && (
-            <button
-              onClick={handleComplete}
-              disabled={isPending}
-              className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50"
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="size-3.5 animate-spin" />
-                  Memproses...
-                </>
-              ) : (
-                <>
-                  <CheckCircle2 className="size-3.5" />
-                  Tandai selesai
-                </>
-              )}
-            </button>
+          {hasQuiz && moduleSlug && (
+            <Link href={`/learning/${moduleSlug}/quiz`} className="flex-1">
+              <button className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md bg-secondary text-secondary-foreground hover:bg-secondary/80">
+                <ClipboardCheck className="size-3.5" />
+                Ambil Quiz
+              </button>
+            </Link>
           )}
         </div>
       </div>
@@ -138,22 +115,9 @@ export default function EnrollButton({
   }
 
   return (
-    <button
-      onClick={handleStartReading}
-      disabled={isPending}
-      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-medium transition-colors disabled:opacity-50"
-    >
-      {isPending ? (
-        <>
-          <Loader2 className="size-4 animate-spin" />
-          Memuat...
-        </>
-      ) : (
-        <>
-          <PlayCircle className="size-4" />
-          Mulai Belajar
-        </>
-      )}
-    </button>
+    <Link href={`/learning/${moduleSlug}/player`} className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 text-sm font-medium transition-colors no-underline">
+      <PlayCircle className="size-4" />
+      Mulai Belajar
+    </Link>
   );
 }

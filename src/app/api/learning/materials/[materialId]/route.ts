@@ -11,7 +11,7 @@ export async function GET(
 
     const { data, error } = await supabase
       .from("learning_materials")
-      .select("id, title, content, source_type")
+      .select("id, title, content, source_url, source_type, file_url")
       .eq("id", materialId)
       .single();
 

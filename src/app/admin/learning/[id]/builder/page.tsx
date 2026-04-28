@@ -26,13 +26,17 @@ export default async function LearningFlowBuilderPage({ params }: PageProps) {
   // Fetch materials and quizzes for linking
   const supabase = getSupabaseServiceClient();
 
-  const [{ data: materials }, { data: quizzes }, { data: resources }] =
+  const [{ data: allMaterials }, { data: lessonLinks }, { data: quizzes }, { data: resources }] =
     await Promise.all([
       supabase
         .from("learning_materials")
-        .select("id, title")
+        .select("id, title, source_url, source_type")
+        .eq("module_id", id),
+      supabase
+        .from("module_lessons")
+        .select("material_id")
         .eq("module_id", id)
-        .eq("is_published", true),
+        .not("material_id", "is", null),
       supabase
         .from("quiz_configs")
         .select("id, title")
@@ -44,12 +48,18 @@ export default async function LearningFlowBuilderPage({ params }: PageProps) {
         .eq("module_id", id),
     ]);
 
+  // Filter out materials already linked to lessons (builder-managed)
+  const linkedMaterialIds = new Set((lessonLinks ?? []).map((l: any) => l.material_id));
+  const materials = (allMaterials ?? []).filter((m) => !linkedMaterialIds.has(m.id));
+
   // Fetch content for first lesson if exists
   let initialLessonContent: string | null = null;
+  let initialVideoUrl: string | null = null;
   if (lessons.length > 0) {
     const lessonWithData = await getLessonWithContent(lessons[0].id);
     if (lessonWithData?.material) {
       initialLessonContent = lessonWithData.material.content;
+      initialVideoUrl = lessonWithData.material.source_url ?? null;
     }
   }
 
@@ -92,6 +102,7 @@ export default async function LearningFlowBuilderPage({ params }: PageProps) {
       quizzes={quizzes ?? []}
       resources={resources ?? []}
       initialLessonContent={initialLessonContent}
+      initialVideoUrl={initialVideoUrl}
     />
   );
 }

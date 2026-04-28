@@ -15,10 +15,15 @@ const ALLOWED_TYPES = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.ms-excel",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "video/mp4",
+  "video/webm",
+  "video/ogg",
+  "video/quicktime",
 ];
 const MAX_PDF_SIZE = 5 * 1024 * 1024; // 5MB for PDFs
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB for images
 const MAX_DOC_SIZE = 10 * 1024 * 1024; // 10MB for documents
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB for videos
 const BUCKET = "learning-files";
 
 export async function POST(request: NextRequest) {
@@ -33,17 +38,21 @@ export async function POST(request: NextRequest) {
     // Validate file size (different limits per type)
     const isPdf = file.type === "application/pdf";
     const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
     const maxSize = isPdf
       ? MAX_PDF_SIZE
       : isImage
         ? MAX_IMAGE_SIZE
-        : MAX_DOC_SIZE;
+        : isVideo
+          ? MAX_VIDEO_SIZE
+          : MAX_DOC_SIZE;
 
     if (file.size > maxSize) {
       const sizeMB = (maxSize / (1024 * 1024)).toFixed(0);
+      const fileType = isPdf ? "PDF" : isVideo ? "video" : "gambar/dokumen";
       return NextResponse.json(
         {
-          error: `Ukuran file maksimal ${sizeMB}MB untuk ${isPdf ? "PDF" : "gambar/dokumen"}`,
+          error: `Ukuran file maksimal ${sizeMB}MB untuk ${fileType}`,
         },
         { status: 400 },
       );
@@ -54,7 +63,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "Tipe file tidak didukung. Hanya PDF, gambar (JPEG/PNG/WebP/GIF), dan dokumen Word/Excel.",
+            "Tipe file tidak didukung. Hanya PDF, gambar (JPEG/PNG/WebP/GIF), video (MP4/WebM/OGG/MOV), dan dokumen Word/Excel.",
         },
         { status: 400 },
       );

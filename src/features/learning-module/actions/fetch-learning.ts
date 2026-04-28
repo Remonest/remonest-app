@@ -3,6 +3,7 @@
 import { getSupabaseServerClient, getSupabaseServiceClient } from "@/lib/supabase/server";
 import type { LearningModule, LearningModuleWithContent, LearningModuleRow, ModuleDifficulty } from "@/features/learning-module/types/learning";
 import type { ModuleLesson } from "@/features/learning-module/types/lesson";
+import type { LearningMaterial } from "@/features/learning-module/types/materials";
 
 // ============================================================
 // Fetch Published Learning Modules (Public)
@@ -53,21 +54,6 @@ export async function getLearningModuleBySlug(slug: string): Promise<LearningMod
 // Fetch Published Materials for a Module (Public)
 // ============================================================
 
-export interface LearningMaterial {
-  id: string;
-  title: string;
-  content: string | null;
-  summary: string | null;
-  source_url: string | null;
-  source_type: string | null;
-  file_url: string | null;
-  difficulty: string;
-  language: string;
-  reading_time_minutes: number | null;
-  tags: string[] | null;
-  order_index: number;
-}
-
 export async function getPublishedMaterialsForModule(moduleId: string): Promise<LearningMaterial[]> {
   const supabase = getSupabaseServerClient();
 
@@ -89,6 +75,41 @@ export async function getPublishedMaterialsForModule(moduleId: string): Promise<
 
     if (fallbackError) {
       console.error("[getPublishedMaterialsForModule] Error:", fallbackError);
+      return [];
+    }
+
+    return (fallbackData ?? []).map((m: any) => ({
+      ...m,
+      order_index: 0,
+    }));
+  }
+
+  return (data ?? []) as LearningMaterial[];
+}
+
+// ============================================================
+// Fetch All Materials for a Module (including unpublished, for player)
+// ============================================================
+
+export async function getMaterialsByModuleId(moduleId: string): Promise<LearningMaterial[]> {
+  const supabase = getSupabaseServerClient();
+
+  const { data, error } = await supabase
+    .from("learning_materials")
+    .select("*")
+    .eq("module_id", moduleId)
+    .order("order_index", { ascending: true, nullsFirst: false });
+
+  if (error) {
+    // Fallback: try without order_index (pre-migration 018)
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from("learning_materials")
+      .select("*")
+      .eq("module_id", moduleId)
+      .order("created_at", { ascending: true });
+
+    if (fallbackError) {
+      console.error("[getMaterialsByModuleId] Error:", fallbackError);
       return [];
     }
 

@@ -1,9 +1,88 @@
-# Changelog
+﻿# Changelog
 
 All notable changes to the Remonest App project.
 
 **Format:** [Semantic Versioning](https://semver.org/)
-**Date Format:** April 27, 2026
+**Date Format:** April 28, 2026
+
+---
+
+## [v2.1.5] - April 28, 2026
+
+### Bug Fixes
+
+#### Quiz "Coba Lagi" — Cookie Error
+- Fixed `UnhandledRejection: Cookies can only be modified in a Server Action or Route Handler` on `/learning/[slug]/quiz`
+- `getQuizAttemptsByUser` and `submitQuizAttempt` were using `getSupabaseServerClient()` which attempts cookie writes; switched to `getSupabaseServiceClient()` since `requireAuth()` already validates the user
+- Added try/catch to `setAll` in `getSupabaseServerClient()` to silently ignore cookie mutation errors when called from Server Components (standard Supabase SSR pattern)
+
+---
+## [v2.1.4] - April 28, 2026
+
+### 🐛 Fixed
+
+#### Learning Player — Content Rendering
+- **Video lessons now render correctly** — `source_url` was never saved to DB from Flow Builder video editor; fixed by wiring `onVideoUrlChange` through to `saveStepContent`
+- **Article/markdown content now renders** — player now branches rendering by `lessonType` instead of `source_type`, fixing cases where `source_type` was wrong on existing records
+- **`activeMaterial` fallback** — when `lesson.materialId` is null, player now falls back to matching material by lesson type (`source_type === "video"` or `source_url` present)
+- **Materials page no longer shows builder-created materials** — filtered out materials linked to lessons via `module_lessons.material_id`
+- **Flow Builder video URL persists on refresh** — `loadLessonContent` now runs on mount via `useEffect` and loads `source_url` from material API
+- **Auto-save no longer fires multiple times** — moved `handleAutoSave` before its `useEffect`, used `useRef` to avoid stale closure re-triggering
+- **Auto-save no longer overwrites linked material** — added `skipNextSaveRef` to suppress save triggered by `onMaterialLink` state changes
+- **`saveStepContent` now returns `materialId`** — builder updates local `lessons` state with new `materialId` after first save, preventing repeated material creation
+- **`getLessonWithContent` no longer filters by `is_published`** — builder-created materials are `is_published: false`; removed filter so content loads correctly
+- **Materials API route now returns `source_url` and `file_url`** — was only returning `content` and `source_type`
+
+#### Flow Builder
+- **Video URL input now saves to DB** — `EditorPanel` accepts `initialVideoUrl`/`onVideoUrlChange` props; builder-client manages `editorVideoUrl` state
+- **`source_type` set correctly on save** — `saveStepContent` now accepts `lessonType` param and sets `source_type: "video"` for video lessons
+- **Link existing material dropdown** — video editor now shows a dropdown to link a published material from the Materials page directly to the lesson
+- **Builder page fetches all materials** (not just `is_published: true`) for the linking dropdown, excluding builder-managed ones
+
+### 🏗️ Changed
+- `renderMaterialContent()` in player now branches purely on `activeLesson.lessonType` (video / article / exercise / resource) instead of `source_type`
+- `renderMarkdown()` improved: added H1, blockquotes, links, proper list styles, better paragraph detection
+- `getMaterialsByModuleId` used in player fetches all materials regardless of `is_published`
+
+---
+
+
+
+### 🎉 New Features
+
+#### Video File Support in File Manager
+- ✅ **Video Upload Support**
+  - Added video file types to file manager: MP4, WebM, OGG, MOV
+  - Increased file size limit for videos to 50MB (vs 10MB for images/documents)
+  - Videos now display with preview thumbnails in file grid
+- ✅ **Enhanced Video Preview**
+  - Hover-to-play functionality for quick video preview
+  - Videos display with play button overlay on hover
+  - Muted by default for user-friendly preview
+- ✅ **Updated File Management UI**
+  - Added "Videos" filter button alongside existing filters
+  - Video files display with proper "Video" badge
+  - Video icon (play button) for non-preview videos
+- ✅ **API Updates**
+  - Upload endpoint now accepts video files with proper validation
+  - Server-side size limits: 50MB for videos, 10MB for images/documents
+  - Enhanced error messages for video-specific scenarios
+- ✅ **Documentation Updates**
+  - Updated admin file manager guide with video support documentation
+  - Enhanced testing checklist with video-specific tests
+  - Updated architecture docs to reflect file manager video capabilities
+
+### 🏗️ Changed
+- Updated file input accept attribute: `accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,video/*"`
+- Enhanced filter logic to properly separate videos from documents
+- Updated file type detection and icon rendering for videos
+- Improved UI descriptions to mention video support
+
+### 📝 Technical Details
+- Video files stored in `learning-files` Supabase Storage bucket
+- File URLs follow same pattern: `/api/learning/file/timestamp-randomfilename.mp4`
+- Videos can be used in learning materials and resources by copying URLs from file manager
+- Hover-to-play implemented with native HTML5 video controls (muted, autoplay on mouseenter, pause on mouseleave)
 
 ---
 
@@ -964,6 +1043,7 @@ supabase db remote --list
 
 | Version | Date | Key Features |
 |---------|------|--------------|
+| v2.1.3 | Apr 28, 2026 | Video file support in file manager, enhanced video preview |
 | v2.1.0 | Apr 27, 2026 | Profile photo upload, client-side compression, WebP conversion |
 | v2.0.0 | Apr 27, 2026 | Portfolio access fixes, quiz submission warnings |
 | v1.9.9 | Apr 22, 2026 | Persistent Portfolio, Public CV, Profile field migration |
@@ -976,5 +1056,6 @@ supabase db remote --list
 
 ---
 
-**Last Updated:** April 27, 2026
+**Last Updated:** April 28, 2026
 **Maintained By:** Development Team
+

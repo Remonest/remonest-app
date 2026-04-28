@@ -48,6 +48,9 @@ interface EditorPanelProps {
   quizzes: { id: string; title: string }[];
   resources: { id: string; title: string; resource_type: string }[];
   onQuizSelect?: (quizId: string) => void;
+  initialVideoUrl?: string;
+  onVideoUrlChange?: (url: string) => void;
+  onMaterialLink?: (materialId: string) => void;
 }
 
 // ─── Component ───────────────────────────────────────────────
@@ -61,9 +64,14 @@ export function EditorPanel({
   quizzes,
   resources,
   onQuizSelect,
+  initialVideoUrl = "",
+  onVideoUrlChange,
+  onMaterialLink,
 }: EditorPanelProps) {
-  const [videoUrl, setVideoUrl] = useState("");
-  const [selectedQuizId, setSelectedQuizId] = useState(lesson?.quizConfigId ?? "");
+  const [videoUrl, setVideoUrl] = useState(initialVideoUrl);
+  const [selectedQuizId, setSelectedQuizId] = useState(
+    lesson?.quizConfigId ?? "",
+  );
   const [selectedResourceId, setSelectedResourceId] = useState("");
 
   // Sync selectedQuizId when lesson changes
@@ -73,13 +81,20 @@ export function EditorPanel({
     }
   }, [lesson]);
 
+  // Sync videoUrl when lesson changes
+  useEffect(() => {
+    setVideoUrl(initialVideoUrl ?? "");
+  }, [initialVideoUrl]);
+
   const handleQuizSelect = (quizId: string) => {
     setSelectedQuizId(quizId);
     onQuizSelect?.(quizId);
   };
 
   const handleToolbarCommand = (command: string) => {
-    const textarea = document.getElementById("wysiwyg-editor") as HTMLTextAreaElement;
+    const textarea = document.getElementById(
+      "wysiwyg-editor",
+    ) as HTMLTextAreaElement;
     if (!textarea) return;
 
     const start = textarea.selectionStart;
@@ -286,16 +301,49 @@ export function EditorPanel({
 
   const renderVideoEditor = () => (
     <div className="mx-auto max-w-2xl space-y-6">
+      {/* Link existing published material */}
+      {materials.length > 0 && (
+        <div className="space-y-2 p-4 border rounded-lg bg-muted/30">
+          <Label>Link Published Material (from Materials page)</Label>
+          <Select
+            value={lesson?.materialId ?? ""}
+            onValueChange={(val) => onMaterialLink?.(val)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Select an existing material..." />
+            </SelectTrigger>
+            <SelectContent>
+              {materials.map((m) => (
+                <SelectItem key={m.id} value={m.id}>{m.title}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            Link a material you created on the Materials page. Its video URL and content will be used in the player.
+          </p>
+        </div>
+      )}
+
+      <div className="relative flex items-center gap-2">
+        <div className="flex-1 h-px bg-border" />
+        <span className="text-xs text-muted-foreground">or enter URL directly</span>
+        <div className="flex-1 h-px bg-border" />
+      </div>
+
       <div className="space-y-2">
         <Label htmlFor="video-url">Video URL</Label>
         <Input
           id="video-url"
           value={videoUrl}
-          onChange={(e) => setVideoUrl(e.target.value)}
+          onChange={(e) => {
+            setVideoUrl(e.target.value);
+            onVideoUrlChange?.(e.target.value);
+          }}
           placeholder="https://youtube.com/watch?v=... or https://vimeo.com/..."
         />
         <p className="text-xs text-muted-foreground">
-          Enter a YouTube or Vimeo URL. The video will be embedded in the lesson.
+          Enter a YouTube or Vimeo URL. The video will be embedded in the
+          lesson.
         </p>
       </div>
 
@@ -317,9 +365,13 @@ export function EditorPanel({
               </div>
             </div>
           ) : (
-            <div className="flex h-full items-center justify-center text-destructive">
-              <p className="text-sm">Invalid video URL</p>
-            </div>
+            <video
+              key={videoUrl} // 🔥 important: prevents play/pause race issues
+              src={videoUrl}
+              controls
+              className="h-full w-full object-cover"
+              onError={() => console.error("Invalid video source")}
+            />
           )}
         </div>
       )}
@@ -422,7 +474,11 @@ export function EditorPanel({
           Need a new quiz for this step?
         </p>
         <Button variant="outline" className="gap-2" asChild>
-          <a href={`/admin/learning/${lesson?.moduleId}/quiz`} target="_blank" rel="noopener noreferrer">
+          <a
+            href={`/admin/learning/${lesson?.moduleId}/quiz`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <ExternalLink className="h-4 w-4" />
             Open Quiz Builder
           </a>
@@ -452,7 +508,8 @@ export function EditorPanel({
         <Upload className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
         <h3 className="mb-1 text-sm font-medium">Upload Resource File</h3>
         <p className="mb-3 text-xs text-muted-foreground">
-          Upload a PDF, template, checklist, or other file for students to download.
+          Upload a PDF, template, checklist, or other file for students to
+          download.
         </p>
         <Button variant="outline" className="gap-2">
           <Upload className="h-4 w-4" />
@@ -464,7 +521,10 @@ export function EditorPanel({
       <div className="space-y-2">
         <Label>Or Select Existing Resource</Label>
         {resources.length > 0 ? (
-          <Select value={selectedResourceId} onValueChange={setSelectedResourceId}>
+          <Select
+            value={selectedResourceId}
+            onValueChange={setSelectedResourceId}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Choose a resource..." />
             </SelectTrigger>
@@ -512,11 +572,16 @@ export function EditorPanel({
               {lesson.title}
             </h1>
             <p className="text-sm text-muted-foreground">
-              {lesson.lessonType === "article" && "Edit the article content. Changes are saved automatically."}
-              {lesson.lessonType === "video" && "Add a video URL and optional notes."}
-              {lesson.lessonType === "exercise" && "Provide exercise instructions and starter code."}
-              {lesson.lessonType === "quiz" && "Link an existing quiz or create a new one."}
-              {lesson.lessonType === "resource" && "Upload or link a downloadable resource."}
+              {lesson.lessonType === "article" &&
+                "Edit the article content. Changes are saved automatically."}
+              {lesson.lessonType === "video" &&
+                "Add a video URL and optional notes."}
+              {lesson.lessonType === "exercise" &&
+                "Provide exercise instructions and starter code."}
+              {lesson.lessonType === "quiz" &&
+                "Link an existing quiz or create a new one."}
+              {lesson.lessonType === "resource" &&
+                "Upload or link a downloadable resource."}
             </p>
           </div>
 
@@ -530,9 +595,7 @@ export function EditorPanel({
       </div>
 
       {/* Editor Content */}
-      <div className="flex-1 overflow-y-auto px-12 py-10">
-        {renderEditor()}
-      </div>
+      <div className="flex-1 overflow-y-auto px-12 py-10">{renderEditor()}</div>
     </main>
   );
 }

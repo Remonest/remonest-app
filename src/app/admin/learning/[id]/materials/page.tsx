@@ -11,7 +11,6 @@ export default async function MaterialsPage({ params }: PageProps) {
   const { id } = await params;
   const supabase = getSupabaseServerClient();
 
-  // Fetch module info
   const { data: module } = await supabase
     .from("learning_modules")
     .select("id, title, slug, status")
@@ -22,14 +21,26 @@ export default async function MaterialsPage({ params }: PageProps) {
     redirect("/admin/learning");
   }
 
-  // Fetch materials
-  const { data: materials } = await supabase
+  // Get material IDs already linked to lessons (managed by Flow Builder)
+  const { data: lessonLinks } = await supabase
+    .from("module_lessons")
+    .select("material_id")
+    .eq("module_id", id)
+    .not("material_id", "is", null);
+
+  const lessonMaterialIds = (lessonLinks ?? []).map((l: any) => l.material_id as string);
+
+  // Fetch materials excluding those managed by Flow Builder
+  const materialsQuery = supabase
     .from("learning_materials")
     .select("*")
     .eq("module_id", id)
     .order("created_at", { ascending: true });
 
-  // Fetch resources
+  const { data: materials } = lessonMaterialIds.length > 0
+    ? await materialsQuery.not("id", "in", `(${lessonMaterialIds.join(",")})`)
+    : await materialsQuery;
+
   const { data: resources } = await supabase
     .from("learning_resources")
     .select("*")
@@ -38,13 +49,11 @@ export default async function MaterialsPage({ params }: PageProps) {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
       <LearningBreadcrumb
         moduleId={id}
         moduleTitle={module.title}
         currentPage="Materials & Resources"
       />
-      
       <MaterialListClient
         module={module}
         materials={materials || []}

@@ -4,7 +4,6 @@ import { useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   Upload,
-  X,
   Image as ImageIcon,
   FileText,
   File,
@@ -13,10 +12,9 @@ import {
   Copy,
   Trash2,
   Loader2,
+  Video,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { LearningBreadcrumb } from "@/components/admin/learning-breadcrumb";
@@ -57,21 +55,27 @@ const ALLOWED_FILE_TYPES = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.ms-excel",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "video/mp4",
+  "video/webm",
+  "video/ogg",
+  "video/quicktime",
 ];
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB
 
 // ─── Component ───────────────────────────────────────────────
 
 export default function AdminUploadPage() {
-  const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [uploadProgress, setUploadProgress] = useState<UploadProgress[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [filter, setFilter] = useState<"all" | "images" | "files">("all");
+  const [filter, setFilter] = useState<"all" | "images" | "files" | "videos">(
+    "all",
+  );
 
   // Handle file selection
   const handleFiles = useCallback(async (files: FileList | File[]) => {
@@ -109,7 +113,12 @@ export default function AdminUploadPage() {
       }
 
       const isImage = file.type.startsWith("image/");
-      const maxSize = isImage ? MAX_IMAGE_SIZE : MAX_FILE_SIZE;
+      const isVideo = file.type.startsWith("video/");
+      const maxSize = isImage
+        ? MAX_IMAGE_SIZE
+        : isVideo
+          ? MAX_VIDEO_SIZE
+          : MAX_FILE_SIZE;
 
       if (file.size > maxSize) {
         setUploadProgress((prev) =>
@@ -241,7 +250,9 @@ export default function AdminUploadPage() {
   // Filter files
   const filteredFiles = uploadedFiles.filter((file) => {
     if (filter === "images") return file.type.startsWith("image/");
-    if (filter === "files") return !file.type.startsWith("image/");
+    if (filter === "files")
+      return !file.type.startsWith("image/") && !file.type.startsWith("video/");
+    if (filter === "videos") return file.type.startsWith("video/");
     return true;
   });
 
@@ -255,6 +266,7 @@ export default function AdminUploadPage() {
   // Get file icon
   const getFileIcon = (type: string) => {
     if (type.startsWith("image/")) return ImageIcon;
+    if (type.startsWith("video/")) return Video;
     if (type === "application/pdf") return FileText;
     return File;
   };
@@ -268,7 +280,7 @@ export default function AdminUploadPage() {
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">File Manager</h1>
         <p className="text-sm text-muted-foreground">
-          Upload and manage images and files for your learning modules.
+          Upload and manage images, videos, and files for your learning modules.
         </p>
       </div>
 
@@ -287,7 +299,7 @@ export default function AdminUploadPage() {
           ref={fileInputRef}
           type="file"
           multiple
-          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx"
+          accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,video/*"
           className="hidden"
           onChange={(e) => e.target.files && handleFiles(e.target.files)}
         />
@@ -322,10 +334,12 @@ export default function AdminUploadPage() {
             {isUploading ? "Uploading..." : "Choose Files"}
           </Button>
 
-          <div className="mt-4 flex gap-4 text-xs text-muted-foreground">
+          <div className="mt-4 flex gap-4 text-xs text-muted-foreground flex-wrap justify-center">
             <span>Images: JPEG, PNG, WebP, GIF (max 10MB)</span>
             <span>•</span>
             <span>Documents: PDF, DOC, XLS (max 10MB)</span>
+            <span>•</span>
+            <span>Videos: MP4, WebM, OGG, MOV (max 50MB)</span>
           </div>
         </div>
       </div>
@@ -414,6 +428,13 @@ export default function AdminUploadPage() {
               >
                 Files
               </Button>
+              <Button
+                variant={filter === "videos" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilter("videos")}
+              >
+                Videos
+              </Button>
             </div>
           </div>
 
@@ -422,6 +443,7 @@ export default function AdminUploadPage() {
             {filteredFiles.map((file) => {
               const FileIcon = getFileIcon(file.type);
               const isImage = file.type.startsWith("image/");
+              const isVideo = file.type.startsWith("video/");
 
               return (
                 <div
@@ -436,6 +458,14 @@ export default function AdminUploadPage() {
                         alt={file.name}
                         className="h-full w-full object-cover transition-transform group-hover:scale-105"
                       />
+                    ) : isVideo ? (
+                      <video
+                        src={file.url}
+                        className="h-full w-full object-cover"
+                        muted
+                        onMouseEnter={(e) => e.currentTarget.play()}
+                        onMouseLeave={(e) => e.currentTarget.pause()}
+                      />
                     ) : (
                       <div className="flex h-full items-center justify-center">
                         <FileIcon className="h-12 w-12 text-muted-foreground" />
@@ -449,7 +479,7 @@ export default function AdminUploadPage() {
                     <div className="mt-1 flex items-center justify-between text-xs text-muted-foreground">
                       <span>{formatFileSize(file.size)}</span>
                       <Badge variant="outline" className="text-[10px]">
-                        {isImage ? "Image" : "File"}
+                        {isImage ? "Image" : isVideo ? "Video" : "File"}
                       </Badge>
                     </div>
 

@@ -34,14 +34,20 @@ import type {
   SourceType,
 } from "@/features/learning-module/types/materials";
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB for PDFs
+const MAX_PDF_SIZE = 5 * 1024 * 1024; // 5MB for PDFs
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB for images
+const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50MB for videos
+const MAX_DOC_SIZE = 10 * 1024 * 1024; // 10MB for documents
 const ALLOWED_TYPES = [
   "application/pdf",
   "image/jpeg",
   "image/png",
   "image/webp",
   "image/gif",
+  "video/mp4",
+  "video/webm",
+  "video/ogg",
+  "video/quicktime",
 ];
 
 interface MaterialFormProps {
@@ -85,17 +91,25 @@ export function MaterialForm({
     if (!file) return;
 
     const isPdf = file.type === "application/pdf";
-    const isImage = ALLOWED_TYPES.includes(file.type) && !isPdf;
-    const maxSize = isPdf ? MAX_FILE_SIZE : MAX_IMAGE_SIZE;
+    const isImage = file.type.startsWith("image/");
+    const isVideo = file.type.startsWith("video/");
+    const maxSize = isPdf
+      ? MAX_PDF_SIZE
+      : isImage
+        ? MAX_IMAGE_SIZE
+        : isVideo
+          ? MAX_VIDEO_SIZE
+          : MAX_DOC_SIZE;
 
     if (file.size > maxSize) {
       const sizeMB = (maxSize / (1024 * 1024)).toFixed(0);
-      toast.error(`Ukuran file maksimal ${sizeMB}MB untuk ${isPdf ? "PDF" : "gambar"}`);
+      const fileType = isPdf ? "PDF" : isVideo ? "video" : "gambar/dokumen";
+      toast.error(`Ukuran file maksimal ${sizeMB}MB untuk ${fileType}`);
       return;
     }
 
     if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error("Hanya PDF dan gambar (JPEG, PNG, WebP, GIF) yang didukung");
+      toast.error("Tipe file tidak didukung. Hanya PDF, gambar (JPEG/PNG/WebP/GIF), dan video (MP4/WebM/OGG/MOV) yang didukung.");
       return;
     }
 
@@ -295,10 +309,10 @@ export function MaterialForm({
                 <>
                   <Upload className="h-6 w-6 text-muted-foreground mb-1" />
                   <p className="text-xs text-muted-foreground">
-                    Klik untuk upload (PDF max 5MB, gambar max 10MB)
+                    Klik untuk upload (PDF max 5MB, gambar max 10MB, video max 50MB)
                   </p>
                   <p className="text-[10px] text-muted-foreground/60 mt-0.5">
-                    PDF, JPEG, PNG, WebP, GIF
+                    PDF, JPEG, PNG, WebP, GIF, MP4, WebM, OGG, MOV
                   </p>
                 </>
               )}
@@ -306,7 +320,7 @@ export function MaterialForm({
             <input
               type="file"
               className="hidden"
-              accept=".pdf,.jpg,.jpeg,.png,.webp,.gif"
+              accept=".pdf,.jpg,.jpeg,.png,.webp,.gif,.mp4,.webm,.ogg,.mov"
               onChange={handleFileUpload}
               disabled={uploading}
             />
